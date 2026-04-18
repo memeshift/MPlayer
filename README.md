@@ -47,7 +47,7 @@ MPlayer/
 └── README.md
 ```
 
-**`index.html` is fully self-contained** for the main UI: all CSS and JavaScript for the full player live inside it — no build step, no npm, no bundler. PHP endpoints (`scan.php`, `art.php`, `embed.php`) handle the server side.
+`**index.html` is fully self-contained** for the main UI: all CSS and JavaScript for the full player live inside it — no build step, no npm, no bundler. PHP endpoints (`scan.php`, `art.php`, `embed.php`) handle the server side.
 
 ---
 
@@ -87,7 +87,7 @@ That's it.
 define('MUSIC_DIR', '/home/youraccount/public_html/player/music/');
 ```
 
-4. Visit the URL in your browser
+1. Visit the URL in your browser
 
 The app has been tested on SiteGround, Bluehost, and DreamHost shared hosting.
 
@@ -122,19 +122,21 @@ In `index.html`, the constants used for the **Share / embed** modal (`PLAYER_BAS
 
 ## ID3 tag support
 
-Tag parsing is implemented in PHP with no external libraries. **`scan.php`** contains the parser used to build the playlist JSON. **`id3.php`** holds the same `parseID3()` API for **`embed.php`**, which must not `require` `scan.php` (that file emits JSON when loaded).
+Tag parsing is implemented in PHP with no external libraries. `**scan.php`** contains the parser used to build the playlist JSON. `**id3.php**` holds the same `parseID3()` API for `**embed.php**`, which must not `require` `scan.php` (that file emits JSON when loaded).
 
-| Tag | Field | Notes |
-|-----|-------|-------|
-| TIT2 / TT2 | Title | |
-| TPE1 / TP1 | Artist | |
-| TALB / TAL | Album | |
-| TYER / TDRC | Year | |
-| TRCK / TRK | Track number | |
-| COMM | Comment / Notes | Shown in the Track Info panel |
-| APIC / PIC | Album art | Served via `art.php` |
-| WXXX | Buy/support URL | Shows a `»buy/support` button |
-| WOAF / TXXX:WOAF | Info URL | Shows a `»more info` button |
+
+| Tag              | Field           | Notes                         |
+| ---------------- | --------------- | ----------------------------- |
+| TIT2 / TT2       | Title           |                               |
+| TPE1 / TP1       | Artist          |                               |
+| TALB / TAL       | Album           |                               |
+| TYER / TDRC      | Year            |                               |
+| TRCK / TRK       | Track number    |                               |
+| COMM             | Comment / Notes | Shown in the Track Info panel |
+| APIC / PIC       | Album art       | Served via `art.php`          |
+| WXXX             | Buy/support URL | Shows a `»buy/support` button |
+| WOAF / TXXX:WOAF | Info URL        | Shows a `»more info` button   |
+
 
 UTF-16 and UTF-8 encoded tags are both handled correctly. ID3v1 is used as a fallback if no ID3v2 tags are found.
 
@@ -206,13 +208,15 @@ Leave it as `none` for a solid dark background in the Winamp theme variables. Th
 
 ## Keyboard shortcuts
 
-| Key | Action |
-|-----|--------|
-| `Space` | Play / Pause |
-| `→` | Next track |
-| `←` | Previous track |
-| `S` | Toggle shuffle |
-| `R` | Cycle repeat (off → all → one) |
+
+| Key     | Action                         |
+| ------- | ------------------------------ |
+| `Space` | Play / Pause                   |
+| `→`     | Next track                     |
+| `←`     | Previous track                 |
+| `S`     | Toggle shuffle                 |
+| `R`     | Cycle repeat (off → all → one) |
+
 
 ---
 
