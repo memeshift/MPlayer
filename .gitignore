@@ -1,0 +1,21 @@
+# Composer
+/vendor/
+composer.phar
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Logs & cache
+*.log
+.phpunit.result.cache
+.php-cs-fixer.cache
+
+# OS & editors
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
