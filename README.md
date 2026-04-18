@@ -4,6 +4,8 @@
 
 Visitors browse and play a directory of MP3s in the browser — no accounts, no in-app uploads, and no database.
 
+**Current demo (my music!)**: [Memeshift Player](https://music.memeshift.com)
+
 **Current build: v1.46** (see [CHANGELOG.md](CHANGELOG.md))
 
 ---
