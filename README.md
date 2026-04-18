@@ -39,6 +39,15 @@ MPlayer/
 ├── id3.php          ← Shared ID3 parser (required by embed.php; same logic as in scan.php)
 ├── config.php       ← The only file you must edit for paths
 ├── .htaccess        ← Security headers, blocks direct access to config.php; CORS for MP3 embeds
+├── favicons/        ← Browser + PWA icon assets
+│   ├── favicon.svg
+│   ├── favicon.ico
+│   ├── favicon-96x96.png
+│   ├── favicon-32x32.png
+│   ├── favicon-16x16.png
+│   ├── apple-touch-icon.png
+│   ├── web-app-manifest-192x192.png
+│   └── web-app-manifest-512x512.png
 ├── music/           ← Put your MP3 files here
 │   └── .htaccess    ← Disables directory listing and PHP execution
 ├── CHANGELOG.md     ← Full version history
