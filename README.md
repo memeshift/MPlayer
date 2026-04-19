@@ -133,7 +133,7 @@ In `index.html`, the constants used for the **Share / embed** modal (`PLAYER_BAS
 
 ## ID3 tag support
 
-Tag parsing is implemented in PHP with no external libraries. `**scan.php`** contains the parser used to build the playlist JSON. `**id3.php**` holds the same `parseID3()` API for `**embed.php**`, which must not `require` `scan.php` (that file emits JSON when loaded).
+Tag parsing is implemented in PHP with no external libraries. `**scan.php`** contains the parser used to build the playlist JSON. `**id3.php`** holds the same `parseID3()` API for `**embed.php`**, which must not `require` `scan.php` (that file emits JSON when loaded).
 
 
 | Tag              | Field           | Notes                         |
