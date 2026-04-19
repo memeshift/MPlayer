@@ -1187,12 +1187,6 @@ input[type="range"]::-moz-range-thumb {
 ════════════════════════════════════════════════════════════════════════ */
 
 @media (max-width: 600px) {
-  html {
-    /* Keep user/browser text scaling behavior predictable on mobile */
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-  }
-
   body {
     padding: 6px 6px 0;
     padding-bottom: calc(182px + env(safe-area-inset-bottom, 0px));
@@ -1211,92 +1205,6 @@ input[type="range"]::-moz-range-thumb {
   .art-wrap { width: 68px; height: 68px; }
   .led-time { font-size: 3rem; }
   .led-title-inner { font-size: 2rem; }
-  .led-display { padding: 6px 8px 7px; }
-  .led-row { gap: 8px; }
-  .info-body { gap: 12px; padding: 10px 10px; }
-  .info-row { gap: 10px; }
-
-  /* Mobile legibility: raise tiny label text to readable range */
-  .titlebar-label {
-    font-size: 1.4rem;
-    letter-spacing: 0.1em;
-    line-height: 1.3;
-  }
-
-  .titlebar-count,
-  .led-meta-line,
-  .ctrl-lbl,
-  .sort-lbl,
-  .btn-sort,
-  .info-key,
-  .info-share-key,
-  .embed-modal-label,
-  .info-notes-label {
-    font-size: 1.4rem;
-    line-height: 1.35;
-  }
-
-  .btn-theme,
-  .dock-theme-row .btn-theme {
-    font-size: 1.4rem;
-    letter-spacing: 0.05em;
-  }
-
-  .rep-label {
-    font-size: 1.4rem;
-    line-height: 1;
-  }
-
-  .pl-item {
-    font-size: 1.4rem;
-    line-height: 1.5;
-    padding: 4px 6px;
-    min-height: 30px;
-    align-items: flex-start;
-  }
-
-  .pl-num,
-  .pl-dur,
-  .pl-badge {
-    font-size: 1.4rem;
-  }
-
-  .pl-status,
-  .pl-footer,
-  .socials-label {
-    font-size: 1.4rem;
-    line-height: 1.4;
-  }
-
-  .pl-footer {
-    padding: 6px 8px;
-    min-height: 36px;
-  }
-
-  .info-key,
-  .info-share-key {
-    letter-spacing: 0.08em;
-  }
-
-  .info-val,
-  .info-dl {
-    font-size: 1.6rem;
-    line-height: 1.45;
-  }
-
-  .info-notes-text {
-    font-size: 1.6rem;
-    line-height: 1.7;
-  }
-
-  .embed-modal-input {
-    font-size: 1.4rem;
-    line-height: 1.5;
-  }
-
-  .dock-time {
-    font-size: 1.8rem;
-  }
 
   .info-share-links { display: none; }
 
@@ -1344,7 +1252,7 @@ input[type="range"]::-moz-range-thumb {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 12px 14px 8px;
+    padding: 10px 18px 4px;
     background: var(--disp-bg);
   }
 
@@ -1375,7 +1283,7 @@ input[type="range"]::-moz-range-thumb {
 
   .dock-time {
     font-family: var(--font-led);
-    font-size: 1.8rem;
+    font-size: 1.7rem;
     color: var(--led-dim);
     letter-spacing: 0.03em;
     flex-shrink: 0;
@@ -1388,7 +1296,7 @@ input[type="range"]::-moz-range-thumb {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 12px 8px;
+    padding: 18px 14px 4px;
   }
 
   .dock-btn {
@@ -1409,16 +1317,16 @@ input[type="range"]::-moz-range-thumb {
   .dock-btn:active { opacity: 0.45; transform: scale(0.88); }
   .dock-btn svg { display: block; pointer-events: none; }
 
-  .dock-btn-sm { width: 52px; height: 52px; opacity: 0.55; }
+  .dock-btn-sm { width: 48px; height: 48px; opacity: 0.55; }
   .dock-btn-sm svg { width: 22px; height: 22px; }
   .dock-btn-sm { position: relative; }
 
-  .dock-btn-md { width: 62px; height: 62px; }
+  .dock-btn-md { width: 58px; height: 58px; }
   .dock-btn-md svg { width: 36px; height: 36px; }
 
   .dock-btn-play {
-    width: 82px;
-    height: 82px;
+    width: 76px;
+    height: 76px;
     background: var(--led);
     border-radius: 50%;
     box-shadow: 0 0 24px var(--led-glow), 0 4px 12px rgba(0,0,0,0.7);
@@ -1453,7 +1361,7 @@ input[type="range"]::-moz-range-thumb {
   .rep-label {
     position: absolute;
     font-family: var(--font-ui);
-    font-size: 1.4rem;
+    font-size: 0.68rem;
     font-weight: bold;
     bottom: 5px;
     right: 5px;
@@ -1464,24 +1372,15 @@ input[type="range"]::-moz-range-thumb {
   .dock-theme-row {
     display: flex;
     justify-content: flex-end;
-    padding: 6px 8px 10px;
+    padding: 2px 8px 8px;
   }
 
   .dock-theme-row .btn-theme {
-    font-size: 1.4rem;
-    height: 34px;
-    min-width: 44px;
-    padding: 0 10px;
+    font-size: 0.76rem;
+    height: 26px;
+    padding: 0 8px;
     white-space: nowrap;
   }
-}
-
-@media (max-width: 380px) {
-  .dock-seek-row { padding-left: 10px; padding-right: 10px; }
-  .dock-transport { padding-left: 8px; padding-right: 8px; gap: 2px; }
-  .dock-btn-sm { width: 48px; height: 48px; }
-  .dock-btn-md { width: 56px; height: 56px; }
-  .dock-btn-play { width: 74px; height: 74px; }
 }
 
 /* ════════════════════════════════════════════════════════════════════════
