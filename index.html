@@ -441,7 +441,7 @@ body::before {
   opacity: 0.7;
 }
 
-#volume  { flex: 0 1 200px; }
+#volume-desktop { flex: 0 1 200px; }
 
 .transport {
   display: flex;
@@ -1616,7 +1616,7 @@ input[type="range"]::-moz-range-thumb {
         <!-- LED Display -->
         <div class="led-display">
           <div class="led-title-wrap" id="led-title-wrap">
-            <span class="led-title-inner" id="led-title">Press play to start</span>
+            <span class="led-title-inner" id="led-title">NO TRACK LOADED</span>
           </div>
           <div class="led-row">
             <span class="led-time" id="led-time">0:00</span>
@@ -1851,6 +1851,23 @@ input[type="range"]::-moz-range-thumb {
        aria-label="Music player audio"></audio>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+<!--
+  ════════════════════════════════════════════════════════════════
+  Memeshift Player — index.html changelog
+  ════════════════════════════════════════════════════════════════
+  v1.37  Fix: volume slider now works on desktop.
+         Root cause 1 — CSS selector mismatch: #volume rule did not
+           match id="volume-desktop", leaving the slider unsized under
+           appearance:none on some browsers.  Fixed to #volume-desktop.
+         Root cause 2 — audio.volume has no effect once the HTMLAudio
+           element is routed through createMediaElementSource().  Volume
+           is now controlled via a GainNode inserted into the Web Audio
+           chain (src → gainNode → analyser → destination).
+         Also: added 'change' event listener alongside 'input' for
+           belt-and-braces cross-browser coverage; volume stored in
+           S.volume so it is applied immediately when setupAudio() runs.
+  ════════════════════════════════════════════════════════════════
+-->
 <script>
 
 'use strict';
@@ -1869,6 +1886,7 @@ const S = {
   sortBy:   'default',
   sortDir:  'asc',
   theme:    localStorage.getItem('msp-theme') || 'memeshift',
+  volume:   0.8,
 };
 
 const audio    = $('audio');
@@ -2310,8 +2328,19 @@ function bindAudio() {
 
   const volDesktop = $('volume-desktop');
   if (volDesktop) {
-    volDesktop.addEventListener('input', () => { audio.volume = volDesktop.value / 100; });
-    audio.volume = volDesktop.value / 100;
+    // Sync slider to stored volume on load
+    volDesktop.value = Math.round(S.volume * 100);
+    audio.volume     = S.volume;
+
+    const applyVolume = () => {
+      S.volume     = volDesktop.value / 100;
+      audio.volume = S.volume;          // fallback before AudioContext is set up
+      if (gainNode) gainNode.gain.value = S.volume;  // Web Audio path
+    };
+
+    // 'input' fires while dragging; 'change' fires on release (belt-and-braces)
+    volDesktop.addEventListener('input',  applyVolume);
+    volDesktop.addEventListener('change', applyVolume);
   }
 
   seekbar.addEventListener('mousedown',  () => seekDragging = true);
@@ -2568,7 +2597,7 @@ function showInfo(t) {
 /* ════════════════════════════════════════════════════════════════════
    WEB AUDIO + VISUALIZER
 ════════════════════════════════════════════════════════════════════ */
-let audioCtx, analyser, visDraw = false;
+let audioCtx, analyser, gainNode, visDraw = false;
 
 const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) ||
   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -2600,10 +2629,13 @@ function initVisualizer() {
 function setupAudio() {
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   analyser = audioCtx.createAnalyser();
+  gainNode = audioCtx.createGain();
   analyser.fftSize               = 64;
   analyser.smoothingTimeConstant = 0.78;
+  gainNode.gain.value            = S.volume;   // apply current slider level
   const src = audioCtx.createMediaElementSource(audio);
-  src.connect(analyser);
+  src.connect(gainNode);       // volume control first
+  gainNode.connect(analyser);  // then visualiser
   analyser.connect(audioCtx.destination);
 }
 
