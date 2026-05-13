@@ -1,6 +1,6 @@
 {
-  "name": "MPlayer",
-  "short_name": "MPlayer",
+  "name": "MyWebSite",
+  "short_name": "MySite",
   "icons": [
     {
       "src": "/favicons/web-app-manifest-192x192.png",
