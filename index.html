@@ -2052,12 +2052,8 @@ function markCurrent() {
 
 function scrollToCurrentItem() {
   if (S.current < 0) return;
-  const el        = playlist.children[S.current];
-  const container = $('pl-scroll');
-  if (!el || !container) return;
-  const elRect        = el.getBoundingClientRect();
-  const containerRect = container.getBoundingClientRect();
-  container.scrollTop = container.scrollTop + (elRect.top - containerRect.top);
+  const el = playlist.children[S.current];
+  if (el) el.scrollIntoView({ block: 'nearest' });
 }
 
 function updateFooter() {
@@ -2191,6 +2187,7 @@ function stopPlayback() {
   audio.pause();
   audio.currentTime = 0;
   S.playing = false;
+  stopVis();
 
   const pi = $('play-icon'), pp = $('pause-icon');
   if (pi) pi.style.display = 'block';
@@ -2323,6 +2320,7 @@ function bindAudio() {
 
   audio.addEventListener('play', () => {
     S.playing = true;
+    startVis();
     const pd = $('btn-play-d');
     if (pd) {
       pd.textContent = '⏸';
@@ -2338,6 +2336,7 @@ function bindAudio() {
 
   audio.addEventListener('pause', () => {
     S.playing = false;
+    stopVis();
     const pd = $('btn-play-d');
     if (pd) {
       pd.textContent = '▶';
@@ -2490,6 +2489,7 @@ function bindControls() {
 function applyTheme(name, save) {
   S.theme = name;
   app.dataset.theme = name;
+  updateVisColors();
 
   const label = name === 'winamp' ? '◈ WINAMP' : '◈ MSHIFT';
   const themeBtn  = $('btn-theme');
@@ -2627,22 +2627,50 @@ function showInfo(t) {
 /* ════════════════════════════════════════════════════════════════════
    WEB AUDIO + VISUALIZER
 ════════════════════════════════════════════════════════════════════ */
-let audioCtx, analyser, gainNode, visDraw = false;
+let audioCtx, analyser, gainNode, visBuf = null, visRafId = null;
+let visLedCol = '#14ff14';
+let visDimCol = '#1a3a1a';
+
+function updateVisColors() {
+  const style = getComputedStyle(app);
+  visLedCol = style.getPropertyValue('--led').trim() || '#14ff14';
+  visDimCol = style.getPropertyValue('--led-dim').trim() || '#1a3a1a';
+}
+
+function hexToRgb(hex) {
+  if (hex.length === 4) {
+    return [parseInt(hex[1]+hex[1],16), parseInt(hex[2]+hex[2],16), parseInt(hex[3]+hex[3],16)];
+  }
+  return [parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16)];
+}
 
 const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) ||
   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
+function startVis() {
+  if (visRafId) return;
+  visRafId = requestAnimationFrame(visLoop);
+}
+
+function stopVis() {
+  if (visRafId) { cancelAnimationFrame(visRafId); visRafId = null; }
+  drawVis();
+}
+
+function visLoop() {
+  drawVis();
+  visRafId = requestAnimationFrame(visLoop);
+}
+
 function initVisualizer() {
   audio.addEventListener('play', () => {
-    if (isIOS) {
-      if (!visDraw) { visDraw = true; drawVis(); }
-      return;
+    if (!isIOS) {
+      if (!audioCtx) setupAudio();
+      if (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted') {
+        audioCtx.resume().catch(() => {});
+      }
     }
-    if (!audioCtx) setupAudio();
-    if (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted') {
-      audioCtx.resume().catch(() => {});
-    }
-    if (!visDraw) { visDraw = true; drawVis(); }
+    startVis();
   });
 
   document.addEventListener('visibilitychange', () => {
@@ -2653,7 +2681,7 @@ function initVisualizer() {
     }
   });
 
-  requestAnimationFrame(drawVis);
+  drawVis(); // draw one idle frame on load
 }
 
 function setupAudio() {
@@ -2663,6 +2691,7 @@ function setupAudio() {
   analyser.fftSize               = 64;
   analyser.smoothingTimeConstant = 0.78;
   gainNode.gain.value            = S.volume;   // apply current slider level
+  visBuf = new Uint8Array(analyser.frequencyBinCount);
   const src = audioCtx.createMediaElementSource(audio);
   src.connect(gainNode);       // volume control first
   gainNode.connect(analyser);  // then visualiser
@@ -2670,44 +2699,37 @@ function setupAudio() {
 }
 
 function drawVis() {
-  requestAnimationFrame(drawVis);
-
   const W = canvas.width;
   const H = canvas.height;
 
-  const style  = getComputedStyle(app);
-  const ledCol = style.getPropertyValue('--led').trim()     || '#14ff14';
-  const dimCol = style.getPropertyValue('--led-dim').trim() || '#1a3a1a';
-
   ctx2d.clearRect(0, 0, W, H);
 
-  if (!analyser) {
+  if (!analyser || !visBuf) {
     const bars = 20, bw = Math.floor(W / bars) - 1;
     for (let i = 0; i < bars; i++) {
-      ctx2d.fillStyle = dimCol;
+      ctx2d.fillStyle = visDimCol;
       ctx2d.fillRect(i * (bw + 1), H - 2, bw, 2);
     }
     return;
   }
 
-  const buf  = new Uint8Array(analyser.frequencyBinCount);
-  analyser.getByteFrequencyData(buf);
+  analyser.getByteFrequencyData(visBuf);
 
-  const bars = Math.min(22, buf.length);
+  const bars = Math.min(22, visBuf.length);
   const bw   = Math.max(1, Math.floor(W / bars) - 1);
 
   for (let i = 0; i < bars; i++) {
-    const v  = buf[i] / 255;
+    const v  = visBuf[i] / 255;
     const bh = Math.max(2, Math.round(v * H));
     const x  = i * (bw + 1);
 
     if (v > 0.75)      ctx2d.fillStyle = '#ff3300';
     else if (v > 0.5)  ctx2d.fillStyle = '#ffaa00';
-    else               ctx2d.fillStyle = ledCol;
+    else               ctx2d.fillStyle = visLedCol;
 
     ctx2d.fillRect(x, H - bh, bw, bh);
 
-    ctx2d.fillStyle = v > 0.1 ? ledCol : dimCol;
+    ctx2d.fillStyle = v > 0.1 ? visLedCol : visDimCol;
     ctx2d.fillRect(x, H - bh - 1, bw, 1);
   }
 }
@@ -2716,6 +2738,7 @@ function resizeCanvas() {
   const wrap = canvas.parentElement;
   canvas.width  = wrap.clientWidth  || 280;
   canvas.height = wrap.clientHeight || 42;
+  drawVis();
 }
 
 /* ════════════════════════════════════════════════════════════════════
@@ -2795,7 +2818,7 @@ function attachSparkle(linkEl) {
       da:      randomBetween(-0.009, -0.004),
       dx:      randomBetween(-0.225, 0.225),
       dy:      randomBetween(-0.275, 0.275),
-      color:   themeColors()[Math.floor(Math.random() * 3)],
+      rgb:     hexToRgb(themeColors()[Math.floor(Math.random() * 3)]),
       twinkle: Math.random() * Math.PI * 2,
     };
   }
@@ -2815,19 +2838,21 @@ function attachSparkle(linkEl) {
       const pulse = 0.85 + 0.15 * Math.sin(p.twinkle);
       p.twinkle += 0.12;
       const a = p.alpha * pulse * edgeFade(p);
+      p.x += p.dx; p.y += p.dy; p.alpha += p.da;
+      if (a < 0.02) continue;
+      const [r, g, b] = p.rgb;
       const grd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 3.5);
-      grd.addColorStop(0,   hexToRgba(p.color, a));
-      grd.addColorStop(0.4, hexToRgba(p.color, a * 0.45));
-      grd.addColorStop(1,   hexToRgba(p.color, 0));
+      grd.addColorStop(0,   `rgba(${r},${g},${b},${a.toFixed(2)})`);
+      grd.addColorStop(0.4, `rgba(${r},${g},${b},${(a*0.45).toFixed(2)})`);
+      grd.addColorStop(1,   `rgba(${r},${g},${b},0)`);
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r * 3.5, 0, Math.PI * 2);
       ctx.fillStyle = grd;
       ctx.fill();
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = hexToRgba(p.color, Math.min(1, a * 1.4));
+      ctx.fillStyle = `rgba(${r},${g},${b},${Math.min(1, a * 1.4).toFixed(2)})`;
       ctx.fill();
-      p.x += p.dx; p.y += p.dy; p.alpha += p.da;
     }
 
     if (running) rafId = requestAnimationFrame(drawFrame);
@@ -2852,20 +2877,6 @@ function attachSparkle(linkEl) {
   linkEl.addEventListener('mouseleave', stop);
   linkEl.addEventListener('focus',      start);
   linkEl.addEventListener('blur',       stop);
-}
-
-function hexToRgba(hex, alpha) {
-  let r, g, b;
-  if (hex.length === 4) {
-    r = parseInt(hex[1] + hex[1], 16);
-    g = parseInt(hex[2] + hex[2], 16);
-    b = parseInt(hex[3] + hex[3], 16);
-  } else {
-    r = parseInt(hex.slice(1, 3), 16);
-    g = parseInt(hex.slice(3, 5), 16);
-    b = parseInt(hex.slice(5, 7), 16);
-  }
-  return `rgba(${r},${g},${b},${alpha.toFixed(3)})`;
 }
 
 /* ════════════════════════════════════════════════════════════════════
@@ -2903,7 +2914,7 @@ function burstSocials() {
       da:      -(0.008 + Math.random() * 0.012),
       dx:      (Math.random() - 0.5) * 0.6,
       dy:      (Math.random() - 0.5) * 0.5,
-      color:   COLORS[Math.floor(Math.random() * COLORS.length)],
+      rgb:     hexToRgb(COLORS[Math.floor(Math.random() * COLORS.length)]),
       twinkle: Math.random() * Math.PI * 2,
     });
   }
@@ -2935,19 +2946,21 @@ function burstSocials() {
       const pulse = 0.85 + 0.15 * Math.sin(p.twinkle);
       p.twinkle += 0.1;
       const a = p.alpha * pulse * edgeFade(p);
+      p.x += p.dx; p.y += p.dy; p.alpha += p.da;
+      if (a < 0.02) continue;
+      const [r, g, b] = p.rgb;
       const grd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 3.5);
-      grd.addColorStop(0,   hexToRgba(p.color, a));
-      grd.addColorStop(0.4, hexToRgba(p.color, a * 0.45));
-      grd.addColorStop(1,   hexToRgba(p.color, 0));
+      grd.addColorStop(0,   `rgba(${r},${g},${b},${a.toFixed(2)})`);
+      grd.addColorStop(0.4, `rgba(${r},${g},${b},${(a*0.45).toFixed(2)})`);
+      grd.addColorStop(1,   `rgba(${r},${g},${b},0)`);
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r * 3.5, 0, Math.PI * 2);
       ctx.fillStyle = grd;
       ctx.fill();
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = hexToRgba(p.color, Math.min(1, a * 1.4));
+      ctx.fillStyle = `rgba(${r},${g},${b},${Math.min(1, a * 1.4).toFixed(2)})`;
       ctx.fill();
-      p.x += p.dx; p.y += p.dy; p.alpha += p.da;
     }
     rafId = requestAnimationFrame(draw);
   }
@@ -2985,13 +2998,12 @@ function openEmbedModal(t) {
   const modal = $('embed-modal');
   modal.style.display = 'flex';
 
-  $('embed-link-text').addEventListener('click', function() { this.select(); }, { once: false });
-  $('embed-code-text').addEventListener('click', function() { this.select(); }, { once: false });
-
   // Move focus to close button for keyboard/SR users
   requestAnimationFrame(() => $('embed-modal-close').focus());
 }
 
+$('embed-link-text').addEventListener('click', function() { this.select(); });
+$('embed-code-text').addEventListener('click', function() { this.select(); });
 $('embed-modal-close').addEventListener('click', closeEmbedModal);
 $('embed-modal').addEventListener('click', e => {
   if (e.target === $('embed-modal')) closeEmbedModal();
