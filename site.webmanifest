@@ -1,6 +1,7 @@
 {
-  "name": "MyWebSite",
-  "short_name": "MySite",
+  "name": ".+Memeshift+. Player",
+  "short_name": "Memeshift",
+  "start_url": "/",
   "icons": [
     {
       "src": "/favicons/web-app-manifest-192x192.png",
@@ -15,7 +16,7 @@
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
+  "theme_color": "#007998",
+  "background_color": "#0a0802",
   "display": "standalone"
 }
