@@ -12,18 +12,21 @@ Gaps and conflicts are documented explicitly rather than papered over.
 
 ---
 
-## v1.47 — PENDING (not yet implemented)
+## v1.47
 
 WCAG-compliant responsive font scaling and touch target sizing.
-Described in previous CHANGELOG.md but `clamp()` is absent from current
-index.html. Zero instances found in code audit. Do not treat as shipped.
 
-**Planned changes (for reference when implementing):**
-- `clamp()` responsive font sizing across all UI elements
+**Changes:**
+- `clamp()` responsive font sizing across UI elements (12 instances)
 - Touch targets enlarged to WCAG 2.1 Level AAA (44×44px minimum)
-- Media queries for ≤480px and ≤360px breakpoints
-- iOS form input `font-size: 16px` to prevent auto-zoom on focus
-- `html { font-size: clamp(...) }` responsive base
+- Media queries added for ≤480px and ≤360px breakpoints
+- `input, select, textarea { font-size: max(16px, 1em) }` to prevent iOS
+  auto-zoom on focus
+- `html { font-size: clamp(8px, calc(5.71px + 0.714vw), 10px) }` responsive
+  base, replacing the flat `62.5%`; scales 1rem from 8px@320px to 10px@600px
+- Playlist metadata (`.pl-num`, `.pl-dur`, `.pl-badge`) floored at
+  `clamp(12px, 1.15rem, 14px)` on ≤600px, so the new fluid base cannot
+  shrink it below 12px on small phones
 
 ---
 
