@@ -1,88 +1,43 @@
-# .+Memeshift+. Player Changelog
+# .+Memeshift+. Player — CHANGELOG
+
+**Source of truth: index.html (current build)**
+**Last reconciled: May 2026**
+
+Entries are drawn from three sources, ranked by reliability:
+1. **index.html inline block** (v1.0–v1.43) — authoritative; written at time of change
+2. **Current index.html code** — confirms what is actually implemented
+3. **Standalone CHANGELOG.md** — supplementary; some entries diverge from code
+
+Gaps and conflicts are documented explicitly rather than papered over.
 
 ---
 
-## v1.47
+## v1.47 — PENDING (not yet implemented)
 
-**WCAG 1.1.1y font size accessibility improvements** — responsive font scaling and touch target compliance for small screens.
+WCAG-compliant responsive font scaling and touch target sizing.
+Described in previous CHANGELOG.md but `clamp()` is absent from current
+index.html. Zero instances found in code audit. Do not treat as shipped.
 
-### Added
-- **CSS `clamp()` responsive font sizing** across all UI elements for fluid scaling between mobile and desktop.
-- **Media queries** for mobile (≤480px) and ultra-small (≤360px) devices with enhanced font sizes and touch targets.
-- **CSS documentation comments** marking all accessibility improvements with `/* WCAG 1.1.1y: */` tags.
-
-### Changed
-**Font sizes (with responsive clamp ranges):**
-- Titlebar label: `1.05rem` → `clamp(1.05rem, 2.5vw, 1.25rem)`
-- Titlebar count: `0.88rem` → `clamp(0.88rem, 2vw, 1rem)`
-- LED title: `2.2rem` → `clamp(1.8rem, 4vw, 2.2rem)`
-- **LED time (critical):** `3.6rem` → `clamp(2.8rem, 6vw, 3.6rem)` — ensures readability on all viewports
-- LED slash/duration: `2rem` → `clamp(1.6rem, 3.5vw, 2rem)`
-- LED meta lines: `0.85rem` → `clamp(0.85rem, 2vw, 1rem)`
-- Button labels (ctrl-lbl): `0.88rem` → `clamp(0.88rem, 2vw, 1rem)`
-- Transport buttons: `1.5rem` → `clamp(1.3rem, 2.5vw, 1.5rem)`
-- Toggle buttons: `0.82rem` → `clamp(0.82rem, 2vw, 1rem) !important`
-- Theme button: `0.82rem` → `clamp(0.82rem, 2vw, 1rem)`
-- Sort label: `0.85rem` → `clamp(0.85rem, 2vw, 1rem)`
-- Sort buttons: `0.82rem` → `clamp(0.82rem, 2vw, 1rem)` + `min-height: 36px`
-- Playlist status: `1.1rem` → `clamp(1.1rem, 2.5vw, 1.3rem)`
-- **Playlist items:** `1.15rem` → `clamp(1.1rem, 2.5vw, 1.2rem)` + `min-height: max(19px, 36px)`
-- Playlist numbers/duration: `1.0rem` → `clamp(0.95rem, 2vw, 1rem)`
-- Playlist badges: `0.82rem` → `clamp(0.75rem, 2vw, 0.9rem)`
-- Playlist footer: `0.88rem` → `clamp(0.88rem, 2vw, 1rem)`
-- Info key labels: `0.88rem` → `clamp(0.88rem, 2vw, 1rem)`
-- **Info values:** `1.35rem` → `clamp(1.25rem, 3vw, 1.5rem)` — improves metadata readability
-- Info share key: `0.88rem` → `clamp(0.88rem, 2vw, 1rem)`
-- Modal title: `1.05rem` → `clamp(1rem, 2.5vw, 1.15rem)`
-- Modal label: `0.85rem` → `clamp(0.85rem, 2vw, 1rem)`
-- **Modal input:** `1.1rem` → `clamp(1rem, 2.5vw, 1.2rem)` + `min-height: 44px` + `font-size: 16px` on iOS
-- Info notes label: `0.85rem` → `clamp(0.85rem, 2vw, 1rem)`
-- **Info notes text:** `1.3rem` → `clamp(1.2rem, 2.5vw, 1.4rem)`
-- Art placeholder: `3.2rem` → `clamp(2.4rem, 5vw, 3.2rem)`
-
-### Improved
-**Touch target sizing (WCAG 2.1 Level AAA compliance):**
-- Transport buttons: `min-width: 30px` → `max(36px, 44px)` with `height: max(22px, 44px)`
-- Play button: `min-width: 34px` → `max(34px, 44px)` with responsive font size
-- Toggle buttons: `min-width: 32px` → `max(32px, 44px)` with `min-height: 44px` + padding `4px 8px`
-- Theme button: `height: 14px` → `height: max(14px, 36px)` with padding `2px 8px`
-- Sort buttons: `padding: 1px 5px` → `padding: 3px 8px` with `min-height: 36px`
-- Playlist items: `min-height: 19px` → `min-height: max(19px, 36px)`
-- Modal close button: added flexbox centering + `min-width: 36px` / `min-height: 36px`
-- Form inputs: added `min-height: 44px` to all `.embed-modal-input` elements
-- iOS-specific: form inputs set to `16px` font size to prevent auto-zoom-on-focus
-
-**Responsive base font size:**
-- `html { font-size: 62.5%; }` → `html { font-size: clamp(62.5%, 10vw, 62.5%); }`
-- Mobile (≤480px): `font-size: clamp(66.67%, 11vw, 75%);`
-- Ultra-small (≤360px): `font-size: 75%;`
-
-### Fixed
-- **Small screen legibility:** all text now scales fluidly with viewport width instead of remaining fixed at minimum sizes.
-- **Touch target undersizing:** buttons and form controls now meet WCAG 2.1 Level AAA 44×44px minimum on all screen sizes.
-- **iOS zoom-on-focus:** form inputs now use `16px` font size, preventing unwanted viewport zoom when focusing.
-- **LED display readability:** time display now scales responsively while maintaining LED aesthetic at all screen sizes.
-
-### Testing Notes
-- Desktop (>1024px): original pixel-perfect dimensions maintained via `clamp()` upper bounds.
-- Tablet (600-1024px): smooth scaling between mobile and desktop breakpoints.
-- Mobile (480-600px): enhanced font sizes and 44px+ touch targets activate.
-- Small (360-480px): additional font size boost and 48px input height for iOS usability.
-- Ultra-small (<360px): maximum font size scaling with 75% base font size.
-
-**Browser support:** Chrome 79+, Firefox 75+, Safari 13.1+, Edge 79+ (all support `clamp()` and `max()`).
+**Planned changes (for reference when implementing):**
+- `clamp()` responsive font sizing across all UI elements
+- Touch targets enlarged to WCAG 2.1 Level AAA (44×44px minimum)
+- Media queries for ≤480px and ≤360px breakpoints
+- iOS form input `font-size: 16px` to prevent auto-zoom on focus
+- `html { font-size: clamp(...) }` responsive base
 
 ---
 
 ## v1.46
 
-**A11y quick wins** (5 fixes):
+**Accessibility (5 fixes):**
 
-1. **`:focus-visible`** — styles for all interactive elements.
-2. **`aria-label`** on all symbol-only transport buttons; **`aria-pressed`** kept in sync with play/pause/shuffle state.
-3. **Visually-hidden `#sr-status`** — `aria-live` region announces Now playing / Paused / Stopped to screen readers.
-4. **Contrast** — `--pl-num`, `--pl-dur`, `--info-key`, `--sort-text` lifted to ≥4.5:1 in both themes.
-5. **Playlist keyboard** — items now keyboard-operable: `tabindex="0"`, Enter/Space activates; `aria-selected` kept in sync with `markCurrent()`.
+1. **`:focus-visible`** — keyboard focus indicators on all interactive elements.
+2. **`aria-label`** on all symbol-only transport buttons; **`aria-pressed`** kept in sync with play, shuffle, and repeat state.
+3. **`#sr-status`** — visually-hidden `aria-live="polite"` region announces Now playing / Paused / Stopped to screen readers.
+4. **Contrast** — `--pl-num`, `--pl-dur`, `--info-key`, `--sort-text` raised to ≥4.5:1 in both themes. Specific values:
+   - Memeshift: `--pl-num` `#554e30` → `#7a7248`; `--pl-dur` → `#8a8258`; `--sort-text` `#666040` → `#9a9060`
+   - Winamp: `--pl-num` / `--pl-dur` `#0a6b0a` → `#2a8c2a`; `--info-key` `#0a6b0a` → `#2a8c2a`
+5. **Playlist keyboard operability** — items get `tabindex="0"`, Enter/Space activates; `aria-selected` synced with `markCurrent()`.
 
 ---
 
@@ -92,170 +47,357 @@ Fixed iOS background audio interruption.
 
 **Root cause:** routing `<audio>` through `AudioContext` via `createMediaElementSource()` causes iOS to cut audio when the page backgrounds, because iOS suspends the `AudioContext` and the `<audio>` element with it.
 
-**Fix:** detect iOS via `userAgent` / `maxTouchPoints` and skip `AudioContext` routing entirely on those devices. Visualiser shows idle bars on iOS (acceptable tradeoff). On all other browsers the visualiser works as before.
+**Fix:** detect iOS via `userAgent` / `maxTouchPoints` and skip `AudioContext` routing entirely on those devices. Visualiser shows idle bars on iOS (acceptable tradeoff). All other browsers unaffected.
+
+---
 
 ## v1.44
 
-Background audio / lock screen controls. Added `playsinline` and `x-webkit-airplay="allow"` to `<audio>` element. Implemented Media Session API via `updateMediaSession(t)`: sets track metadata (track title, artist, album, artwork) so iOS lock screen and media notification centers display the now-playing track.
+Background audio and lock screen controls.
+
+- Added `playsinline` and `x-webkit-airplay="allow"` to `<audio>` element.
+- Implemented Media Session API via `updateMediaSession(t)`: sets track metadata (title, artist, album, artwork) so iOS lock screen and Android media notification show the now-playing track.
+- Action handlers registered: play, pause, nexttrack, previoustrack, seekbackward (−10s), seekforward (+10s).
+
+---
+
+## [undocumented — present in current build, version unknown]
+
+**Favicons and web app manifest.** SVG, PNG (96×96, 32×32, 16×16), ICO,
+and Apple touch icon (180×180) added to `<head>`. `site.webmanifest`
+linked. Not present in the v1.43 build; appeared alongside v1.44–v1.46
+changes. No version number assigned in any source.
+
+**Desktop volume slider fix (mislabeled v1.37 in code comment).**
+Two root causes resolved:
+- CSS selector mismatch: `#volume` rule did not match `id="volume-desktop"`, leaving the slider unsized under `appearance:none` on some browsers. Fixed to `#volume-desktop`.
+- `audio.volume` has no effect once `<audio>` is routed through `createMediaElementSource()`. Volume now controlled via a `GainNode` inserted into the Web Audio chain (`src → gainNode → analyser → destination`).
+- Added `change` event listener alongside `input` for cross-browser coverage; volume stored in `S.volume` so it is applied immediately when `setupAudio()` runs.
+
+*Note: the inline code comment labels this v1.37, but v1.37 is already
+documented (sticky panel, below). The fix is not present in the v1.43
+build, placing it in the v1.44–v1.46 window. Version number in the
+comment is an error.*
+
+---
 
 ## v1.43
 
 Share col refinements.
 
-- **Desktop:** two separate links collapsed into one »Share / Embed link that opens the modal directly. `info-share-key` gets `white-space:nowrap` so label never wraps.
-- **Mobile:** icon button hidden via base CSS (`display:none`), only revealed inside ≤600px media query — guarantees it never shows on desktop. Icon centred horizontally below the label via `text-align:center`.
+- **Desktop:** two separate links (»share, »embed) collapsed into one »Share / Embed link that opens the modal directly. `info-share-key` gets `white-space:nowrap` so the label never wraps.
+- **Mobile:** icon button hidden via base CSS (`display:none`), only revealed inside ≤600px media query — guarantees it never appears on desktop. Icon centred horizontally below the label via `align-items:center` on the share col.
+
+---
 
 ## v1.42
 
-Mobile share col: SHARE THIS label restored above the icon. Only the »share/»embed text links are hidden on mobile. Share col alignment changed to `flex-start` so label + icon stack top-to-bottom.
+Mobile share col: SHARE THIS label restored above the icon. Only the
+»share / »embed text links are hidden on mobile. Share col alignment
+changed to `flex-start` so label + icon stack top-to-bottom flush left.
+
+---
 
 ## v1.41
 
-**Mobile share UX.** On ≤600px the »share/»embed text links are hidden and replaced by a single upward-arrow share icon (28px, 44×44px tap target). Tapping calls `navigator.share()` — the native OS share sheet on iOS/Android.
+Mobile share UX. On ≤600px the »share / »embed text links are hidden and
+replaced by a single upward-arrow share icon (28px, 44×44px tap target).
+Tapping calls `navigator.share()` — the native iOS/Android share sheet —
+with title, text, and `?t=` deep link. Falls back to clipboard copy on
+browsers without Web Share API support. Desktop text links unchanged.
+
+---
 
 ## v1.40
 
-Share col sizing. `.info-meta-cols` switched from flex to `grid(2fr 1fr)` so share col always occupies exactly one third of the metadata area. `.info-share-links` items given `min-height` 36px + `padding: 6px 0` for better touch targets.
+Share col sizing. `.info-meta-cols` switched from flex to `grid(2fr 1fr)`
+so the share col always occupies exactly one third of the metadata area.
+`.info-share-links` items given `min-height: 36px` + `padding: 6px 0` for
+comfortable tap targets.
+
+---
 
 ## v1.39
 
-Share/Embed feature.
+Share / Embed feature.
 
-**Track Info panel:** `info-body` restructured into two side-by-side columns (`.info-meta-col` left, `.info-share-col` right) separated by a subtle vertical divider. SHARE THIS key + share/embed links added.
+**Track Info panel:** `info-body` restructured into two side-by-side
+columns (`.info-meta-col` left, `.info-share-col` right) separated by a
+subtle vertical divider. SHARE THIS key + share/embed links added to right
+col, flush-left matching ARTIST/ALBUM padding.
 
-**JS:** `shareTrack()` copies `?t=` deep link to clipboard with copied! flash; `openEmbedModal()` shows a keyboard-dismissible overlay with direct link and iframe snippet. `?t=` param read on `init()`.
+**JS:** `shareTrack()` copies `?t=` deep link to clipboard with a
+"copied!" flash; `openEmbedModal()` shows a keyboard-dismissible overlay
+with a direct link and iframe snippet. `?t=` param read on `init()` to
+auto-play a shared track.
 
-**New file:** `embed.php` — self-contained single-track mini-player, Option A style (yellow titlebar, art block, DM Mono font), 125px height, full-width responsive, no seekbar, links back to main player.
+**New file:** `embed.php` — self-contained single-track mini-player,
+Option A style (yellow titlebar, art block, DM Mono font), 125px height,
+full-width responsive, no seekbar, links back to main player with `?t=`
+deep link.
+
+---
 
 ## v1.38
 
-Fixed desktop seekbar thumb position. `#seekbar-d` was missing `width:100%`, so browsers rendered it at ~129px intrinsic width. Thumb was proportionally correct within that narrow track but visually displaced on the full-width player. Now the thumb position matches the audio progress.
+Fixed desktop seekbar thumb position. `#seekbar-d` was missing
+`width:100%`, so browsers rendered it at ~129px intrinsic width. Thumb was
+proportionally correct within that narrow track but visually misaligned
+with the full panel. Now shares `width:100%` rule with `#seekbar`. Mobile
+seekbar unchanged.
+
+---
 
 ## v1.37
 
-**Mobile:** `.panel-main` is now `position:sticky; top:0; z-index:50`. Player panel (visualiser + LED + title bar) stays pinned at the top of the viewport while Track Info and Playlist scroll beneath it.
+Mobile: `.panel-main` is now `position:sticky; top:0; z-index:50`. Player
+panel (visualiser + LED + title bar) stays pinned at the top of the
+viewport while Track Info and Playlist scroll beneath it. No
+padding/height compensation needed — sticky keeps the element in document
+flow. Desktop layout unchanged.
+
+---
 
 ## v1.36
 
-Restored desktop seekbar (`seekbar-d`) below LED display as desktop-only element. Synced with `timeupdate` and mobile seekbar. Mobile seekbar and dock unchanged.
+Restored desktop seekbar (`seekbar-d`) below LED display as desktop-only
+element. Synced with `timeupdate` and mobile seekbar. Mobile seekbar and
+dock unchanged.
+
+---
+
+## v1.29–v1.35 — NO RECORD
+
+Seven versions with no entry in any source. Known to have existed (version
+sequence is confirmed by v1.28 and v1.36 entries in the inline block).
+The handoff summary lists two fixes that likely fall here:
+- Theme switcher not working: `<html data-theme="memeshift">` was
+  permanently overriding `applyTheme()` on `#app`. Removed from `<html>`,
+  kept only on `#app`.
+- Mobile extra buttons showing >600px: mobile dock elements not in
+  `mobile-only` wrapper — fixed with wrapping div.
+
+Both fixes are confirmed present in current code; version numbers unknown.
+
+---
 
 ## v1.28
 
-Fixed mobile play/pause icon swap: `playTrack()` was using `textContent` which destroyed the SVG children. Now uses `style.display` swap consistent with audio event handlers.
+Fixed mobile play/pause icon swap. `playTrack()` was using `textContent`
+which destroyed the SVG children. Now uses `style.display` swap consistent
+with audio event handlers.
+
+---
 
 ## v1.27
 
-Mobile pause icon widened and given explicit 38×38 dimensions to match visual weight of play triangle in `dock-btn-play` circle.
+Mobile pause icon widened and given explicit 38×38 dimensions to match
+visual weight of play triangle in `dock-btn-play` circle.
+
+---
 
 ## v1.26
 
-Mobile secondary row buttons corrected: `btn-rwd` / `btn-fwd` renamed to `btn-prev-sm` / `btn-next-sm` with ⏮/⏭ glyphs and correct titles. JS bindings updated. Seeking within a track is seekbar only; skip buttons move between tracks.
+Mobile secondary row buttons corrected. `btn-rwd` / `btn-fwd` renamed to
+`btn-prev-sm` / `btn-next-sm` with ⏮/⏭ glyphs and correct titles. JS
+bindings updated. Seeking within a track is seekbar-only; skip buttons
+move between tracks.
+
+---
+
+## v1.24–v1.25 — NO RECORD
+
+Two versions with no entry in any source. Fall between v1.23 (Memeshift
+default theme) and v1.26 (mobile secondary button fix). Content unknown.
+
+---
 
 ## v1.23
 
-Memeshift theme now loads by default. `data-theme` on `<html>` set to `memeshift`; JS state fallback changed from `winamp` to `memeshift`.
+Memeshift theme now loads by default. `data-theme` on `<html>` set to
+`memeshift`; JS state fallback changed from `winamp` to `memeshift`.
+
+---
 
 ## v1.22
 
-Fixed iOS Safari theme switcher tap: `attachSparkle()` now runs before click listener binding so DOM reparenting doesn't orphan the handler. `cursor:pointer` added to `.buy-sparkle-wrap` for iOS tap feedback.
+Fixed iOS Safari theme switcher tap. `attachSparkle()` now runs before
+click listener binding so DOM reparenting doesn't orphan the handler.
+`cursor:pointer` added to `.buy-sparkle-wrap` for iOS tap recognition on
+non-anchor wrapper elements.
+
+---
 
 ## v1.21
 
-Mobile dock redesigned from reference apps (Apple Music, Bandcamp, Spotify).
+Mobile dock redesigned from reference apps (Apple Music, Bandcamp,
+Spotify).
 
 - Seek thumb: round 20px pill.
 - Primary transport: flat SVG icons, `SHUF|PREV|▶|NEXT|REP` with 76px glowing play circle.
 - Secondary row: skip5/stop/skip5 in Winamp chrome, compact vol slider, theme toggle.
-- Memeshift: yellow play + yellow seek thumb.
+- Memeshift: yellow play circle + yellow seek thumb.
 - All touch targets ≥44px. Safe-area-inset respected.
+
+---
 
 ## v1.20
 
-**Mobile:** seekbar, vol/balance and transport controls wrapped in `#controls-dock`, fixed to bottom of screen on ≤600px. Touch targets enlarged (`btn-t`: 38×40px, play: 48×40px). Body padding adjusted to make room.
+Mobile: seekbar, vol/balance and transport controls wrapped in
+`#controls-dock`, fixed to bottom of screen on ≤600px. Touch targets
+enlarged (`btn-t`: 38×40px, play: 48×40px). Body padding accounts for
+dock height + iPhone safe-area-inset-bottom. Desktop layout unchanged.
+
+---
 
 ## v1.19
 
-`burstSocials` Memeshift palette: `#fcd97c` replaced with `#F90002` (brand red) for maximum vibrancy. Hover sparkle unchanged.
+`burstSocials` Memeshift palette: `#fcd97c` replaced with `#F90002`
+(brand red) for maximum vibrancy. Hover sparkle unchanged.
+
+---
 
 ## v1.18
 
-Sparkle/burst colors now theme-aware.
+Sparkle and burst colours now theme-aware.
 
 - **Winamp:** LED green tones (`#14ff14`, `#00cc00`, `#ffffff`).
 - **Memeshift:** yellow/teal palette (`#FAC946`, `#fcd97c`, `#007998`).
 
-Both `attachSparkle` and `burstSocials` updated. Gravatar gradient colors removed.
+Both `attachSparkle` and `burstSocials` updated. Gravatar gradient colours
+removed.
+
+---
 
 ## v1.17
 
-Hover sparkle animation slowed 50%: `da`, `dx`, `dy` halved in `attachSparkle()` `spawnParticle`. `burstSocials` unchanged.
+Hover sparkle animation slowed 50%. `da`, `dx`, `dy` halved in
+`attachSparkle()` `spawnParticle`. `burstSocials` unchanged.
+
+---
 
 ## v1.16
 
-`burstSocials()` particle effect on theme switch: one-shot cloud of white/magenta/cyan particles over social icon area, fades over 3 seconds. Theme switcher float-right restored via transport-center.
+`burstSocials()` particle effect on theme switch: one-shot cloud of
+white/magenta/cyan particles over social icon area, fades over 3 seconds.
+Theme switcher float-right restored via transport-center sub-group layout.
+
+---
 
 ## v1.15
 
-Changelog added to all project files.
+Changelog added to all project files (index.html, scan.php, art.php,
+config.php).
+
+---
 
 ## v1.14
 
-Socials strip (email, YouTube, Instagram, SoundCloud, RSS) integrated into player title bar. Theme switcher moved to transport row (right-aligned). Particle sparkle added to theme button.
+Socials strip (email, YouTube, Instagram, SoundCloud, RSS) integrated into
+player title bar as 12px SVG icons. Theme switcher moved to transport row
+(right-aligned). Particle sparkle added to theme button.
+
+---
 
 ## v1.13
 
-All panels stacked vertically at all screen sizes. Transport and vol/balance rows centred. ResizeObserver removed.
+All panels stacked vertically at all screen sizes. Transport and
+vol/balance rows centred. ResizeObserver removed.
+
+---
 
 ## v1.12
 
-Playlist auto-scrolls active track to top on track change using `getBoundingClientRect` (no page viewport jump).
+Playlist auto-scrolls active track into view on track change using
+`getBoundingClientRect()` relative scroll — no page viewport jump.
+
+---
 
 ## v1.11
 
-Silkscreen pixel font replaces Share Tech Mono for Winamp theme. Winamp playlist/info text updated to LED green (`#14ff14`).
+Silkscreen pixel font replaces Share Tech Mono for Winamp theme. Winamp
+playlist and info text updated to LED green (`#14ff14`).
+
+---
 
 ## v1.10
 
-Sort badges (contextual pills) in playlist rows showing year/artist/album value when sort is active.
+Sort badges (contextual pills) in playlist rows showing year/artist/album
+value when a sort other than DEFAULT is active.
+
+---
 
 ## v1.9
 
-Added INFO row (WOAF/TXXX tag) with »more info link. `parseTXXX()` helper added; WOAF support completed.
+Added INFO row (WOAF/TXXX tag) with »more info link to Track Info panel.
+`parseTXXX()` helper added to scan.php; WOAF support completed.
+
+---
 
 ## v1.8
 
-Added BUY row (WXXX tag) with »buy/support link and particle sparkle hover effect (white/magenta/cyan galaxy).
+Added BUY row (WXXX tag) with »buy/support link to Track Info panel.
+Particle sparkle hover effect (white/magenta/cyan galaxy) on the link.
+
+---
 
 ## v1.7
 
-Added FILE → download link in track info panel.
+Added FILE row with »download link in Track Info panel.
+
+---
 
 ## v1.6
 
-Info panel: Notes section moved to full-width row via flex-wrap. Album art + metadata side-by-side on all screen sizes.
+Info panel: Notes section moved to full-width row via flex-wrap. Album art
+and metadata displayed side-by-side on all screen sizes.
+
+---
 
 ## v1.5
 
-Playlist height matched to col-left via ResizeObserver. Sort direction indicators (▲/▼) added to sort buttons.
+Playlist height matched to col-left via ResizeObserver. Sort direction
+indicators (▲/▼) added to sort buttons.
+
+---
 
 ## v1.4
 
-Layout restructure: col-left (player + info) beside playlist on desktop; full Memeshift brand skin (Lora, DM Mono, yellow/teal).
+Layout restructure: col-left (player + info) beside playlist on desktop.
+Full Memeshift brand skin: Lora, DM Mono, yellow/teal colour system.
+
+---
 
 ## v1.3
 
-LED title always scrolls; shows Artist ◆ Album ◆ Title.
+LED title always scrolls; displays Artist ◆ Album ◆ Title.
+
+---
 
 ## v1.2
 
-Replaced emoji transport icons (⏪⏩) with plain geometric symbols (◀◀ ▶▶) to prevent OS emoji override.
+Replaced emoji transport icons (⏪⏩) with plain geometric symbols (◀◀
+▶▶) to prevent OS emoji override.
+
+---
 
 ## v1.1
 
-Fixed UTF-16 trailing null bug causing `?` in ID3 tags.
+Fixed UTF-16 trailing null bug in ID3 tag decoder causing `?` to appear
+at the end of tag values. `decodeText()` now strips trailing nulls
+per-encoding after conversion, not before.
+
+---
 
 ## v1.0
 
-Initial build: Winamp-style player UI, HTML5 audio, Web Audio visualiser, LED display, transport controls, playlist panel with sort (artist/album/year asc/desc), track info panel, dual theme system.
+Initial build.
 
----
+- Winamp-style player UI, HTML5 audio, Web Audio API visualiser (22 bars)
+- LED display with scrolling marquee, time, kbps
+- Transport controls: prev, back 5s, play/pause, stop, forward 5s, next, shuffle, repeat
+- Playlist panel with sort: DEFAULT / ARTIST ▲▼ / ALBUM ▲▼ / YEAR ▲▼
+- Track Info panel: title, artist, album, year, comment, album art
+- Dual theme system: Winamp (dark/green LED) and Memeshift (yellow/teal)
+- Backend: scan.php (ID3v2.2/v2.3/v2.4 + ID3v1 fallback), art.php (APIC extractor), config.php
+- Security: `realpath()` path validation, `.mp3` allowlist, no user input touches filesystem
