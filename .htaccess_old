@@ -1,0 +1,55 @@
+# ── Memeshift Player — Root .htaccess ──────────────────────────────────────
+# Applies to all files served from this directory.
+# Requires mod_headers and mod_rewrite (standard on all shared PHP hosts).
+
+Options -Indexes
+
+# ── Security headers ──────────────────────────────────────────────────────
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "DENY"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "no-referrer"
+
+    # Content Security Policy:
+    #  • scripts: self + inline (needed for the inline <script> block)
+    #  • styles:  self + inline + Google Fonts
+    #  • fonts:   Google Fonts CDN
+    #  • images:  self + data URIs (for the SVG placeholder)
+    #  • media:   self (MP3 streaming from same origin)
+    #  • connect: self (fetch() to scan.php / art.php)
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; connect-src 'self'"
+
+    # ── embed.php exception ───────────────────────────────────────────────
+    # embed.php is intentionally served inside iframes on external domains.
+    # Unset X-Frame-Options for this file only so that the
+    # Content-Security-Policy: frame-ancestors * header sent by embed.php
+    # becomes the sole framing policy. All other files keep DENY above.
+    <Files "embed.php">
+        Header always unset X-Frame-Options
+        Header always unset x-frame-options
+    </Files>
+</IfModule>
+
+# ── Block direct HTTP access to config.php ───────────────────────────────
+# (It can still be require_once'd by other PHP scripts internally.)
+<FilesMatch "^config\.php$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# ── Block access to sensitive file types ─────────────────────────────────
+<FilesMatch "\.(sql|log|env|htpasswd|bak|swp|md)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# ── PHP settings (shared host safe) ──────────────────────────────────────
+<IfModule mod_php.c>
+    php_flag display_errors Off
+    php_flag log_errors On
+</IfModule>
+<IfModule mod_php8.c>
+    php_flag display_errors Off
+    php_flag log_errors On
+</IfModule>
