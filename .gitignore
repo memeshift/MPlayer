@@ -12,6 +12,19 @@ composer.phar
 .phpunit.result.cache
 .php-cs-fixer.cache
 
+# Admin login/upload — credentials, lockout state, audit log, staged
+# uploads. Never committed even if a host forces these into the repo dir
+# instead of one level above it (see config.php's CREDENTIALS_FILE).
+.mplayer-admin-*.json
+.mplayer-lock-*.json
+.mplayer-audit.log
+/staging/*
+!/staging/.htaccess
+
+# Claude Code — local context, never published
+CLAUDE.md
+.claude/
+
 # OS & editors
 .DS_Store
 .idea/
