@@ -54,6 +54,7 @@ body { max-width: 640px; }
 <body>
 <div class="top-nav">
   <h1 style="margin:0;">Upload Track</h1>
+  <a href="library.php">Library</a>
   <a href="logout.php">Log out</a>
 </div>
 <p class="lede">Pick an MP3. We'll read its existing tags so you can review or edit them before it's published.</p>
