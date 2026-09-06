@@ -127,6 +127,50 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .top-nav a { min-height: 44px; display: inline-flex; align-items: center; }
+#art-preview-wrap, .art-preview-wrap { position: relative; }
+.art-remove-btn {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
+  border-radius: 50%;
+  background: var(--error);
+  color: #fff;
+  border: 2px solid var(--bg);
+  font-size: 16px;
+  line-height: 1;
+  padding: 0;
+}
+.art-remove-btn:hover { background: #ff8a8a; }
+.art-dropzone {
+  position: relative;
+  display: block;
+  width: 100%;
+  border: 2px dashed var(--border);
+  border-radius: 6px;
+  padding: 20px 16px;
+  text-align: center;
+  color: var(--text-dim);
+  background: var(--panel);
+  cursor: pointer;
+}
+.art-dropzone:hover, .art-dropzone.drag-over { border-color: var(--accent-hi); color: var(--text); }
+.art-dropzone-title { display: block; font-family: var(--font-ui); font-weight: bold; color: var(--text); }
+.art-dropzone .hint { display: block; margin-top: 4px; margin-bottom: 0; }
+.art-dropzone input[type=file] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  opacity: 0;
+  cursor: pointer;
+  padding: 0;
+  border: none;
+}
 CSS;
 }
 
