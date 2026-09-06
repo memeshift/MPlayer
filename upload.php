@@ -57,7 +57,7 @@ body { max-width: 640px; }
   <a href="library.php">Library</a>
   <a href="logout.php">Log out</a>
 </div>
-<p class="lede">Upload an MP3. Its existing tags will be read so you can review or edit them before it's published.</p>
+<p class="lede">Find and upload an MP3. Its existing tags will be read so you can review or edit them before it's published.</p>
 
 <?php echo mp_sr_status_html(); ?>
 <div id="msg" role="alert"></div>
