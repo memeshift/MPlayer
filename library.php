@@ -47,10 +47,8 @@ body { max-width: 640px; }
 .track-edit.open { display: block; }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 @media (max-width: 480px) { .grid-2 { grid-template-columns: 1fr; } }
-#art-row { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 14px; }
-.track-edit .art-preview, .track-edit .no-art { width: 70px; height: 70px; }
-.track-edit .no-art { display: flex; align-items: center; justify-content: center; background: var(--border); color: var(--text-dim); font-size: 0.7em; }
-.track-edit .art-preview[hidden], .track-edit .no-art[hidden] { display: none; }
+.art-row { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 14px; }
+.track-edit .art-preview { width: 70px; height: 70px; }
 .row-actions { display: flex; gap: 10px; margin-top: 10px; }
 .row-actions .delete-btn { background: transparent; border: 1px solid var(--border); color: var(--text-dim); }
 #empty-msg { display: none; color: var(--text-dim); }
@@ -80,23 +78,22 @@ body { max-width: 640px; }
       </div>
     </button>
     <form class="track-edit" enctype="multipart/form-data" novalidate>
-      <div id="art-row">
-        <img class="edit-art-preview art-preview" alt="" hidden>
-        <div class="edit-art-placeholder no-art" hidden>No art</div>
-        <div>
-          <label>Replace cover art
-            <input type="file" name="art" accept="image/jpeg,image/png,image/gif,image/webp">
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;margin-top:8px;">
-            <input type="checkbox" class="remove-art-input" style="width:auto;min-height:auto;">
-            Remove existing art
-          </label>
+      <div class="art-row">
+        <div class="art-preview-wrap" hidden>
+          <img class="edit-art-preview art-preview" alt="">
+          <button type="button" class="art-remove-btn" aria-label="Remove cover art">&times;</button>
         </div>
+        <label class="art-dropzone">
+          <span class="art-dropzone-title">Add cover art</span>
+          <span class="hint">Drop an image here, or click to browse.</span>
+          <input type="file" class="art-input" name="art" accept="image/jpeg,image/png,image/gif,image/webp">
+        </label>
+        <input type="checkbox" class="remove-art-input" hidden>
       </div>
+      <div class="field"><label>Title<input type="text" name="title" maxlength="200"></label></div>
+      <div class="field"><label>Artist<input type="text" name="artist" maxlength="200"></label></div>
+      <div class="field"><label>Album<input type="text" name="album" maxlength="200"></label></div>
       <div class="grid-2">
-        <div class="field"><label>Title<input type="text" name="title" maxlength="200"></label></div>
-        <div class="field"><label>Artist<input type="text" name="artist" maxlength="200"></label></div>
-        <div class="field"><label>Album<input type="text" name="album" maxlength="200"></label></div>
         <div class="field"><label>Year<input type="text" name="year" maxlength="4" inputmode="numeric"></label></div>
         <div class="field"><label>Track number<input type="text" name="track" maxlength="10" inputmode="numeric"></label></div>
       </div>
@@ -174,14 +171,15 @@ body { max-width: 640px; }
     editForm.querySelector('[name=info_url]').value = t.info_url || '';
 
     const editArt = editForm.querySelector('.edit-art-preview');
-    const editNoArt = editForm.querySelector('.edit-art-placeholder');
+    const editPreviewWrap = editForm.querySelector('.art-preview-wrap');
+    const editDropzoneTitle = editForm.querySelector('.art-dropzone-title');
     if (t.has_art) {
       editArt.src = 'art.php?f=' + t.file;
       editArt.alt = '';
-      editArt.hidden = false;
-    } else {
-      editNoArt.hidden = false;
+      editPreviewWrap.hidden = false;
+      editDropzoneTitle.textContent = 'Replace cover art';
     }
+    wireArtDropzone(editForm);
 
     summary.addEventListener('click', () => {
       editForm.classList.toggle('open');
@@ -192,6 +190,56 @@ body { max-width: 640px; }
     editForm.querySelector('.delete-btn').addEventListener('click', () => onDelete(realFilename, t.title));
 
     return node;
+  }
+
+  // Mirrors upload.php's art-dropzone behavior (drag/drop, click-to-browse,
+  // remove button), scoped to one track row instead of a single global form.
+  function wireArtDropzone(editForm) {
+    const dropzone = editForm.querySelector('.art-dropzone');
+    const dropzoneTitle = editForm.querySelector('.art-dropzone-title');
+    const input = editForm.querySelector('.art-input');
+    const previewWrap = editForm.querySelector('.art-preview-wrap');
+    const preview = editForm.querySelector('.edit-art-preview');
+    const removeBtn = editForm.querySelector('.art-remove-btn');
+    const removeInput = editForm.querySelector('.remove-art-input');
+    let localArtUrl = null;
+
+    removeBtn.addEventListener('click', () => {
+      input.value = '';
+      if (localArtUrl) { URL.revokeObjectURL(localArtUrl); localArtUrl = null; }
+      previewWrap.hidden = true;
+      dropzoneTitle.textContent = 'Add cover art';
+      removeInput.checked = true;
+    });
+
+    input.addEventListener('change', () => {
+      const f = input.files[0];
+      if (!f) return;
+      removeInput.checked = false;
+      if (localArtUrl) URL.revokeObjectURL(localArtUrl);
+      localArtUrl = URL.createObjectURL(f);
+      preview.src = localArtUrl;
+      preview.alt = 'New cover art';
+      previewWrap.hidden = false;
+      dropzoneTitle.textContent = 'Replace cover art';
+    });
+
+    ['dragover', 'dragenter'].forEach(evt => dropzone.addEventListener(evt, (e) => {
+      e.preventDefault();
+      dropzone.classList.add('drag-over');
+    }));
+    ['dragleave', 'drop'].forEach(evt => dropzone.addEventListener(evt, (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('drag-over');
+    }));
+    dropzone.addEventListener('drop', (e) => {
+      const f = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (!f) return;
+      const dt = new DataTransfer();
+      dt.items.add(f);
+      input.files = dt.files;
+      input.dispatchEvent(new Event('change'));
+    });
   }
 
   async function onSave(e, file) {
