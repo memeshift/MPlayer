@@ -29,7 +29,7 @@ define('ART_CACHE_TTL',   86400);  // 24 hrs — album art images
 //    Never derive this from $_SERVER['HTTP_HOST'] — that header is
 //    attacker-controlled on the request that triggers a reset email, and
 //    using it would let someone poison the link sent to the real admin. ──
-define('APP_BASE_URL', 'https://your-domain.com');
+define('APP_BASE_URL', 'https://music.memeshift.com');
 
 // ── Admin login + upload ──────────────────────────────────
 // Credentials file: JSON, holds the admin password hash, reset-token state,
@@ -39,7 +39,7 @@ define('APP_BASE_URL', 'https://your-domain.com');
 // top of that. Generate the file itself by hand — see README for the
 // one-time `php -r "echo password_hash(...)"` command; there is no web
 // endpoint that creates or edits it.
-define('CREDENTIALS_FILE', dirname(__DIR__) . '/.mplayer-admin-CHANGE-ME.json');
+define('CREDENTIALS_FILE', dirname(__DIR__) . '/.mplayer-admin-3b3e77d59cce3312.json');
 
 // ── Where in-progress uploads are held before they're committed to
 //    MUSIC_DIR (see upload_inspect.php / upload_commit.php) ──
