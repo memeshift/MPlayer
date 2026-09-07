@@ -60,7 +60,7 @@ body { max-width: 640px; }
   <a href="upload.php">Upload</a>
   <a href="logout.php">Log out</a>
 </div>
-<p class="lede">Browse what's already published. Click a track to edit its tags or delete it.</p>
+<p class="lede">Browse published tracks. Click one to edit its tags or delete it.</p>
 
 <?php echo mp_sr_status_html(); ?>
 <div id="msg" role="alert"></div>
@@ -98,8 +98,8 @@ body { max-width: 640px; }
         <div class="field"><label>Track number<input type="text" name="track" maxlength="10" inputmode="numeric"></label></div>
       </div>
       <div class="field"><label>Notes / comment<textarea name="comment" maxlength="1000"></textarea></label></div>
-      <div class="field"><label>Buy link (https://&hellip;)<input type="url" name="buy_url" maxlength="500" placeholder="https://"></label></div>
-      <div class="field"><label>More-info link (https://&hellip;)<input type="url" name="info_url" maxlength="500" placeholder="https://"></label></div>
+      <div class="field"><label>Buy link<input type="url" name="buy_url" maxlength="500" placeholder="https://"></label></div>
+      <div class="field"><label>More-info link<input type="url" name="info_url" maxlength="500" placeholder="https://"></label></div>
       <div class="row-actions">
         <button type="submit" class="save-btn">Save changes</button>
         <button type="button" class="delete-btn">Delete track</button>

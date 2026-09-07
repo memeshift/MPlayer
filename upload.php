@@ -117,7 +117,7 @@ body.batch-active { max-width: 900px; }
   <a href="library.php">Library</a>
   <a href="logout.php">Log out</a>
 </div>
-<p class="lede">Find and upload MP3s, one or many at once. Each file's existing tags will be read so you can review or edit them before it's published.</p>
+<p class="lede">Batch upload your MP3 files below.  You can edit the tags for each file before publishing.</p>
 
 <?php echo mp_sr_status_html(); ?>
 <div id="msg" role="alert"></div>
@@ -181,11 +181,11 @@ body.batch-active { max-width: 900px; }
             <textarea id="comment" name="comment" maxlength="1000"></textarea>
           </div>
           <div class="field">
-            <label for="buy_url">Buy link (https://&hellip;)</label>
+            <label for="buy_url">Buy link</label>
             <input type="url" id="buy_url" name="buy_url" maxlength="500" placeholder="https://">
           </div>
           <div class="field">
-            <label for="info_url">More-info link (https://&hellip;)</label>
+            <label for="info_url">More-info link</label>
             <input type="url" id="info_url" name="info_url" maxlength="500" placeholder="https://">
           </div>
 
