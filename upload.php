@@ -113,7 +113,7 @@ body.batch-active { max-width: 900px; }
 </head>
 <body>
 <div class="top-nav">
-  <h1 style="margin:0;">Upload Tracks</h1>
+  <h1 style="margin:0;">Upload</h1>
   <a href="library.php">Library</a>
   <a href="logout.php">Log out</a>
 </div>
