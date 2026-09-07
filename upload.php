@@ -114,8 +114,11 @@ body.batch-active { max-width: 900px; }
 <body>
 <div class="top-nav">
   <h1 style="margin:0;">Upload</h1>
-  <a href="library.php">Library</a>
-  <a href="logout.php">Log out</a>
+  <nav class="top-nav-links">
+    <a href="upload.php" aria-current="page">Upload</a>
+    <a href="library.php">Library</a>
+  </nav>
+  <a href="logout.php" class="nav-logout">Log out</a>
 </div>
 <p class="lede">Batch upload your MP3 files below.  You can edit the tags for each file before publishing.</p>
 

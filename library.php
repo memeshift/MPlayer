@@ -57,8 +57,11 @@ body { max-width: 640px; }
 <body>
 <div class="top-nav">
   <h1 style="margin:0;">Library</h1>
-  <a href="upload.php">Upload</a>
-  <a href="logout.php">Log out</a>
+  <nav class="top-nav-links">
+    <a href="upload.php">Upload</a>
+    <a href="library.php" aria-current="page">Library</a>
+  </nav>
+  <a href="logout.php" class="nav-logout">Log out</a>
 </div>
 <p class="lede">Browse published tracks. Click one to edit its tags or delete it.</p>
 

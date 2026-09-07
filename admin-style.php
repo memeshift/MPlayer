@@ -125,8 +125,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   display: block;
   margin-bottom: 10px;
 }
-.top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-.top-nav a { min-height: 44px; display: inline-flex; align-items: center; }
+.top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 16px; }
+.top-nav-links { display: flex; gap: 24px; align-items: center; }
+.top-nav-links a { min-height: 44px; display: inline-flex; align-items: center; position: relative; }
+.top-nav-links a[aria-current="page"] { color: var(--accent); font-weight: bold; }
+.top-nav-links a[aria-current="page"]::after { content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 2px; background: var(--accent); }
+.nav-logout { min-height: 44px; display: inline-flex; align-items: center; color: var(--text-dim); font-size: 0.9rem; }
 #art-preview-wrap, .art-preview-wrap { position: relative; }
 .art-remove-btn {
   position: absolute;
