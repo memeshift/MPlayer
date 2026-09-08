@@ -1,0 +1,7 @@
+# Files that live in the repo but must never ship inside a distributed
+# zip built with `git archive`. reference/ in particular holds working
+# material — including MP3s — that is not part of the app.
+reference/      export-ignore
+.gitattributes  export-ignore
+.gitignore      export-ignore
+CHANGELOG.md    export-ignore

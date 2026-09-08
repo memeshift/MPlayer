@@ -1,11 +1,11 @@
 <?php
 /**
  * ┌──────────────────────────────────────────────────────┐
- * │  Memeshift Player — upload_commit.php                 │
- * │  Auth-gated. Writes the (possibly edited) tags into   │
- * │  the staged MP3 and moves it into MUSIC_DIR. Once     │
- * │  this succeeds, scan.php/art.php pick the track up    │
- * │  automatically — no other file needs to change.       │
+ * │  MPlayer — upload_commit.php                         │
+ * │  Auth-gated. Writes the (possibly edited) tags into  │
+ * │  the staged MP3 and moves it into MUSIC_DIR. Once    │
+ * │  this succeeds, scan.php/art.php pick the track up   │
+ * │  automatically — no other file needs to change.      │
  * └──────────────────────────────────────────────────────┘
  *
  * POST: token, title, artist, album, year, track, comment, buy_url,

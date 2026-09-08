@@ -1,7 +1,7 @@
 <?php
 /**
  * ┌──────────────────────────────────────────────────────┐
- * │  Memeshift Player — art.php                          │
+ * │  MPlayer — art.php                                   │
  * │  Extracts and serves embedded album art from a       │
  * │  single MP3 file. Read-only. No user data written.   │
  * └──────────────────────────────────────────────────────┘

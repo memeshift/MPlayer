@@ -1,16 +1,17 @@
 <?php
 /**
  * ┌──────────────────────────────────────────────────────┐
- * │  Memeshift Player — background_upload.php              │
- * │  Auth-gated: validates and stores a new player          │
- * │  background image, called from the Customize modal in  │
- * │  index.html. Same validation as cover-art uploads       │
- * │  (magic-byte sniff + MAX_ART_MB), stored as a real file │
- * │  in images/backgrounds/ (not embedded like cover art,   │
- * │  since this is a page background, not track metadata).  │
+ * │  MPlayer — background_upload.php                     │
+ * │  Auth-gated: validates and stores an uploaded image —│
+ * │  either the player background (Customize modal in    │
+ * │  index.html) or the site icon (settings.php). Same   │
+ * │  validation as cover-art uploads (magic-byte sniff + │
+ * │  MAX_ART_MB), stored as a real file rather than      │
+ * │  embedded like cover art, since neither is track     │
+ * │  metadata.                                           │
  * └──────────────────────────────────────────────────────┘
  *
- * POST csrf, image
+ * POST csrf, image, kind=background|icon
  * Returns { ok:true, path:"images/backgrounds/xxxx.jpg" }
  */
 
@@ -51,10 +52,11 @@ if ($validated === null) {
 }
 
 $ext = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/gif' => 'gif', 'image/webp' => 'webp'][$validated['mime']];
-$dir = __DIR__ . '/images/backgrounds/';
+$subdir = ($_POST['kind'] ?? 'background') === 'icon' ? 'images/icons/' : 'images/backgrounds/';
+$dir = __DIR__ . '/' . $subdir;
 if (!is_dir($dir) && !mkdir($dir, 0755, true) && !is_dir($dir)) {
     http_response_code(500);
-    echo json_encode(['error' => 'Could not create backgrounds directory.']);
+    echo json_encode(['error' => 'Could not create the upload directory.']);
     exit;
 }
 
@@ -65,4 +67,4 @@ if (file_put_contents($dir . $filename, $validated['data'], LOCK_EX) === false) 
     exit;
 }
 
-echo json_encode(['ok' => true, 'path' => 'images/backgrounds/' . $filename]);
+echo json_encode(['ok' => true, 'path' => $subdir . $filename]);

@@ -1,7 +1,7 @@
 <?php
 /**
  * ┌──────────────────────────────────────────────────────┐
- * │  Memeshift Player — embed.php                        │
+ * │  MPlayer — embed.php                                 │
  * │  Self-contained single-track mini-player for         │
  * │  embedding on external sites via <iframe>.           │
  * │  Usage: embed.php?t=url-encoded-filename.mp3         │
@@ -18,12 +18,12 @@
  * v1.0  Initial build. Option A style: yellow titlebar removed per
  *       design decision, art block fills full height, DM Mono font,
  *       125px height, responsive width, play/pause via HTML5 audio,
- *       links back to music.memeshift.com with ?t= deep link.
+ *       links back to the player with a ?t= deep link.
  * v1.2  Fixed asset URLs being relative. When embed.php loads inside an
  *       iframe on an external domain, relative paths like 'music/' and
- *       'art.php' resolve against the embedding site's origin, not
- *       music.memeshift.com. All three URLs (audio, art, player link)
- *       are now fully qualified absolute URLs to music.memeshift.com.
+ *       'art.php' resolve against the embedding site's origin, not this
+ *       player's. All three URLs (audio, art, player link) are now fully
+ *       qualified absolute URLs built from APP_BASE_URL.
  *       invalid 'ALLOWALL' value (not a recognised XFO token — browsers
  *       treat unknown values as DENY). X-Frame-Options header omitted
  *       entirely; Content-Security-Policy: frame-ancestors * is the
@@ -32,6 +32,7 @@
  */
 
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/auth.php'; // mp_site_name() — definitions only, no output
 require_once __DIR__ . '/id3.php'; // pure parser library — no output, no side effects
 
 // ── Validate ?t= parameter ──
@@ -61,8 +62,9 @@ $year      = htmlspecialchars($tags['year']   ?: '', ENT_QUOTES, 'UTF-8');
 $hasArt    = $tags['has_art'];
 // ── Build absolute URLs — embed.php is served inside iframes on external
 // domains, so relative paths would resolve against the embedding site.
-// All asset URLs must be fully qualified to music.memeshift.com.
-$baseUrl   = 'https://music.memeshift.com';
+// All asset URLs must be fully qualified, so they are built from
+// APP_BASE_URL rather than guessed from the incoming request.
+$baseUrl   = rtrim(APP_BASE_URL, '/');
 $fileEnc   = rawurlencode($filename);
 $audioUrl  = $baseUrl . '/music/' . rawurlencode($filename);
 $artUrl    = $baseUrl . '/art.php?f=' . $fileEnc;
@@ -86,7 +88,7 @@ header('X-Content-Type-Options: nosniff');
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><?= $title ?> — Memeshift</title>
+<title><?= $title ?> — <?= htmlspecialchars(mp_site_name(), ENT_QUOTES, 'UTF-8') ?></title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -285,7 +287,7 @@ html, body {
           <svg class="pause-icon" id="pause-icon" viewBox="0 0 24 24" fill="#1a1000" width="14" height="14" style="display:none"><path d="M4 3h5v18H4zm11 0h5v18h-5z"/></svg>
         </button>
         <span class="time-display" id="time-display">0:00</span>
-        <a class="listen-link" href="<?= $playerUrl ?>" target="_blank" rel="noopener noreferrer">listen on memeshift.com »</a>
+        <a class="listen-link" href="<?= $playerUrl ?>" target="_blank" rel="noopener noreferrer">listen on <?= htmlspecialchars(mp_site_name(), ENT_QUOTES, 'UTF-8') ?> »</a>
       </div>
 
     </div>

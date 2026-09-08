@@ -32,3 +32,16 @@ CLAUDE.md
 *.swp
 *.swo
 *~
+
+# Per-install config — copied from config.example.php on first setup,
+# never overwritten by an update. See README.
+/config.php
+
+# Admin-uploaded assets (backgrounds, site icons)
+/images/backgrounds/
+/images/icons/
+
+# Uploaded tracks — the directory and its .htaccess ship (scan.php needs
+# the directory to exist), the audio never does
+/music/*
+!/music/.htaccess

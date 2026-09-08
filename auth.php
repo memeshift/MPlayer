@@ -1,10 +1,10 @@
 <?php
 /**
  * ┌──────────────────────────────────────────────────────┐
- * │  Memeshift Player — auth.php                          │
- * │  Session, CSRF, and login-lockout helpers.            │
- * │  No output, no side effects beyond session/lock       │
- * │  files. Safe to require_once from any admin script.   │
+ * │  MPlayer — auth.php                                  │
+ * │  Session, CSRF, and login-lockout helpers.           │
+ * │  No output, no side effects beyond session/lock      │
+ * │  files. Safe to require_once from any admin script.  │
  * └──────────────────────────────────────────────────────┘
  *
  * Provides: mp_session_start(), mp_is_logged_in(), mp_require_login(),
@@ -45,33 +45,38 @@ function mp_write_credentials(array $data): bool {
 }
 
 /* ── Site settings file (JSON, filesystem-only — see config.php) ──
-   Public-facing values (social links, player design). Defaults below
-   match index.html's current hardcoded markup/CSS so an unset settings
-   file renders identically to today's static page. */
+   Public-facing values: site name, icon, social links, player design.
+   Defaults are deliberately blank so a fresh install starts unbranded —
+   index.html hides any social icon whose value is empty, and favicon.php
+   falls back to the bundled default mark. */
 
 function mp_default_site_settings(): array {
     return [
-        // Matches index.html's current hardcoded links, so an unset
-        // settings file changes nothing for existing visitors — only an
-        // admin explicitly blanking a field in settings.php hides an icon.
+        // Shown in the player title bar and admin page titles. Blank falls
+        // back to MP_DEFAULT_SITE_NAME, so a fresh install is never nameless.
+        'site_name' => '',
+        // Favicon path, set by uploading an image in settings.php. Blank
+        // means favicon.php serves the bundled default mark.
+        'icon' => '',
+        // Blank by default: a fresh install shows no social icons at all
+        // (applySocial() in index.html hides an icon whose value is empty).
         'social' => [
             'email'      => '',
-            'youtube'    => 'https://www.youtube.com/memeshift',
-            'instagram'  => 'https://www.instagram.com/memeshift/',
-            'soundcloud' => 'https://soundcloud.com/memeshift',
-            'rss'        => 'https://www.memeshift.com/rss',
+            'youtube'    => '',
+            'instagram'  => '',
+            'soundcloud' => '',
+            'rss'        => '',
         ],
         'design' => [
             'titlebar_color'     => '#FAC946',
             'controls_dock_color'=> '#007998',
             'pl_item_color'      => '#d4c07a',
-            // Matches the memeshift theme's current background photo. The
-            // theme's own --bg-image CSS var is declared on #app, which is
-            // body's descendant, not ancestor — body never inherits it, so
-            // this value must always be applied explicitly (see index.html's
-            // applyBackground()) rather than left for the stylesheet to
-            // supply on its own.
-            'bg_image'           => 'https://www.memeshift.com/wp-content/uploads/2025/02/Scan-scaled.jpg',
+            // Blank by default — a fresh install has no background photo.
+            // When set, the value must always be applied explicitly (see
+            // index.html's applyBackground()): the theme's own --bg-image
+            // CSS var is declared on #app, which is body's descendant, not
+            // its ancestor, so body never inherits it from the stylesheet.
+            'bg_image'           => '',
             'bg_size'            => 'contain',
             'bg_repeat_x'        => true,
             'bg_repeat_y'        => true,
@@ -87,9 +92,22 @@ function mp_read_site_settings(): array {
     $defaults = mp_default_site_settings();
     if (!is_array($data)) return $defaults;
     return [
-        'social' => array_merge($defaults['social'], $data['social'] ?? []),
-        'design' => array_merge($defaults['design'], $data['design'] ?? []),
+        'site_name' => is_string($data['site_name'] ?? null) ? $data['site_name'] : $defaults['site_name'],
+        'icon'      => is_string($data['icon'] ?? null) ? $data['icon'] : $defaults['icon'],
+        'social'    => array_merge($defaults['social'], $data['social'] ?? []),
+        'design'    => array_merge($defaults['design'], $data['design'] ?? []),
     ];
+}
+
+/* Site name for page titles and reset emails. Falls back to the product
+   name so an install where nobody has set one yet still reads sensibly. */
+function mp_site_name(): string {
+    $name = trim((string) (mp_read_site_settings()['site_name'] ?? ''));
+    if ($name !== '') return $name;
+    // defined() guard, not a bare constant: config.php is per-install and
+    // never overwritten by an update, so an install predating this constant
+    // would otherwise fatal on every page.
+    return defined('MP_DEFAULT_SITE_NAME') ? MP_DEFAULT_SITE_NAME : 'MPlayer';
 }
 
 function mp_write_site_settings(array $data): bool {

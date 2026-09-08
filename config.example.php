@@ -1,7 +1,7 @@
 <?php
 /**
  * ┌──────────────────────────────────────────────────────┐
- * │  Memeshift Player — config.php                       │
+ * │  MPlayer — config.php                                │
  * │  This is the ONLY file you need to edit.             │
  * └──────────────────────────────────────────────────────┘
  *
@@ -25,11 +25,23 @@ define('ALLOWED_EXT', ['mp3']);
 define('SCAN_CACHE_TTL',  300);    // 5 min  — track listing
 define('ART_CACHE_TTL',   86400);  // 24 hrs — album art images
 
-// ── Canonical site URL, used ONLY to build password-reset links/emails.
-//    Never derive this from $_SERVER['HTTP_HOST'] — that header is
-//    attacker-controlled on the request that triggers a reset email, and
+// ── Canonical site URL. SET THIS to your own domain, no trailing slash.
+//    Used to build password-reset links/emails and the absolute URLs in
+//    embed.php. Never derive this from $_SERVER['HTTP_HOST'] — that header
+//    is attacker-controlled on the request that triggers a reset email, and
 //    using it would let someone poison the link sent to the real admin. ──
-define('APP_BASE_URL', 'https://music.memeshift.com');
+define('APP_BASE_URL', 'https://example.com');
+
+// ── Product name shown before anyone sets a site name in Settings ──
+define('MP_DEFAULT_SITE_NAME', 'MPlayer');
+
+// ── First-run setup code ──────────────────────────────────────────────
+// Set this to any phrase to enable setup.php, the one-time page that
+// creates the admin account. Give the phrase to whoever is setting the
+// site up, along with the URL. An empty string disables setup.php
+// entirely, and it also refuses to run once the credentials file exists.
+// Set it back to '' (and delete setup.php) once the account is created.
+define('SETUP_CODE', '');
 
 // ── Admin login + upload ──────────────────────────────────
 // Credentials file: JSON, holds the admin password hash, reset-token state,

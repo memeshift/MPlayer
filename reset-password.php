@@ -1,10 +1,10 @@
 <?php
 /**
  * ┌──────────────────────────────────────────────────────┐
- * │  Memeshift Player — reset-password.php                │
- * │  Validates a reset token and sets a new password.     │
- * │  Single-use, 30-min expiry, bumps session_version to  │
- * │  invalidate every other active session on success.    │
+ * │  MPlayer — reset-password.php                        │
+ * │  Validates a reset token and sets a new password.    │
+ * │  Single-use, 30-min expiry, bumps session_version to │
+ * │  invalidate every other active session on success.   │
  * └──────────────────────────────────────────────────────┘
  */
 
@@ -62,10 +62,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $tokenValid) {
             mp_write_credentials($creds);
 
             if (!empty($creds['email'])) {
-                $body = "Your Memeshift Player admin password was just changed.\n\n"
+                $body = "Your " . mp_site_name() . " admin password was just changed.\n\n"
                       . "If this wasn't you, someone may have access to your reset email — "
                       . "check your account immediately.";
-                @mail($creds['email'], 'Memeshift Player — password changed', $body);
+                @mail($creds['email'], mp_site_name() . ' — password changed', $body);
             }
 
             mp_log_event('reset_completed');
@@ -82,7 +82,7 @@ $csrf = mp_csrf_token();
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Reset Password — .+Memeshift+. Player</title>
+<title>Reset Password — <?php echo htmlspecialchars(mp_site_name(), ENT_QUOTES, 'UTF-8'); ?></title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">

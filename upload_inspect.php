@@ -1,10 +1,10 @@
 <?php
 /**
  * ┌──────────────────────────────────────────────────────┐
- * │  Memeshift Player — upload_inspect.php                │
- * │  Auth-gated. Stages an uploaded MP3, reads its ID3    │
- * │  tags, and returns them as prefill JSON. Nothing is   │
- * │  written to MUSIC_DIR here — see upload_commit.php.   │
+ * │  MPlayer — upload_inspect.php                        │
+ * │  Auth-gated. Stages an uploaded MP3, reads its ID3   │
+ * │  tags, and returns them as prefill JSON. Nothing is  │
+ * │  written to MUSIC_DIR here — see upload_commit.php.  │
  * └──────────────────────────────────────────────────────┘
  *
  * POST multipart/form-data: file=<mp3>, csrf=<token>

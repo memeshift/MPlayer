@@ -1,11 +1,11 @@
 <?php
 /**
  * ┌──────────────────────────────────────────────────────┐
- * │  Memeshift Player — site-config.php                   │
- * │  Read-only, no auth — same trust level as scan.php/    │
- * │  art.php. Serves the admin-editable social links and   │
- * │  player design settings for index.html to apply on     │
- * │  load. No user input, nothing but a JSON read.         │
+ * │  MPlayer — site-config.php                           │
+ * │  Read-only, no auth — same trust level as scan.php/  │
+ * │  art.php. Serves the admin-editable social links and │
+ * │  player design settings for index.html to apply on   │
+ * │  load. No user input, nothing but a JSON read.       │
  * └──────────────────────────────────────────────────────┘
  */
 

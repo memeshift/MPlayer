@@ -1,11 +1,11 @@
 <?php
 /**
  * ┌──────────────────────────────────────────────────────┐
- * │  Memeshift Player — settings.php                      │
- * │  Auth-gated admin page: which social icons show on    │
- * │  the public player, and where they link. Blank field  │
- * │  = icon hidden. Saves via settings_save.php into       │
- * │  SITE_SETTINGS_FILE's "social" key.                    │
+ * │  MPlayer — settings.php                              │
+ * │  Auth-gated admin page: site name, site icon, and    │
+ * │  which social icons show on the public player. Blank │
+ * │  social field = icon hidden. Saves via               │
+ * │  settings_save.php under section=site.               │
  * └──────────────────────────────────────────────────────┘
  */
 
@@ -30,7 +30,7 @@ $social = $settings['social'];
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Settings — .+Memeshift+. Player</title>
+<title>Settings — <?php echo htmlspecialchars(mp_site_name(), ENT_QUOTES, 'UTF-8'); ?></title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
@@ -41,7 +41,7 @@ body { max-width: 640px; }
 </head>
 <body>
 <?php echo mp_admin_nav_html('settings'); ?>
-<p class="lede">Social icons shown in the player's title bar. Leave a field blank to hide that icon.</p>
+<p class="lede">Your site's name, icon, and the social links shown in the player's title bar. Leave a social field blank to hide that icon.</p>
 <div class="page-header">
   <h1>Settings</h1>
 </div>
@@ -50,6 +50,22 @@ body { max-width: 640px; }
 
 <form id="social-form">
   <input type="hidden" name="csrf" value="<?php echo htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8'); ?>">
+  <input type="hidden" name="icon" id="icon" value="<?php echo htmlspecialchars($settings['icon'], ENT_QUOTES, 'UTF-8'); ?>">
+
+  <div class="field">
+    <label for="site_name">Site name</label>
+    <input type="text" id="site_name" name="site_name" maxlength="60" value="<?php echo htmlspecialchars($settings['site_name'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="<?php echo htmlspecialchars(mp_site_name(), ENT_QUOTES, 'UTF-8'); ?>">
+    <p class="hint">Shown in the player title bar, the browser tab, and password-reset emails.</p>
+  </div>
+
+  <div class="field">
+    <label for="icon_file">Site icon</label>
+    <img id="icon-preview" src="favicon.php" alt="Current site icon" width="32" height="32" style="display:block;margin-bottom:8px;border-radius:4px">
+    <input type="file" id="icon_file" accept="image/png,image/jpeg,image/gif,image/webp" aria-describedby="icon-hint">
+    <p class="hint" id="icon-hint">The browser-tab icon. A square PNG works best. Max <?php echo (int) MAX_ART_MB; ?>MB.</p>
+    <div id="icon-msg" role="status"></div>
+  </div>
+
   <div class="field">
     <label for="email">Email</label>
     <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($social['email'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="you@example.com">
@@ -81,7 +97,7 @@ document.getElementById('social-form').addEventListener('submit', function (e) {
   msg.className = '';
   msg.textContent = '';
   var fd = new FormData(this);
-  fd.set('section', 'social');
+  fd.set('section', 'site');
   fetch('settings_save.php', { method: 'POST', body: fd })
     .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
     .then(function (res) {
@@ -94,6 +110,34 @@ document.getElementById('social-form').addEventListener('submit', function (e) {
       msg.className = 'msg msg-error';
       msg.textContent = err.message;
       if (sr) sr.textContent = err.message;
+    });
+});
+
+// Icon upload posts straight to background_upload.php, which stores the
+// file and returns its path; the path goes into the hidden field and is
+// only persisted when the form itself is saved.
+document.getElementById('icon_file').addEventListener('change', function () {
+  var file = this.files && this.files[0];
+  if (!file) return;
+  var out = document.getElementById('icon-msg');
+  out.className = '';
+  out.textContent = 'Uploading…';
+  var fd = new FormData();
+  fd.append('csrf', document.querySelector('input[name=csrf]').value);
+  fd.append('kind', 'icon');
+  fd.append('image', file);
+  fetch('background_upload.php', { method: 'POST', body: fd })
+    .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+    .then(function (res) {
+      if (!res.ok) throw new Error(res.data.error || 'Upload failed.');
+      document.getElementById('icon').value = res.data.path;
+      document.getElementById('icon-preview').src = res.data.path + '?v=' + Date.now();
+      out.className = 'msg msg-success';
+      out.textContent = 'Icon uploaded. Press Save to apply it.';
+    })
+    .catch(function (err) {
+      out.className = 'msg msg-error';
+      out.textContent = err.message;
     });
 });
 </script>

@@ -1,10 +1,10 @@
 <?php
 /**
  * ┌──────────────────────────────────────────────────────┐
- * │  Memeshift Player — forgot-password.php               │
- * │  Requests a password-reset email. Always responds     │
- * │  identically regardless of match, to avoid account    │
- * │  enumeration and email-bombing.                        │
+ * │  MPlayer — forgot-password.php                       │
+ * │  Requests a password-reset email. Always responds    │
+ * │  identically regardless of match, to avoid account   │
+ * │  enumeration and email-bombing.                      │
  * └──────────────────────────────────────────────────────┘
  */
 
@@ -52,10 +52,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $link = rtrim(APP_BASE_URL, '/') . '/reset-password.php?token=' . urlencode($token);
             $fromHost = parse_url(APP_BASE_URL, PHP_URL_HOST) ?: 'localhost';
 
-            $body = "A password reset was requested for your Memeshift Player admin account.\n\n"
+            $body = "A password reset was requested for your " . mp_site_name() . " admin account.\n\n"
                   . "Reset your password (link valid for 30 minutes, single use):\n$link\n\n"
                   . "If you didn't request this, you can ignore this email — your password will not change.";
-            @mail($creds['email'], 'Memeshift Player — password reset', $body, "From: no-reply@$fromHost");
+            @mail($creds['email'], mp_site_name() . ' — password reset', $body, "From: no-reply@$fromHost");
 
             mp_log_event('reset_requested');
         } else {
@@ -80,7 +80,7 @@ $csrf = mp_csrf_token();
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Forgot Password — .+Memeshift+. Player</title>
+<title>Forgot Password — <?php echo htmlspecialchars(mp_site_name(), ENT_QUOTES, 'UTF-8'); ?></title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">

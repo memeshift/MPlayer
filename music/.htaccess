@@ -1,0 +1,25 @@
+# ── MPlayer — music/ ──────────────────────────────────────────────────
+# Audio must stay publicly readable (the player streams from here), so
+# this only removes directory listing and the ability to execute
+# anything uploaded into this folder as code. Uploads are already
+# validated as real MPEG audio by upload_inspect.php; this is the
+# second line of defence if that ever fails.
+
+Options -Indexes
+
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php8.c>
+    php_flag engine off
+</IfModule>
+
+# LiteSpeed / Apache without mod_php: stop these extensions being handled
+# by any scripting engine.
+<FilesMatch "\.(php|php[0-9]|phtml|phar|cgi|pl|py|sh)$">
+    Order allow,deny
+    Deny from all
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+</FilesMatch>

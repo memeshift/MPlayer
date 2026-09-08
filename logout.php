@@ -1,6 +1,6 @@
 <?php
 /**
- * Memeshift Player — logout.php
+ * MPlayer — logout.php
  * Destroys the admin session and returns to login.
  */
 

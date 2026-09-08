@@ -1,9 +1,9 @@
 <?php
 /**
  * ┌──────────────────────────────────────────────────────┐
- * │  Memeshift Player — id3.php                          │
+ * │  MPlayer — id3.php                                   │
  * │  Pure ID3 parser library. No output, no headers,     │
- * │  no side effects. Safe to require_once from any file. │
+ * │  no side effects. Safe to require_once from any file.│
  * └──────────────────────────────────────────────────────┘
  *
  * Provides: parseID3(), parseTXXX(), parseWXXX(),

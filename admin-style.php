@@ -1,14 +1,14 @@
 <?php
 /**
  * ┌──────────────────────────────────────────────────────┐
- * │  Memeshift Player — admin-style.php                   │
- * │  Shared CSS for login/reset/upload admin pages.       │
- * │  No output on its own — call mp_admin_css() inside a  │
- * │  <style> block. Kept separate so five pages don't      │
- * │  each carry their own copy of the same WCAG-AA rules. │
+ * │  MPlayer — admin-style.php                           │
+ * │  Shared CSS for login/reset/upload admin pages.      │
+ * │  No output on its own — call mp_admin_css() inside a │
+ * │  <style> block. Kept separate so five pages don't    │
+ * │  each carry their own copy of the same WCAG-AA rules.│
  * └──────────────────────────────────────────────────────┘
  *
- * Palette borrowed from index.html's Memeshift brand theme
+ * Palette borrowed from index.html's studio theme
  * (--chrome, --titlebar-bg, --pl-sel-bg) so admin pages read as
  * part of the same app, not a bolted-on afterthought.
  */
@@ -17,7 +17,6 @@ function mp_admin_css(): string {
     return <<<CSS
 :root {
   --bg:        #0a0a0a;
-  --bg-image:  url('https://www.memeshift.com/wp-content/uploads/2025/02/Scan-scaled.jpg');
   --panel:     #141410;
   --text:      #FAC946;
   --text-dim:  #c8b86a;

@@ -1,10 +1,10 @@
 <?php
 /**
  * ┌──────────────────────────────────────────────────────┐
- * │  Memeshift Player — library_actions.php               │
- * │  Auth-gated JSON endpoint for library.php: list       │
- * │  what's in MUSIC_DIR, edit an existing file's tags    │
- * │  in place, or delete a file. No renaming on edit —     │
+ * │  MPlayer — library_actions.php                       │
+ * │  Auth-gated JSON endpoint for library.php: list      │
+ * │  what's in MUSIC_DIR, edit an existing file's tags   │
+ * │  in place, or delete a file. No renaming on edit —   │
  * │  filenames stay fixed once uploaded (see library.php). │
  * └──────────────────────────────────────────────────────┘
  *

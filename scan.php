@@ -1,7 +1,7 @@
 <?php
 /**
  * ┌──────────────────────────────────────────────────────┐
- * │  Memeshift Player — scan.php                         │
+ * │  MPlayer — scan.php                                  │
  * │  Scans the music/ directory, reads ID3 tags,         │
  * │  returns a sanitised JSON array. Read-only.          │
  * └──────────────────────────────────────────────────────┘

@@ -1,8 +1,8 @@
 <?php
 /**
  * ┌──────────────────────────────────────────────────────┐
- * │  Memeshift Player — customize_check.php               │
- * │  Tiny auth-check endpoint for index.html's Customize   │
+ * │  MPlayer — customize_check.php                       │
+ * │  Tiny auth-check endpoint for index.html's Customize │
  * │  mode: tells the page's JS whether the current visitor │
  * │  has an admin session, without exposing anything else. │
  * └──────────────────────────────────────────────────────┘

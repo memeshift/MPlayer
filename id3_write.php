@@ -1,10 +1,10 @@
 <?php
 /**
  * ┌──────────────────────────────────────────────────────┐
- * │  Memeshift Player — id3_write.php                     │
- * │  ID3v2.3 tag WRITER. Pure functions, no output, no    │
- * │  side effects beyond the files it's explicitly told   │
- * │  to write. Safe to require_once from any script.      │
+ * │  MPlayer — id3_write.php                             │
+ * │  ID3v2.3 tag WRITER. Pure functions, no output, no   │
+ * │  side effects beyond the files it's explicitly told  │
+ * │  to write. Safe to require_once from any script.     │
  * └──────────────────────────────────────────────────────┘
  *
  * Provides: writeID3Tags()

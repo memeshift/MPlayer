@@ -1,11 +1,11 @@
 <?php
 /**
  * ┌──────────────────────────────────────────────────────┐
- * │  Memeshift Player — library.php                       │
- * │  Auth-gated admin page: browse everything already in  │
- * │  music/, edit a track's tags in place, or delete it.  │
- * │  Talks to library_actions.php. No changes needed to   │
- * │  scan.php/art.php/embed.php/index.html.               │
+ * │  MPlayer — library.php                               │
+ * │  Auth-gated admin page: browse everything already in │
+ * │  music/, edit a track's tags in place, or delete it. │
+ * │  Talks to library_actions.php. No changes needed to  │
+ * │  scan.php/art.php/embed.php/index.html.              │
  * └──────────────────────────────────────────────────────┘
  */
 
@@ -28,7 +28,7 @@ $csrf = mp_csrf_token();
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Library — .+Memeshift+. Player</title>
+<title>Library — <?php echo htmlspecialchars(mp_site_name(), ENT_QUOTES, 'UTF-8'); ?></title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">

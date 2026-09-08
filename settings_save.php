@@ -1,13 +1,14 @@
 <?php
 /**
  * ┌──────────────────────────────────────────────────────┐
- * │  Memeshift Player — settings_save.php                 │
- * │  Auth-gated JSON endpoint. Merges posted fields into   │
- * │  SITE_SETTINGS_FILE under "social" (from settings.php)│
+ * │  MPlayer — settings_save.php                         │
+ * │  Auth-gated JSON endpoint. Merges posted fields into │
+ * │  SITE_SETTINGS_FILE under "site" (from settings.php) │
  * │  or "design" (from the Customize modal in index.html). │
  * └──────────────────────────────────────────────────────┘
  *
- * POST section=social  csrf, email, youtube, instagram, soundcloud, rss
+ * POST section=site    csrf, site_name, icon, email, youtube, instagram,
+ *                       soundcloud, rss
  * POST section=design  csrf, titlebar_color, controls_dock_color,
  *                       pl_item_color, bg_image, bg_repeat_x, bg_repeat_y,
  *                       bg_align, bg_fixed
@@ -37,7 +38,18 @@ function ss_hexColor(string $raw, string $fallback): string {
 $section = (string)($_POST['section'] ?? '');
 $settings = mp_read_site_settings();
 
-if ($section === 'social') {
+if ($section === 'site') {
+    $settings['site_name'] = mb_substr(sanitiseText((string)($_POST['site_name'] ?? '')), 0, 60);
+
+    // Only accept paths we generated ourselves (see background_upload.php),
+    // never an arbitrary path — this value is rendered site-wide and is read
+    // back off disk by favicon.php.
+    $icon = sanitiseText((string)($_POST['icon'] ?? ''));
+    if ($icon !== '' && !preg_match('#^images/icons/[A-Za-z0-9_\-]+\.(jpe?g|png|gif|webp)$#', $icon)) {
+        $icon = $settings['icon'];
+    }
+    $settings['icon'] = $icon;
+
     $email = filter_var(trim((string)($_POST['email'] ?? '')), FILTER_VALIDATE_EMAIL);
     $settings['social'] = [
         'email'      => $email ?: '',
@@ -50,9 +62,8 @@ if ($section === 'social') {
     $defaults = mp_default_site_settings()['design'];
     $bgImage = sanitiseText((string)($_POST['bg_image'] ?? ''));
     // Only accept paths we generated ourselves (see background_upload.php)
-    // or the stock memeshift default — never trust an arbitrary URL/path
-    // here, this is admin-only but the value ends up rendered site-wide
-    // via site-config.php.
+    // — never trust an arbitrary URL/path here. This is admin-only, but the
+    // value ends up rendered site-wide via site-config.php.
     if ($bgImage !== '' && $bgImage !== $defaults['bg_image']
         && !preg_match('#^images/backgrounds/[A-Za-z0-9_\-]+\.(jpe?g|png|gif|webp)$#', $bgImage)) {
         $bgImage = $settings['design']['bg_image'];

@@ -66,6 +66,11 @@ Options -Indexes
     </IfModule>
 </FilesMatch>
 
+# ── Block the git metadata directory, if the app was deployed by cloning
+#    rather than from a zip. .git/config and .git/HEAD have no file
+#    extension, so the extension rules below never match them. ──
+RedirectMatch 404 /\.git(/|$)
+
 # ── Block access to sensitive file types ─────────────────────────────────
 <FilesMatch "\.(sql|log|env|htpasswd|bak|swp|md|json|ini)$">
     Order allow,deny
