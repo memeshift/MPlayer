@@ -131,13 +131,13 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   margin-bottom: 10px;
 }
 .top-nav { display: flex; gap: 0; margin-bottom: 8px; }
-.nav-tab { flex: 0 0 40%; display: flex; align-items: center; justify-content: center; min-height: 48px; border: 1px solid var(--border); border-right: none; background: var(--panel); color: var(--text-dim); font-family: var(--font-ui); font-weight: bold; text-decoration: none; transition: all 0.2s; }
+.nav-tab { flex: 1 1 40%; min-width: 0; display: flex; align-items: center; justify-content: center; min-height: 48px; border: 1px solid var(--border); border-right: none; background: var(--panel); color: var(--text-dim); font-family: var(--font-ui); font-weight: bold; text-decoration: none; transition: all 0.2s; }
 .nav-tab:last-of-type { border-right: 1px solid var(--border); }
 .nav-tab:hover { background: rgba(250, 201, 70, 0.05); }
 .nav-tab[aria-current="page"] { background: var(--accent); color: var(--accent-text); }
-.nav-logout { flex: 0 0 20%; display: flex; align-items: center; justify-content: center; min-height: 48px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); font-family: var(--font-ui); font-size: 0.9rem; text-decoration: none; transition: all 0.2s; }
+.nav-logout { flex: 1 1 20%; min-width: 0; display: flex; align-items: center; justify-content: center; min-height: 48px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); font-family: var(--font-ui); font-size: 0.9rem; text-decoration: none; transition: all 0.2s; }
 .nav-logout:hover { background: rgba(200, 184, 106, 0.05); }
-.nav-menu-wrap { position: relative; flex: 0 0 20%; }
+.nav-menu-wrap { position: relative; flex: 1 1 20%; min-width: 0; }
 .nav-menu-trigger { width: 100%; gap: 6px; }
 .nav-menu-trigger svg { width: 18px; height: 18px; flex: none; fill: currentColor; }
 .nav-menu {

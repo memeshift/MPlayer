@@ -37,6 +37,8 @@ $social = $settings['social'];
 <style>
 <?php echo mp_admin_css(); ?>
 body { max-width: 640px; }
+#msg { transition-property: opacity; transition-timing-function: linear; }
+#msg.fade-out { opacity: 0; }
 </style>
 </head>
 <body>
@@ -105,6 +107,15 @@ document.getElementById('social-form').addEventListener('submit', function (e) {
       msg.className = 'msg msg-success';
       msg.textContent = 'Saved.';
       if (sr) sr.textContent = 'Settings saved.';
+      msg.classList.remove('fade-out');
+      msg.style.transitionDuration = '';
+      const collapse = () => { msg.className = ''; msg.textContent = ''; };
+      requestAnimationFrame(() => {
+        msg.style.transitionDuration = '2000ms';
+        requestAnimationFrame(() => msg.classList.add('fade-out'));
+      });
+      msg.addEventListener('transitionend', collapse, { once: true });
+      setTimeout(collapse, 2200);
     })
     .catch(function (err) {
       msg.className = 'msg msg-error';

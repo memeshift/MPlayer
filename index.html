@@ -935,6 +935,55 @@ body {
 
 .embed-modal-input:focus { outline: none; border-color: var(--led); }
 
+#album-art.art-clickable { cursor: pointer; }
+
+.art-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+}
+
+.art-modal {
+  position: relative;
+  max-width: min(90vw, 720px);
+  max-height: 90vh;
+}
+
+.art-modal img {
+  display: block;
+  max-width: min(90vw, 720px);
+  max-height: 90vh;
+  width: auto;
+  height: auto;
+  box-shadow: 2px 3px 20px rgba(0,0,0,0.9);
+  border-radius: var(--radius);
+}
+
+.art-modal-close {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  width: 32px;
+  height: 32px;
+  background: var(--titlebar-bg);
+  border: 1px solid var(--chrome-hi);
+  border-radius: 50%;
+  color: rgba(255,255,255,0.8);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.art-modal-close:hover { color: #fff; }
+
 .info-notes {
   flex-basis: 100%;
   margin-top: 0;
@@ -1764,7 +1813,7 @@ input, select, textarea {
                 <span class="info-key">INFO</span>
                 <span class="info-val" id="info-info">—</span>
               </div>
-              <div class="info-row">
+              <div class="info-row" id="info-file-row" style="display:none">
                 <span class="info-key">FILE</span>
                 <span class="info-val" id="info-file">—</span>
               </div>
@@ -1856,6 +1905,15 @@ input, select, textarea {
           <textarea class="embed-modal-input" id="embed-code-text" rows="3" readonly></textarea>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ══ ARTWORK MODAL ══ -->
+  <div class="art-modal-overlay" id="art-modal" style="display:none"
+       role="dialog" aria-modal="true" aria-label="Album artwork">
+    <div class="art-modal">
+      <button class="art-modal-close" id="art-modal-close" aria-label="Close">&#10005;</button>
+      <img id="art-modal-img" src="" alt="">
     </div>
   </div>
 
@@ -2528,7 +2586,8 @@ function showInfo(t) {
   $('info-notes' ).textContent = t.comment || '—';
 
   const fileEl = $('info-file');
-  if (t.file) {
+  const fileRow = $('info-file-row');
+  if (t.file && t.download_enabled) {
     const a = document.createElement('a');
     a.href        = 'music/' + t.file;
     a.download    = decodeURIComponent(t.file);
@@ -2537,8 +2596,10 @@ function showInfo(t) {
     a.setAttribute('aria-label', 'Download ' + decodeURIComponent(t.file));
     fileEl.innerHTML = '';
     fileEl.appendChild(a);
+    if (fileRow) fileRow.style.display = '';
   } else {
     fileEl.textContent = '—';
+    if (fileRow) fileRow.style.display = 'none';
   }
 
   const buyRow = $('info-buy-row');
@@ -2603,10 +2664,20 @@ function showInfo(t) {
     img.src = `art.php?f=${t.file}`;
     img.onload  = () => { img.style.display = 'block'; ph.style.display = 'none'; };
     img.onerror = () => { img.style.display = 'none';  ph.style.display = 'flex'; };
+
+    img.classList.add('art-clickable');
+    img.setAttribute('role', 'button');
+    img.setAttribute('tabindex', '0');
+    img.setAttribute('aria-label', `View larger ${altText}`);
   } else {
     img.setAttribute('alt', '');
     img.style.display = 'none';
     ph.style.display  = 'flex';
+
+    img.classList.remove('art-clickable');
+    img.removeAttribute('role');
+    img.removeAttribute('tabindex');
+    img.removeAttribute('aria-label');
   }
 }
 
@@ -2998,7 +3069,9 @@ $('embed-modal').addEventListener('click', e => {
   if (e.target === $('embed-modal')) closeEmbedModal();
 });
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeEmbedModal();
+  if (e.key !== 'Escape') return;
+  closeEmbedModal();
+  closeArtModal();
 });
 
 function closeEmbedModal() {
@@ -3007,6 +3080,39 @@ function closeEmbedModal() {
   const trigger = $('btn-share-link') || $('btn-share-icon');
   if (trigger) trigger.focus();
 }
+
+function openArtModal() {
+  const img = $('album-art');
+  if (img.style.display !== 'block' || !img.src) return;
+
+  $('art-modal-img').src = img.src;
+  $('art-modal-img').alt = img.getAttribute('alt') || '';
+
+  const modal = $('art-modal');
+  modal.style.display = 'flex';
+
+  requestAnimationFrame(() => $('art-modal-close').focus());
+}
+
+function closeArtModal() {
+  const modal = $('art-modal');
+  if (modal.style.display === 'none') return;
+  modal.style.display = 'none';
+  $('art-modal-img').src = '';
+  $('album-art').focus();
+}
+
+$('album-art').addEventListener('click', openArtModal);
+$('album-art').addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    openArtModal();
+  }
+});
+$('art-modal-close').addEventListener('click', closeArtModal);
+$('art-modal').addEventListener('click', e => {
+  if (e.target === $('art-modal')) closeArtModal();
+});
 
 /* ════════════════════════════════════════════════════════════════════
    BOOT

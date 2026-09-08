@@ -140,6 +140,7 @@ body.select-mode .list-actions { position: sticky; top: 0; z-index: 10; backgrou
       <div class="field"><label>Notes / comment<textarea name="comment" maxlength="1000"></textarea></label></div>
       <div class="field"><label>Buy link<input type="url" name="buy_url" maxlength="500" placeholder="https://"></label></div>
       <div class="field"><label>More-info link<input type="url" name="info_url" maxlength="500" placeholder="https://"></label></div>
+      <div class="field"><label class="checkbox-field"><input type="checkbox" name="download_enabled"> Allow visitors to download this track</label></div>
       <div class="row-actions">
         <button type="button" class="delete-btn">Delete track</button>
         <button type="submit" class="save-btn">Save changes</button>
@@ -223,6 +224,7 @@ body.select-mode .list-actions { position: sticky; top: 0; z-index: 10; backgrou
     editForm.querySelector('[name=comment]').value = t.comment || '';
     editForm.querySelector('[name=buy_url]').value = t.buy_url || '';
     editForm.querySelector('[name=info_url]').value = t.info_url || '';
+    editForm.querySelector('[name=download_enabled]').checked = !!t.download_enabled;
 
     const editArt = editForm.querySelector('.edit-art-preview');
     const editPreviewWrap = editForm.querySelector('.art-preview-wrap');

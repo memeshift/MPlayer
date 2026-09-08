@@ -29,7 +29,7 @@ require_once __DIR__ . '/id3.php'; // sanitiseText()/sanitiseUrl() reused for sa
  * $destPath (may be the same path — a temp file is used internally and
  * atomically renamed over the destination).
  *
- * $tags: ['title','artist','album','year','track','comment','buy_url','info_url']
+ * $tags: ['title','artist','album','year','track','comment','buy_url','info_url','download_enabled']
  * $newArtData/$newArtMime: raw bytes + mime of new cover art, or null to
  * leave art untouched (existing art, if any, is preserved — see below).
  */
@@ -59,6 +59,9 @@ function writeID3Tags(string $srcPath, string $destPath, array $tags, ?string $n
     $frames .= iw_commFrame($tags['comment'] ?? '');
     $frames .= iw_wxxxFrame($tags['buy_url'] ?? '');
     $frames .= iw_woafFrame($tags['info_url'] ?? '');
+    if (!empty($tags['download_enabled'])) {
+        $frames .= iw_txxxFrame('DOWNLOAD_ENABLED', '1');
+    }
     if ($newArtData !== null && $newArtMime !== null) {
         $frames .= iw_apicFrame($newArtMime, $newArtData);
     }
@@ -146,6 +149,13 @@ function iw_woafFrame(string $url): string {
     $url = sanitiseUrl($url);
     if ($url === '') return '';
     return iw_frameHeader('WOAF', strlen($url)) . $url;
+}
+
+/* TXXX (generic user-defined text frame): encoding(0, latin1) + description
+   \0-terminated + value. Matches parseTXXX()'s reader. */
+function iw_txxxFrame(string $desc, string $value): string {
+    $body = "\x00" . $desc . "\x00" . $value;
+    return iw_frameHeader('TXXX', strlen($body)) . $body;
 }
 
 /* APIC (front cover art): encoding(0) + mime + null + pic-type(3=front

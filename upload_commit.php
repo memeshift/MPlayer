@@ -9,7 +9,7 @@
  * └──────────────────────────────────────────────────────┘
  *
  * POST: token, title, artist, album, year, track, comment, buy_url,
- *       info_url, csrf, keep_art=1|0, optional art=<image file>
+ *       info_url, download_enabled=1|0, csrf, keep_art=1|0, optional art=<image file>
  */
 
 require_once __DIR__ . '/config.php';
@@ -58,6 +58,7 @@ $tags = [
     'comment'  => iw_capField((string)($_POST['comment'] ?? ''), 1000),
     'buy_url'  => mb_substr(sanitiseUrl((string)($_POST['buy_url'] ?? '')), 0, 500),
     'info_url' => mb_substr(sanitiseUrl((string)($_POST['info_url'] ?? '')), 0, 500),
+    'download_enabled' => !empty($_POST['download_enabled']),
 ];
 
 /* ── New art (optional) ── */

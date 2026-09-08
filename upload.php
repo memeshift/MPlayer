@@ -218,6 +218,9 @@ body.batch-active { max-width: 640px; }
             <label for="info_url">More-info link</label>
             <input type="url" id="info_url" name="info_url" maxlength="500" placeholder="https://">
           </div>
+          <div class="field">
+            <label class="checkbox-field"><input type="checkbox" id="download_enabled" name="download_enabled"> Allow visitors to download this track</label>
+          </div>
 
           <input type="hidden" id="token" name="token">
           <input type="hidden" name="csrf" value="<?php echo htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8'); ?>">
@@ -273,7 +276,7 @@ body.batch-active { max-width: 640px; }
     if (fileInput.files.length) stageFiles(fileInput.files);
   });
 
-  // Each item: { token, name, tags: {title,artist,album,year,track,comment,buy_url,info_url},
+  // Each item: { token, name, tags: {title,artist,album,year,track,comment,buy_url,info_url,download_enabled},
   //              hasArt, localArtFile, localArtUrl, removeArt,
   //              status: 'staging'|'pending'|'publishing'|'published'|'error', errorMsg }
   const items = [];
@@ -310,7 +313,8 @@ body.batch-active { max-width: 640px; }
       item.tags = {
         title: data.title || '', artist: data.artist || '', album: data.album || '',
         year: data.year || '', track: data.track || '', comment: data.comment || '',
-        buy_url: data.buy_url || '', info_url: data.info_url || ''
+        buy_url: data.buy_url || '', info_url: data.info_url || '',
+        download_enabled: !!data.download_enabled
       };
       item.hasArt = !!data.has_art;
       item.status = 'pending';
@@ -398,7 +402,7 @@ body.batch-active { max-width: 640px; }
     });
   }
 
-  const FIELD_IDS = ['title', 'artist', 'album', 'year', 'track', 'comment', 'buy_url', 'info_url', 'art-input', 'remove-art-input'];
+  const FIELD_IDS = ['title', 'artist', 'album', 'year', 'track', 'comment', 'buy_url', 'info_url', 'download_enabled', 'art-input', 'remove-art-input'];
   function setFieldsDisabled(disabled) {
     FIELD_IDS.forEach(id => { $(id).disabled = disabled; });
   }
@@ -409,7 +413,8 @@ body.batch-active { max-width: 640px; }
     item.tags = {
       title: $('title').value, artist: $('artist').value, album: $('album').value,
       year: $('year').value, track: $('track').value, comment: $('comment').value,
-      buy_url: $('buy_url').value, info_url: $('info_url').value
+      buy_url: $('buy_url').value, info_url: $('info_url').value,
+      download_enabled: $('download_enabled').checked
     };
   }
 
@@ -430,6 +435,7 @@ body.batch-active { max-width: 640px; }
     $('comment').value = item.tags.comment;
     $('buy_url').value = item.tags.buy_url;
     $('info_url').value = item.tags.info_url;
+    $('download_enabled').checked = !!item.tags.download_enabled;
     $('art-input').value = '';
     $('remove-art-input').checked = !!item.removeArt;
 

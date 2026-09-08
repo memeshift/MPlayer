@@ -10,7 +10,7 @@
  *
  * GET  ?action=list
  * POST action=edit    file, title, artist, album, year, track, comment,
- *                      buy_url, info_url, csrf, keep_art=1|0, optional art
+ *                      buy_url, info_url, download_enabled=1|0, csrf, keep_art=1|0, optional art
  * POST action=delete   file, csrf
  */
 
@@ -106,6 +106,7 @@ if ($action === 'edit') {
         'comment'  => la_capField((string)($_POST['comment'] ?? ''), 1000),
         'buy_url'  => mb_substr(sanitiseUrl((string)($_POST['buy_url'] ?? '')), 0, 500),
         'info_url' => mb_substr(sanitiseUrl((string)($_POST['info_url'] ?? '')), 0, 500),
+        'download_enabled' => !empty($_POST['download_enabled']),
     ];
 
     $newArtData = null;

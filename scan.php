@@ -89,6 +89,7 @@ function parseID3(string $filepath): array {
         'comment' => '',
         'buy_url'  => '',    // WXXX / WXX frame URL
         'info_url' => '',    // WOAF frame URL — official audio file webpage
+        'download_enabled' => false,    // TXXX:DOWNLOAD_ENABLED frame, value "1"
         'has_art'  => false,
     ];
 
@@ -206,14 +207,17 @@ function parseID3(string $filepath): array {
             // frames with the frame name as description and the URL as value.
             // Structure: [enc byte][description \0-terminated][value]
             if ($isTxxx) {
-                if (strlen($data) >= 2 && empty($result['info_url'])) {
+                if (strlen($data) >= 2) {
                     $parsed = parseTXXX($data);
                     // Match description case-insensitively to "WOAF"
-                    if (strcasecmp($parsed['desc'], 'WOAF') === 0) {
+                    if (empty($result['info_url']) && strcasecmp($parsed['desc'], 'WOAF') === 0) {
                         $url = sanitiseUrl($parsed['value']);
                         if ($url !== '') {
                             $result['info_url'] = $url;
                         }
+                    }
+                    if (strcasecmp($parsed['desc'], 'DOWNLOAD_ENABLED') === 0) {
+                        $result['download_enabled'] = ($parsed['value'] === '1');
                     }
                 }
                 continue;

@@ -35,6 +35,7 @@ function parseID3(string $filepath): array {
         'comment' => '',
         'buy_url'  => '',
         'info_url' => '',
+        'download_enabled' => false,
         'has_art'  => false,
     ];
 
@@ -134,11 +135,14 @@ function parseID3(string $filepath): array {
             }
 
             if ($isTxxx) {
-                if (strlen($data) >= 2 && empty($result['info_url'])) {
+                if (strlen($data) >= 2) {
                     $parsed = parseTXXX($data);
-                    if (strcasecmp($parsed['desc'], 'WOAF') === 0) {
+                    if (empty($result['info_url']) && strcasecmp($parsed['desc'], 'WOAF') === 0) {
                         $url = sanitiseUrl($parsed['value']);
                         if ($url !== '') $result['info_url'] = $url;
+                    }
+                    if (strcasecmp($parsed['desc'], 'DOWNLOAD_ENABLED') === 0) {
+                        $result['download_enabled'] = ($parsed['value'] === '1');
                     }
                 }
                 continue;
