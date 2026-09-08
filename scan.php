@@ -67,6 +67,8 @@ foreach ($files as $filepath) {
     $tracks[] = $tags;
 }
 
+$tracks = applyTrackOrder($tracks);
+
 echo json_encode($tracks, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 exit;
 

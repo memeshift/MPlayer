@@ -15,10 +15,12 @@ Options -Indexes
     #  • scripts: self + inline (needed for the inline <script> block)
     #  • styles:  self + inline + Google Fonts
     #  • fonts:   Google Fonts CDN
-    #  • images:  self + data URIs (for the SVG placeholder)
+    #  • images:  self + data URIs (for the SVG placeholder) + blob URIs
+    #             (for upload.php's local cover-art preview, via
+    #             URL.createObjectURL() before the file is actually uploaded)
     #  • media:   self (MP3 streaming from same origin)
     #  • connect: self (fetch() to scan.php / art.php)
-    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; connect-src 'self'"
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self'; connect-src 'self'"
 
 # ── Allow embed.php to be loaded in iframes on any domain ──────────────
 # Hosts like SiteGround inject X-Frame-Options: DENY globally as a security

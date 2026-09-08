@@ -44,6 +44,58 @@ function mp_write_credentials(array $data): bool {
     return file_put_contents(CREDENTIALS_FILE, json_encode($data, JSON_PRETTY_PRINT), LOCK_EX) !== false;
 }
 
+/* ── Site settings file (JSON, filesystem-only — see config.php) ──
+   Public-facing values (social links, player design). Defaults below
+   match index.html's current hardcoded markup/CSS so an unset settings
+   file renders identically to today's static page. */
+
+function mp_default_site_settings(): array {
+    return [
+        // Matches index.html's current hardcoded links, so an unset
+        // settings file changes nothing for existing visitors — only an
+        // admin explicitly blanking a field in settings.php hides an icon.
+        'social' => [
+            'email'      => '',
+            'youtube'    => 'https://www.youtube.com/memeshift',
+            'instagram'  => 'https://www.instagram.com/memeshift/',
+            'soundcloud' => 'https://soundcloud.com/memeshift',
+            'rss'        => 'https://www.memeshift.com/rss',
+        ],
+        'design' => [
+            'titlebar_color'     => '#FAC946',
+            'controls_dock_color'=> '#007998',
+            'pl_item_color'      => '#d4c07a',
+            // Matches the memeshift theme's current background photo. The
+            // theme's own --bg-image CSS var is declared on #app, which is
+            // body's descendant, not ancestor — body never inherits it, so
+            // this value must always be applied explicitly (see index.html's
+            // applyBackground()) rather than left for the stylesheet to
+            // supply on its own.
+            'bg_image'           => 'https://www.memeshift.com/wp-content/uploads/2025/02/Scan-scaled.jpg',
+            'bg_size'            => 'contain',
+            'bg_repeat_x'        => true,
+            'bg_repeat_y'        => true,
+            'bg_align'           => 'right',
+            'bg_fixed'           => false,
+        ],
+    ];
+}
+
+function mp_read_site_settings(): array {
+    $raw = @file_get_contents(SITE_SETTINGS_FILE);
+    $data = $raw === false ? null : json_decode($raw, true);
+    $defaults = mp_default_site_settings();
+    if (!is_array($data)) return $defaults;
+    return [
+        'social' => array_merge($defaults['social'], $data['social'] ?? []),
+        'design' => array_merge($defaults['design'], $data['design'] ?? []),
+    ];
+}
+
+function mp_write_site_settings(array $data): bool {
+    return file_put_contents(SITE_SETTINGS_FILE, json_encode($data, JSON_PRETTY_PRINT), LOCK_EX) !== false;
+}
+
 /* ── Login/session state ── */
 
 function mp_is_logged_in(): bool {

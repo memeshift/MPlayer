@@ -41,6 +41,39 @@ define('APP_BASE_URL', 'https://music.memeshift.com');
 // endpoint that creates or edits it.
 define('CREDENTIALS_FILE', dirname(__DIR__) . '/.mplayer-admin-3b3e77d59cce3312.json');
 
+// ── Site settings file: JSON, holds admin-editable social links and
+//    player design (colors/background). Public-facing values only (no
+//    secrets), but kept alongside CREDENTIALS_FILE outside the webroot
+//    for consistency with the rest of the admin state. ──
+define('SITE_SETTINGS_FILE', dirname(__DIR__) . '/.mplayer-site-settings-3b3e77d59cce3312.json');
+
+// ── Track order file: JSON array of filenames, the admin-set play order
+//    used by both scan.php (public player) and library_actions.php (admin
+//    list). Same outside-webroot pattern as the files above. ──
+define('TRACK_ORDER_FILE', dirname(__DIR__) . '/.mplayer-track-order-3b3e77d59cce3312.json');
+
+/* Sort $tracks (each with a rawurlencode'd 'file' key) by their position in
+   TRACK_ORDER_FILE (a flat JSON array of filenames). Tracks not listed there
+   — e.g. newly uploaded ones — keep their existing relative order and sort
+   after every listed track. Used by scan.php and library_actions.php. */
+function applyTrackOrder(array $tracks): array {
+    $order = [];
+    if (is_file(TRACK_ORDER_FILE)) {
+        $decoded = json_decode((string) file_get_contents(TRACK_ORDER_FILE), true);
+        if (is_array($decoded)) $order = array_flip(array_values($decoded));
+    }
+    if (!$order) return $tracks;
+
+    $withKeys = [];
+    foreach ($tracks as $i => $t) {
+        $filename = urldecode($t['file']);
+        $withKeys[] = [$order[$filename] ?? (count($order) + $i), $i, $t];
+    }
+    usort($withKeys, fn($a, $b) => $a[0] <=> $b[0] ?: $a[1] <=> $b[1]);
+
+    return array_map(fn($w) => $w[2], $withKeys);
+}
+
 // ── Where in-progress uploads are held before they're committed to
 //    MUSIC_DIR (see upload_inspect.php / upload_commit.php) ──
 define('STAGING_DIR', __DIR__ . '/staging/');

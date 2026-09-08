@@ -73,6 +73,8 @@ if ($action === 'list') {
         $tracks[] = $tags;
     }
 
+    $tracks = applyTrackOrder($tracks);
+
     echo json_encode(['tracks' => $tracks], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
 }
@@ -141,6 +143,36 @@ if ($action === 'edit') {
     }
 
     mp_log_event('library_edited:' . basename($path));
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
+if ($action === 'reorder') {
+    $order = json_decode((string) ($_POST['order'] ?? ''), true);
+    if (!is_array($order)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Invalid order.']);
+        exit;
+    }
+
+    $filenames = [];
+    foreach ($order as $raw) {
+        $path = la_resolveMusicFile((string) $raw);
+        if ($path === null) {
+            http_response_code(404);
+            echo json_encode(['error' => 'That file is no longer in the library — refresh and try again.']);
+            exit;
+        }
+        $filenames[] = basename($path);
+    }
+
+    if (file_put_contents(TRACK_ORDER_FILE, json_encode($filenames)) === false) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Could not save the new order.']);
+        exit;
+    }
+
+    mp_log_event('library_reordered');
     echo json_encode(['ok' => true]);
     exit;
 }

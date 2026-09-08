@@ -18,7 +18,6 @@ function mp_admin_css(): string {
 :root {
   --bg:        #0a0a0a;
   --bg-image:  url('https://www.memeshift.com/wp-content/uploads/2025/02/Scan-scaled.jpg');
-  --bg-overlay:rgba(10, 8, 2, 0.82);
   --panel:     #141410;
   --text:      #FAC946;
   --text-dim:  #c8b86a;
@@ -29,13 +28,13 @@ function mp_admin_css(): string {
   --error:     #ff6b6b;
   --error-bg:  #2a0a0a;
   --border:    #554e30;
-  --font-ui:   'DM Mono', 'Courier New', monospace;
+  --font-ui:   'Lora', Georgia, serif;
   --font-body: 'Lora', Georgia, serif;
 }
 * { box-sizing: border-box; }
 body {
   background-color: var(--bg);
-  background-image: linear-gradient(var(--bg-overlay), var(--bg-overlay)), var(--bg-image);
+  background-image: var(--bg-image);
   background-size: auto, contain;
   background-repeat: repeat;
   background-attachment: fixed;
@@ -52,7 +51,14 @@ h1 {
   color: var(--text);
   margin-bottom: 4px;
 }
-p.lede { color: var(--text-dim); margin-top: 0; }
+.page-header {  
+padding:5px 0 10px 0}
+p.lede { color: var(--text-dim);
+  margin-top: 0;
+  border: 1px solid var(--border);
+  padding: 1em;
+  border-radius: 1px;
+background:var(--panel);}
 form { display: flex; flex-direction: column; gap: 18px; margin-top: 24px; }
 fieldset { border: 1px solid var(--border); border-radius: 4px; padding: 16px; }
 legend { font-family: var(--font-ui); padding: 0 6px; color: var(--text-dim); }
@@ -132,6 +138,39 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .nav-tab[aria-current="page"] { background: var(--accent); color: var(--accent-text); }
 .nav-logout { flex: 0 0 20%; display: flex; align-items: center; justify-content: center; min-height: 48px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); font-family: var(--font-ui); font-size: 0.9rem; text-decoration: none; transition: all 0.2s; }
 .nav-logout:hover { background: rgba(200, 184, 106, 0.05); }
+.nav-menu-wrap { position: relative; flex: 0 0 20%; }
+.nav-menu-trigger { width: 100%; gap: 6px; }
+.nav-menu-trigger svg { width: 18px; height: 18px; flex: none; fill: currentColor; }
+.nav-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 180px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 20;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+.nav-menu[hidden] { display: none; }
+.nav-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  color: var(--text-dim);
+  font-family: var(--font-ui);
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+.nav-menu-item:hover, .nav-menu-item:focus-visible { background: rgba(250, 201, 70, 0.08); color: var(--text); }
+.nav-menu-item svg { width: 14px; height: 14px; flex: none; fill: currentColor; opacity: 0.8; }
 #art-preview-wrap, .art-preview-wrap { position: relative; }
 .art-remove-btn {
   position: absolute;
@@ -177,6 +216,51 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
   border: none;
 }
 CSS;
+}
+
+/**
+ * Shared top nav for admin pages: Upload/Library tabs plus a dropdown
+ * (Settings/Customize/Stats/Logout) replacing the old plain "Log out" link.
+ * $active is 'upload', 'library', 'settings', or 'stats'.
+ */
+function mp_admin_nav_html(string $active): string {
+    $tab = function (string $href, string $label, string $key) use ($active): string {
+        $current = $active === $key ? ' aria-current="page"' : '';
+        return '<a href="' . $href . '" class="nav-tab"' . $current . '>' . $label . '</a>';
+    };
+    $menuItem = function (string $href, string $label, string $key, bool $newTab = false) use ($active): string {
+        $current = $active === $key ? ' aria-current="page"' : '';
+        $extra = $newTab
+            ? ' target="_blank" rel="noopener noreferrer"><span>' . $label . '</span>'
+              . '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42 9.3-9.29H14V3zM5 5h6v2H5v12h12v-6h2v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/></svg>'
+            : '>' . $label;
+        return '<a href="' . $href . '" role="menuitem" class="nav-menu-item"' . $current . $extra . '</a>';
+    };
+    return '<div class="top-nav">'
+        . $tab('upload.php', 'Upload', 'upload')
+        . $tab('library.php', 'Library', 'library')
+        . '<div class="nav-menu-wrap">'
+        . '<button type="button" class="nav-logout nav-menu-trigger" id="nav-menu-trigger" aria-haspopup="true" aria-expanded="false" aria-controls="nav-menu">'
+        . '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>'
+        . '<span>Menu</span>'
+        . '</button>'
+        . '<div class="nav-menu" id="nav-menu" role="menu" hidden>'
+        . $menuItem('settings.php', 'Settings', 'settings')
+        . $menuItem('index.html?customize=1', 'Customize', 'customize', true)
+        . $menuItem('stats.php', 'Stats', 'stats')
+        . $menuItem('logout.php', 'Log out', 'logout')
+        . '</div>'
+        . '</div>'
+        . '</div>'
+        . '<script>(function(){'
+        . 'var t=document.getElementById("nav-menu-trigger"),m=document.getElementById("nav-menu");'
+        . 'if(!t||!m)return;'
+        . 'function close(){m.hidden=true;t.setAttribute("aria-expanded","false");}'
+        . 'function open(){m.hidden=false;t.setAttribute("aria-expanded","true");}'
+        . 't.addEventListener("click",function(e){e.stopPropagation();m.hidden?open():close();});'
+        . 'document.addEventListener("click",function(e){if(!m.hidden&&!m.contains(e.target)&&e.target!==t)close();});'
+        . 'document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!m.hidden){close();t.focus();}});'
+        . '})();</script>';
 }
 
 /**
