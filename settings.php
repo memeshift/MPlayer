@@ -48,7 +48,6 @@ body { max-width: 640px; }
   <h1>Settings</h1>
 </div>
 <?php echo mp_sr_status_html(); ?>
-<div id="msg" role="alert"></div>
 
 <form id="social-form">
   <input type="hidden" name="csrf" value="<?php echo htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8'); ?>">
@@ -89,6 +88,7 @@ body { max-width: 640px; }
     <input type="url" id="rss" name="rss" value="<?php echo htmlspecialchars($social['rss'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="https://example.com/rss">
   </div>
   <button type="submit">Save</button>
+  <div id="msg" role="alert"></div>
 </form>
 
 <script>

@@ -8,7 +8,7 @@
  * │  each carry their own copy of the same WCAG-AA rules.│
  * └──────────────────────────────────────────────────────┘
  *
- * Palette borrowed from index.html's studio theme
+ * Palette borrowed from index.html's mplayer theme
  * (--chrome, --titlebar-bg, --pl-sel-bg) so admin pages read as
  * part of the same app, not a bolted-on afterthought.
  */

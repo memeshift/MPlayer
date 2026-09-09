@@ -76,8 +76,8 @@
   --bg-image:   none;
 }
 
-/* ── STUDIO THEME ─────────────────────────────────────────────────── */
-[data-theme="studio"] {
+/* ── MPLAYER THEME ─────────────────────────────────────────────────── */
+[data-theme="mplayer"] {
   --chrome:          #FAC946;
   --chrome-hi:       #fcd97c;
   --chrome-lo:       #b87a08;
@@ -92,7 +92,7 @@
   --pl-bg:           #141410;
   --pl-alt:          #1a1a14;
   --pl-text:         #d4c07a;
-  /* ── A11Y FIX 4a: Studio theme contrast corrections ── */
+  /* ── A11Y FIX 4a: MPlayer theme contrast corrections ── */
   --pl-num:          #7a7248;   /* was #554e30 (~2.1:1) → now ~4.5:1 on #141410 */
   --pl-dur:          #8a8258;   /* was #777055 (~3.1:1) → now ~4.6:1 */
   /* ── /A11Y FIX 4a ── */
@@ -694,9 +694,9 @@ body {
   border-color: transparent;
 }
 
-[data-theme="studio"] .pl-badge-year   { color: #a07828; background: #1a1408; border-color: #302010; }
-[data-theme="studio"] .pl-badge-artist { color: var(--btn-active-col); background: #061214; border-color: #082028; }
-[data-theme="studio"] .pl-badge-album  { color: #2a6835; background: #081008; border-color: #102018; }
+[data-theme="mplayer"] .pl-badge-year   { color: #a07828; background: #1a1408; border-color: #302010; }
+[data-theme="mplayer"] .pl-badge-artist { color: var(--btn-active-col); background: #061214; border-color: #082028; }
+[data-theme="mplayer"] .pl-badge-album  { color: #2a6835; background: #081008; border-color: #102018; }
 
 .pl-footer {
   display: flex;
@@ -1010,7 +1010,7 @@ body {
   word-break: break-word;
 }
 
-[data-theme="studio"] .info-notes-text {
+[data-theme="mplayer"] .info-notes-text {
   font-style: normal;
 }
 
@@ -1049,11 +1049,11 @@ body {
   background: transparent;
 }
 
-[data-theme="studio"] .tbar-social {
+[data-theme="mplayer"] .tbar-social {
   color: rgba(255,255,255,0.55);
 }
 
-[data-theme="studio"] .tbar-social:hover {
+[data-theme="mplayer"] .tbar-social:hover {
   color: var(--chrome);
 }
 
@@ -1086,7 +1086,7 @@ body {
   padding-right: 4px;
 }
 
-[data-theme="studio"] .socials-label {
+[data-theme="mplayer"] .socials-label {
   color: var(--sort-text);
 }
 
@@ -1117,14 +1117,14 @@ body {
   background: transparent;
 }
 
-[data-theme="studio"] .social-link:hover {
+[data-theme="mplayer"] .social-link:hover {
   color: var(--chrome);
   background: transparent;
   border-color: transparent;
 }
 
-[data-theme="studio"] .tbar-social:hover,
-[data-theme="studio"] .social-link.tbar-social:hover {
+[data-theme="mplayer"] .tbar-social:hover,
+[data-theme="mplayer"] .social-link.tbar-social:hover {
   color: var(--chrome) !important;
   background: transparent;
 }
@@ -1165,11 +1165,11 @@ body {
   color: #80bfff;
 }
 
-[data-theme="studio"] .info-dl {
+[data-theme="mplayer"] .info-dl {
   color: var(--btn-active-col);
 }
 
-[data-theme="studio"] .info-dl:hover {
+[data-theme="mplayer"] .info-dl:hover {
   color: #00a8c8;
 }
 
@@ -1470,16 +1470,16 @@ input[type="range"]::-moz-range-thumb {
   }
   .dock-btn-play svg { width: 38px; height: 38px; }
 
-  [data-theme="studio"] .dock-btn-play {
+  [data-theme="mplayer"] .dock-btn-play {
     background: var(--chrome);
     box-shadow: 0 0 24px rgba(250,201,70,0.6), 0 4px 12px rgba(0,0,0,0.7);
     color: #1a1000;
   }
-  [data-theme="studio"] .dock-seek-row input[type="range"]::-webkit-slider-thumb {
+  [data-theme="mplayer"] .dock-seek-row input[type="range"]::-webkit-slider-thumb {
     background: var(--chrome);
     box-shadow: 0 0 8px rgba(250,201,70,0.6);
   }
-  [data-theme="studio"] .dock-seek-row input[type="range"]::-moz-range-thumb {
+  [data-theme="mplayer"] .dock-seek-row input[type="range"]::-moz-range-thumb {
     background: var(--chrome);
     box-shadow: 0 0 8px rgba(250,201,70,0.6);
   }
@@ -1540,22 +1540,22 @@ input[type="range"]::-moz-range-thumb {
 }
 
 /* ════════════════════════════════════════════════════════════════════════
-   STUDIO THEME SPECIFIC OVERRIDES
+   MPLAYER THEME SPECIFIC OVERRIDES
 ════════════════════════════════════════════════════════════════════════ */
 
-[data-theme="studio"] .panel {
+[data-theme="mplayer"] .panel {
   border-color: var(--chrome-hi) var(--chrome-lo) var(--chrome-lo) var(--chrome-hi);
 }
 
-[data-theme="studio"] .pl-item:hover {
+[data-theme="mplayer"] .pl-item:hover {
   background: rgba(0, 121, 152, 0.18) !important;
 }
 
-[data-theme="studio"] .btn-t {
+[data-theme="mplayer"] .btn-t {
   font-weight: 500;
 }
 
-[data-theme="studio"] .btn-t:hover {
+[data-theme="mplayer"] .btn-t:hover {
   background: var(--btn-hi);
 }
 
@@ -1625,7 +1625,7 @@ input, select, textarea {
 
 </head>
 <body>
-<div id="app" data-theme="studio">
+<div id="app" data-theme="mplayer">
 
   <!-- ══════════════════════════════════════════════════════════
        A11Y FIX 3: Visually-hidden screen reader live region.
@@ -1956,7 +1956,11 @@ const S = {
   playing:  false,
   sortBy:   'default',
   sortDir:  'asc',
-  theme:    ['winamp', 'studio'].includes(localStorage.getItem('msp-theme')) ? localStorage.getItem('msp-theme') : 'studio',
+  theme:    (() => {
+    // migrate pre-rename saved value ('studio' theme id renamed to 'mplayer')
+    const saved = localStorage.getItem('msp-theme') === 'studio' ? 'mplayer' : localStorage.getItem('msp-theme');
+    return ['winamp', 'mplayer'].includes(saved) ? saved : 'mplayer';
+  })(),
   volume:   0.8,
 };
 
@@ -2465,7 +2469,7 @@ function bindControls() {
 
   document.addEventListener('click', e => {
     if (e.target.closest('#btn-theme') || e.target.closest('#btn-theme-d')) {
-      applyTheme(S.theme === 'winamp' ? 'studio' : 'winamp', true);
+      applyTheme(S.theme === 'winamp' ? 'mplayer' : 'winamp', true);
     }
   });
 
@@ -2536,7 +2540,7 @@ function applyTheme(name, save) {
   if (window.MP_reapplyDesign) window.MP_reapplyDesign();
   updateVisColors();
 
-  const label = name === 'winamp' ? '◈ WINAMP' : '◈ STUDIO';
+  const label = name === 'winamp' ? '◈ WINAMP' : '◈ MPLAYER';
   const themeBtn  = $('btn-theme');
   const themeBtn2 = $('btn-theme-d');
   if (themeBtn)  themeBtn.textContent  = label;
@@ -2847,7 +2851,7 @@ function attachSparkle(linkEl) {
   function W() { return cvs.width || W_fallback; }
 
   function themeColors() {
-    return app.dataset.theme === 'studio'
+    return app.dataset.theme === 'mplayer'
       ? ['#FAC946', '#fcd97c', '#007998']
       : ['#14ff14', '#00cc00', '#ffffff'];
   }
@@ -2957,7 +2961,7 @@ function burstSocials() {
   cvs.height = H;
 
   const ctx    = cvs.getContext('2d');
-  const COLORS = app.dataset.theme === 'studio'
+  const COLORS = app.dataset.theme === 'mplayer'
     ? ['#FAC946', '#F90002', '#007998']
     : ['#14ff14', '#00cc00', '#ffffff'];
   const MARGIN = 10;
@@ -3242,7 +3246,7 @@ init();
   };
   var HEX_RE = /^#[0-9a-fA-F]{6}$/;
   // The theme's CSS custom properties (--chrome, --titlebar-bg, --pl-text, …)
-  // are declared on #app via [data-theme="studio"], not on <html>/<body>.
+  // are declared on #app via [data-theme="mplayer"], not on <html>/<body>.
   // Overriding them anywhere higher up the tree gets silently shadowed by
   // #app's own stylesheet declaration, since cascade resolution for a
   // property is per-element — an ancestor's inline value never beats an
@@ -3256,9 +3260,9 @@ init();
     else design = lastDesign;
     if (!design) return;
 
-    // Customization only applies to the studio theme — winamp classic keeps
+    // Customization only applies to the mplayer theme — winamp classic keeps
     // its own fixed palette, so clear any inline overrides while it's active.
-    if (themeRoot.dataset.theme !== 'studio') {
+    if (themeRoot.dataset.theme !== 'mplayer') {
       Object.keys(DESIGN_VAR_GROUPS).forEach(function (key) {
         DESIGN_VAR_GROUPS[key].forEach(function (cssVar) { themeRoot.style.removeProperty(cssVar); });
       });

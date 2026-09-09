@@ -18,7 +18,7 @@ A fresh install ships blank: no tracks, no artwork, no social links, no branding
 - Streams audio in the browser with an HTML5 `<audio>` element
 - Displays a real-time spectrum visualiser (Web Audio API); on iOS the visualiser stays idle because routing audio through `AudioContext` would stop background playback (see changelog v1.45)
 - Shows a scrollable, sortable playlist with a full track info panel
-- Two visual themes: a Winamp-inspired dark skin and a warmer "Studio" skin (yellow/teal), recolourable from the admin Customize panel
+- Two visual themes: a Winamp-inspired dark skin and a warmer "MPlayer" skin (yellow/teal), recolourable from the admin Customize panel
 - **Deep links**: open the player with `?t=` plus a URL-encoded filename (e.g. `/?t=mytrack.mp3`) to start on a specific track after the scan loads
 - **Share / embed**: from the UI, copy a direct link or an `<iframe>` snippet that loads `embed.php` (single-track mini player for external sites)
 - **Media Session API** (where supported): lock screen / notification metadata and transport actions on mobile and desktop browsers
@@ -391,13 +391,13 @@ PHP's built-in dev server (`php -S`) **ignores `.htaccess` entirely** — so `co
 
 ### Two themes
 
-Toggle using the skin button in the transport area (label switches between **◈ WINAMP** and **◈ STUDIO** depending on the active theme).
+Toggle using the skin button in the transport area (label switches between **◈ WINAMP** and **◈ MPLAYER** depending on the active theme).
 
 - **Winamp** — dark grey chrome, green LED display, Silkscreen + VT323 pixel fonts
-- **Studio** — warm yellow/teal palette, Lora + DM Mono fonts
+- **MPlayer** — warm yellow/teal palette, Lora + DM Mono fonts
 
 Theme choice is saved in `localStorage` (`msp-theme`). The first visit defaults to
-**Studio** unless a saved choice exists. Both themes' colours can be overridden per-site
+**MPlayer** unless a saved choice exists. Both themes' colours can be overridden per-site
 from the Customize panel.
 
 ### Playlist
