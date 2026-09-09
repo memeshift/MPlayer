@@ -2533,6 +2533,7 @@ function bindControls() {
 function applyTheme(name, save) {
   S.theme = name;
   app.dataset.theme = name;
+  if (window.MP_reapplyDesign) window.MP_reapplyDesign();
   updateVisColors();
 
   const label = name === 'winamp' ? '◈ WINAMP' : '◈ STUDIO';
@@ -3248,8 +3249,22 @@ init();
   // element's own matching rule. So color overrides must target #app itself.
   var themeRoot = document.getElementById('app') || document.documentElement;
 
+  var lastDesign = null;
+
   function applyDesign(design) {
+    if (design) lastDesign = design;
+    else design = lastDesign;
     if (!design) return;
+
+    // Customization only applies to the studio theme — winamp classic keeps
+    // its own fixed palette, so clear any inline overrides while it's active.
+    if (themeRoot.dataset.theme !== 'studio') {
+      Object.keys(DESIGN_VAR_GROUPS).forEach(function (key) {
+        DESIGN_VAR_GROUPS[key].forEach(function (cssVar) { themeRoot.style.removeProperty(cssVar); });
+      });
+      return;
+    }
+
     Object.keys(DESIGN_VAR_GROUPS).forEach(function (key) {
       var val = design[key];
       if (!val || !HEX_RE.test(val)) return;
@@ -3257,6 +3272,7 @@ init();
     });
     applyBackground(design);
   }
+  window.MP_reapplyDesign = applyDesign;
 
   function applyBackground(design) {
     // --bg-image is read directly by <body>, which is #app's ancestor, so
