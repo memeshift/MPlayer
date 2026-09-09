@@ -31,18 +31,27 @@ function mp_admin_css(): string {
   --font-body: 'Lora', Georgia, serif;
 }
 * { box-sizing: border-box; }
-body {
+html {
   background-color: var(--bg);
   background-image: var(--bg-image);
   background-size: auto, contain;
   background-repeat: repeat;
   background-attachment: fixed;
+  min-height: 100%;
+  display: flex;
+}
+body {
   color: var(--text);
   font-family: var(--font-body);
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 24px 16px 64px;
   line-height: 1.5;
+  max-width: 480px;
+  width: 100%;
+  margin: auto;
+  padding: 24px 20px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 h1 {
   font-family: var(--font-ui);
@@ -107,6 +116,9 @@ a.secondary-action {
   margin-top: 8px;
   min-height: 44px;
   line-height: 44px;
+}
+.secondary-links {
+  text-align: center;
 }
 /* Visible focus ring on every interactive element — never suppressed. */
 a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible {

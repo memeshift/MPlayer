@@ -80,9 +80,7 @@ $csrf = mp_csrf_token();
 <style><?php echo mp_admin_css(); ?></style>
 </head>
 <body>
-<h1>Admin Login</h1>
-<p class="lede">Sign in to upload and manage tracks.</p>
-
+<h1>MPlayer Login</h1>
 <?php echo mp_sr_status_html($error); ?>
 <?php if ($error): ?>
   <div class="msg msg-error"><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></div>
@@ -101,6 +99,9 @@ $csrf = mp_csrf_token();
   <button type="submit">Log in</button>
 </form>
 
-<a class="secondary-action" href="forgot-password.php">Forgot password?</a>
+<div class="secondary-links">
+  <a class="secondary-action" href="/">Main Site</a>
+   | <a class="secondary-action" href="forgot-password.php">Forgot password?</a>
+</div>
 </body>
 </html>
