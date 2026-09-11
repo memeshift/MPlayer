@@ -18,7 +18,7 @@ jobs:
           username: ${{ secrets.FTP_USER_MUSIC }}
           password: ${{ secrets.FTP_PASS_MUSIC }}
           protocol: ftps
-          server-dir: /1973a732aed04a5a/files/public_html/
+          server-dir: /public_html/
           exclude: |
             **/.git*
             **/.github/**
@@ -35,7 +35,7 @@ jobs:
           username: ${{ secrets.FTP_USER_SXSE }}
           password: ${{ secrets.FTP_PASS_SXSE }}
           protocol: ftps
-          server-dir: /a87ff053354cedff/files/public_html/
+          server-dir: /public_html/
           exclude: |
             **/.git*
             **/.github/**
@@ -46,7 +46,7 @@ jobs:
           username: ${{ secrets.FTP_USER_MAUMO }}
           password: ${{ secrets.FTP_PASS_MAUMO }}
           protocol: ftps
-          server-dir: /49fc5a82d2732a33/files/public_html/
+          server-dir: /public_html/
           exclude: |
             **/.git*
             **/.github/**
