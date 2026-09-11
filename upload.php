@@ -143,7 +143,7 @@ body.batch-active { max-width: 640px; }
 </head>
 <body>
 <?php echo mp_admin_nav_html('upload'); ?>
-<p class="lede">Batch upload your MP3 files below.  You can edit the tags for each file before publishing.</p>
+<p class="lede">Batch upload your MP3 files below.  You can edit the tags for each file before publishing to your <a href="/" target="_blank">live site</a>.</p>
 <div class="page-header">
   <h1>Upload</h1>
 </div>
@@ -219,7 +219,7 @@ body.batch-active { max-width: 640px; }
             <input type="url" id="info_url" name="info_url" maxlength="500" placeholder="https://">
           </div>
           <div class="field">
-            <label class="checkbox-field"><input type="checkbox" id="download_enabled" name="download_enabled"> Allow visitors to download this track</label>
+            <label class="checkbox-field"><input type="checkbox" id="download_enabled" name="download_enabled">Show a download link to visitors for this track</label>
           </div>
 
           <input type="hidden" id="token" name="token">
