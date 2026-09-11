@@ -1,0 +1,52 @@
+name: Deploy MPlayer
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy-staging:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to music.memeshift.com
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST_MUSIC }}
+          username: ${{ secrets.FTP_USER_MUSIC }}
+          password: ${{ secrets.FTP_PASS_MUSIC }}
+          protocol: ftps
+          server-dir: /1973a732aed04a5a/files/public_html/
+          exclude: |
+            **/.git*
+            **/.github/**
+
+  deploy-production:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to sxseplayer.memeshift.com
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST_SXSE }}
+          username: ${{ secrets.FTP_USER_SXSE }}
+          password: ${{ secrets.FTP_PASS_SXSE }}
+          protocol: ftps
+          server-dir: /a87ff053354cedff/files/public_html/
+          exclude: |
+            **/.git*
+            **/.github/**
+      - name: Deploy to maumo.memeshift.com
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST_MAUMO }}
+          username: ${{ secrets.FTP_USER_MAUMO }}
+          password: ${{ secrets.FTP_PASS_MAUMO }}
+          protocol: ftps
+          server-dir: /49fc5a82d2732a33/files/public_html/
+          exclude: |
+            **/.git*
+            **/.github/**
