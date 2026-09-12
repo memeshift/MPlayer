@@ -2205,8 +2205,8 @@ function updateMediaSession(t) {
   const album  = t.album  || '';
 
   const artwork = t.has_art ? [
-    { src: `art.php?f=${t.file}`, sizes: '256x256', type: 'image/jpeg' },
-    { src: `art.php?f=${t.file}`, sizes: '512x512', type: 'image/jpeg' },
+    { src: `art.php?f=${t.file}&v=${t.mtime}`, sizes: '256x256', type: 'image/jpeg' },
+    { src: `art.php?f=${t.file}&v=${t.mtime}`, sizes: '512x512', type: 'image/jpeg' },
   ] : [];
 
   navigator.mediaSession.metadata = new MediaMetadata({ title, artist, album, artwork });
@@ -2666,7 +2666,7 @@ function showInfo(t) {
       ? `${t.album} album artwork`
       : (t.artist ? `${t.artist} artwork` : 'Album artwork');
     img.setAttribute('alt', altText);
-    img.src = `art.php?f=${t.file}`;
+    img.src = `art.php?f=${t.file}&v=${t.mtime}`;
     img.onload  = () => { img.style.display = 'block'; ph.style.display = 'none'; };
     img.onerror = () => { img.style.display = 'none';  ph.style.display = 'flex'; };
 
@@ -3666,7 +3666,8 @@ init();
     if (document.title.indexOf('▶') !== 0) document.title = name;
   }
 
-  fetch('site-config.php').then(function (r) { return r.json(); }).then(function (cfg) {
+  var siteConfigFresh = new URLSearchParams(window.location.search).get('fresh') === '1';
+  fetch('site-config.php' + (siteConfigFresh ? '?_=' + Date.now() : '')).then(function (r) { return r.json(); }).then(function (cfg) {
     applySiteName(cfg.site_name);
     applySocial(cfg.social);
     applyDesign(cfg.design);

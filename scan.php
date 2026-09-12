@@ -60,6 +60,7 @@ foreach ($files as $filepath) {
     $tags            = parseID3($real);
     $tags['file']    = rawurlencode($filename);
     $tags['filesize'] = filesize($real) ?: 0;
+    $tags['mtime']    = filemtime($real) ?: 0;
     // Duration is filled client-side via HTML5 audio metadata event.
     // We set 0 here; JS updates it after each track loads.
     $tags['duration'] = 0;

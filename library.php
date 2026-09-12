@@ -206,7 +206,7 @@ body.select-mode .list-actions { position: sticky; top: 0; z-index: 10; backgrou
     const summaryArt = node.querySelector('.track-summary .art-preview');
     const summaryNoArt = node.querySelector('.track-summary .no-art');
     if (t.has_art) {
-      summaryArt.src = 'art.php?f=' + t.file;
+      summaryArt.src = 'art.php?f=' + t.file + '&v=' + t.mtime;
       summaryArt.alt = 'Cover art for ' + (t.title || t.file);
       summaryArt.hidden = false;
     } else {
@@ -230,7 +230,7 @@ body.select-mode .list-actions { position: sticky; top: 0; z-index: 10; backgrou
     const editPreviewWrap = editForm.querySelector('.art-preview-wrap');
     const editDropzoneTitle = editForm.querySelector('.art-dropzone-title');
     if (t.has_art) {
-      editArt.src = 'art.php?f=' + t.file;
+      editArt.src = 'art.php?f=' + t.file + '&v=' + t.mtime;
       editArt.alt = '';
       editPreviewWrap.hidden = false;
       editDropzoneTitle.textContent = 'Replace cover art';

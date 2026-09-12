@@ -144,7 +144,7 @@ document.getElementById('icon_file').addEventListener('change', function () {
       document.getElementById('icon').value = res.data.path;
       document.getElementById('icon-preview').src = res.data.path + '?v=' + Date.now();
       out.className = 'msg msg-success';
-      out.textContent = 'Icon uploaded. Press Save to apply it.';
+      out.textContent = 'Icon uploaded. Click the Save button below to apply it.';
     })
     .catch(function (err) {
       out.className = 'msg msg-error';

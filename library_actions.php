@@ -70,6 +70,7 @@ if ($action === 'list') {
         $tags = parseID3($real);
         $tags['file'] = rawurlencode($filename);
         $tags['filesize'] = filesize($real) ?: 0;
+        $tags['mtime']    = filemtime($real) ?: 0;
         $tracks[] = $tags;
     }
 
