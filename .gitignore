@@ -24,6 +24,7 @@ composer.phar
 # Claude Code — local context, never published
 CLAUDE.md
 .claude/
+/references/
 
 # OS & editors
 .DS_Store
