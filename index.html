@@ -984,6 +984,212 @@ body {
 
 .art-modal-close:hover { color: #fff; }
 
+/* ══ NOW-PLAYING VIEW (mobile expanded, swipe down to dismiss) ══ */
+.now-view {
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  display: none;
+  flex-direction: column;
+  background: var(--disp-bg);
+  transform: translateY(100%);
+  transition: transform 0.28s ease;
+  touch-action: none;
+  overflow: hidden;
+}
+.now-view.dragging { transition: none; }
+.now-view-bg {
+  position: absolute;
+  inset: -10%;
+  background-size: cover;
+  background-position: center;
+  filter: blur(40px) brightness(0.55);
+  transform: scale(1.15);
+}
+.now-view-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+}
+.now-view-handle {
+  position: relative;
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.4);
+  margin: 12px auto 0;
+  flex: none;
+}
+.now-view-art-wrap {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 24px;
+  min-height: 0;
+}
+.now-view-art-wrap img {
+  width: min(78vw, 420px);
+  height: min(78vw, 420px);
+  max-width: 100%;
+  max-height: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--radius);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+}
+.now-view-meta {
+  position: relative;
+  text-align: center;
+  padding: 0 24px;
+  color: #fff;
+}
+.now-view-title-wrap {
+  overflow: hidden;
+  width: 100%;
+  position: relative;
+}
+.now-view-title {
+  font-family: var(--font-info);
+  font-size: 20px;
+  font-weight: 700;
+  white-space: nowrap;
+  display: inline-block;
+  will-change: transform;
+}
+.now-view-title.scrolling {
+  animation: led-marquee linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .now-view-title.scrolling {
+    animation: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+}
+.now-view-artist {
+  font-family: var(--font-info-body);
+  font-size: 15px;
+  opacity: 0.75;
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.now-view-notes-hint {
+  font-family: var(--font-info);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.4);
+  margin-top: 10px;
+}
+.now-view-notes {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  background: var(--disp-bg);
+  transform: translateY(100%);
+  transition: transform 0.28s ease;
+  padding: 12px 24px 24px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.now-view-notes.dragging { transition: none; }
+.now-view-notes.peeking { animation: now-view-notes-peek 0.6s ease-out; }
+@keyframes now-view-notes-peek {
+  0%   { transform: translateY(100%); }
+  35%  { transform: translateY(88%); }
+  60%  { transform: translateY(94%); }
+  100% { transform: translateY(100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .now-view-notes.peeking { animation: none; }
+}
+.now-view-notes-handle {
+  position: relative;
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.4);
+  margin: 0 auto 20px;
+  flex: none;
+  touch-action: none;
+}
+.now-view-notes-handle::before {
+  /* Enlarges the touch target well past the visible 40x4px bar without
+     changing how it looks. */
+  content: '';
+  position: absolute;
+  inset: -16px -20px;
+}
+.now-view-notes-label {
+  font-family: var(--font-info);
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 10px;
+}
+.now-view-notes-text {
+  font-family: var(--font-info-body);
+  font-size: 16px;
+  line-height: 1.5;
+  color: #fff;
+  white-space: pre-wrap;
+}
+.now-view-seek-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 24px 0;
+}
+.now-view-seek-row input[type="range"] { flex: 1; }
+.now-view-seek-row input[type="range"]::-webkit-slider-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.6);
+}
+.now-view-seek-row input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.6);
+}
+.now-view-time {
+  font-family: var(--font-info);
+  font-size: 13px;
+  color: rgba(255,255,255,0.7);
+  min-width: 34px;
+  text-align: center;
+}
+.now-view-transport {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  padding: 16px 24px 32px;
+}
+.now-view-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 8px;
+}
+
 .info-notes {
   flex-basis: 100%;
   margin-top: 0;
@@ -1917,6 +2123,48 @@ input, select, textarea {
     </div>
   </div>
 
+  <!-- ══ NOW-PLAYING VIEW (mobile) ══ -->
+  <div class="now-view" id="now-view" role="dialog" aria-modal="true" aria-label="Now playing">
+    <div class="now-view-bg" id="now-view-bg"></div>
+    <div class="now-view-handle" aria-hidden="true"></div>
+    <div class="now-view-art-wrap">
+      <div class="art-placeholder" id="now-view-art-ph">♪</div>
+      <img id="now-view-art" src="" alt="">
+    </div>
+    <div class="now-view-meta">
+      <div class="now-view-title-wrap" id="now-view-title-wrap">
+        <span class="now-view-title" id="now-view-title">—</span>
+      </div>
+      <div class="now-view-artist" id="now-view-artist">—</div>
+      <div class="now-view-notes-hint" id="now-view-notes-hint" aria-hidden="true">▲ notes</div>
+    </div>
+    <div class="now-view-seek-row">
+      <span class="now-view-time" id="now-view-time-cur">0:00</span>
+      <input type="range" id="now-view-seek" min="0" max="1000" value="0" step="1"
+             aria-label="Seek position">
+      <span class="now-view-time" id="now-view-time-dur">0:00</span>
+    </div>
+    <div class="now-view-transport">
+      <button class="now-view-btn" id="now-view-prev" aria-label="Previous track">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+      </button>
+      <button class="now-view-btn now-view-btn-play" id="now-view-play"
+              aria-label="Play or pause" aria-pressed="false">
+        <svg id="now-view-play-icon" viewBox="0 0 24 24" fill="currentColor" width="34" height="34"><path d="M8 5v14l11-7z"/></svg>
+        <svg id="now-view-pause-icon" viewBox="0 0 24 24" fill="currentColor" width="34" height="34" style="display:none"><path d="M4 3h5v18H4zm11 0h5v18h-5z"/></svg>
+      </button>
+      <button class="now-view-btn" id="now-view-next" aria-label="Next track">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28"><path d="M6 18l8.5-6L6 6v12zm8.5-12v12h2V6h-2z"/></svg>
+      </button>
+    </div>
+
+    <div class="now-view-notes" id="now-view-notes" aria-hidden="true">
+      <div class="now-view-notes-handle" id="now-view-notes-handle" aria-hidden="true"></div>
+      <div class="now-view-notes-label">NOTES</div>
+      <div class="now-view-notes-text" id="now-view-notes-text">—</div>
+    </div>
+  </div>
+
 </div><!-- /app -->
 
 <audio id="audio" preload="none" playsinline x-webkit-airplay="allow"
@@ -2179,11 +2427,15 @@ function playTrack(index) {
   const pi = $('play-icon'), pp = $('pause-icon');
   if (pi) pi.style.display = 'none';
   if (pp) pp.style.display = 'block';
+  const nvpi = $('now-view-play-icon'), nvpp = $('now-view-pause-icon');
+  if (nvpi) nvpi.style.display = 'none';
+  if (nvpp) nvpp.style.display = 'block';
 
   setScrollTitle(ledLabel(t));
   markCurrent();
   showInfo(t);
   updateMediaSession(t);
+  syncNowView(t);
 
   /* ── A11Y FIX 3: announce track to screen readers ──
      Rollback: remove this one line.
@@ -2240,6 +2492,9 @@ function stopPlayback() {
   const pi = $('play-icon'), pp = $('pause-icon');
   if (pi) pi.style.display = 'block';
   if (pp) pp.style.display = 'none';
+  const nvpi = $('now-view-play-icon'), nvpp = $('now-view-pause-icon');
+  if (nvpi) nvpi.style.display = 'block';
+  if (nvpp) nvpp.style.display = 'none';
 
   const pd = $('btn-play-d');
   if (pd) {
@@ -2251,6 +2506,10 @@ function stopPlayback() {
   const dc = $('dock-time-cur');
   if (dc) dc.textContent = '0:00';
   seekbar.value = 0;
+  const nvc = $('now-view-time-cur');
+  if (nvc) nvc.textContent = '0:00';
+  const nvs = $('now-view-seek');
+  if (nvs) nvs.value = 0;
 
   /* ── A11Y FIX 3: announce stop ──
      Rollback: remove this one line.
@@ -2322,7 +2581,11 @@ function bindAudio() {
       seekbar.value = pos;
       const sd = $('seekbar-d');
       if (sd) sd.value = pos;
+      const nvs = $('now-view-seek');
+      if (nvs) nvs.value = pos;
     }
+    const nvc = $('now-view-time-cur');
+    if (nvc) nvc.textContent = t;
   });
 
   audio.addEventListener('loadedmetadata', () => {
@@ -2330,6 +2593,8 @@ function bindAudio() {
     ledDur.textContent = d;
     const dd = $('dock-time-dur');
     if (dd) dd.textContent = d;
+    const nvd = $('now-view-time-dur');
+    if (nvd) nvd.textContent = d;
 
     const t = S.sorted[S.current];
     if (t && t.filesize > 0 && audio.duration > 0) {
@@ -2377,9 +2642,14 @@ function bindAudio() {
     const pi = $('play-icon'),  pp = $('pause-icon');
     if (pi) pi.style.display = 'none';
     if (pp) pp.style.display = 'block';
+    const nvpi = $('now-view-play-icon'), nvpp = $('now-view-pause-icon');
+    if (nvpi) nvpi.style.display = 'none';
+    if (nvpp) nvpp.style.display = 'block';
     // Mobile play button aria-pressed
     const bplay = $('btn-play');
     if (bplay) bplay.setAttribute('aria-pressed', 'true'); // A11Y FIX 2b
+    const nvplay = $('now-view-play');
+    if (nvplay) nvplay.setAttribute('aria-pressed', 'true');
   });
 
   audio.addEventListener('pause', () => {
@@ -2393,8 +2663,13 @@ function bindAudio() {
     const pi = $('play-icon'),  pp = $('pause-icon');
     if (pi) pi.style.display = 'block';
     if (pp) pp.style.display = 'none';
+    const nvpi = $('now-view-play-icon'), nvpp = $('now-view-pause-icon');
+    if (nvpi) nvpi.style.display = 'block';
+    if (nvpp) nvpp.style.display = 'none';
     const bplay = $('btn-play');
     if (bplay) bplay.setAttribute('aria-pressed', 'false'); // A11Y FIX 2b
+    const nvplay = $('now-view-play');
+    if (nvplay) nvplay.setAttribute('aria-pressed', 'false');
 
     /* ── A11Y FIX 3: announce pause ──
        Rollback: remove this one line.
@@ -2438,6 +2713,18 @@ function bindAudio() {
       }
     });
   }
+
+  const nvSeek = $('now-view-seek');
+  if (nvSeek) {
+    nvSeek.addEventListener('mousedown',  () => seekDragging = true);
+    nvSeek.addEventListener('touchstart', () => seekDragging = true, { passive: true });
+    nvSeek.addEventListener('input', () => {
+      if (audio.duration) {
+        audio.currentTime = (nvSeek.value / 1000) * audio.duration;
+        seekbar.value = nvSeek.value;
+      }
+    });
+  }
 }
 
 /* ════════════════════════════════════════════════════════════════════
@@ -2466,6 +2753,13 @@ function bindControls() {
 
   if ($('btn-theme-d')) attachSparkle($('btn-theme-d'));
   if ($('btn-theme'))   attachSparkle($('btn-theme'));
+  // Notes-hint sparkle: ambient from the moment the view opens, not
+  // hover/touch-triggered — it's a one-time "you can do this" cue that
+  // goes away for good once tapped, so it gets manual start/stop instead
+  // of attachSparkle's default hover/touch bindings.
+  if ($('now-view-notes-hint')) {
+    notesHintSparkle = attachSparkle($('now-view-notes-hint'), false);
+  }
 
   document.addEventListener('click', e => {
     if (e.target.closest('#btn-theme') || e.target.closest('#btn-theme-d')) {
@@ -2477,6 +2771,9 @@ function bindControls() {
   $('btn-stop') && $('btn-stop').addEventListener('click', stopPlayback);
   $('btn-prev') && $('btn-prev').addEventListener('click', prevTrack);
   $('btn-next') && $('btn-next').addEventListener('click', nextTrack);
+  $('now-view-play') && $('now-view-play').addEventListener('click', togglePlayPause);
+  $('now-view-prev') && $('now-view-prev').addEventListener('click', prevTrack);
+  $('now-view-next') && $('now-view-next').addEventListener('click', nextTrack);
   $('btn-shuf') && $('btn-shuf').addEventListener('click', () => {
     S.shuffle = !S.shuffle;
     $('btn-shuf').classList.toggle('on', S.shuffle);
@@ -2667,8 +2964,8 @@ function showInfo(t) {
       : (t.artist ? `${t.artist} artwork` : 'Album artwork');
     img.setAttribute('alt', altText);
     img.src = `art.php?f=${t.file}&v=${t.mtime}`;
-    img.onload  = () => { img.style.display = 'block'; ph.style.display = 'none'; };
-    img.onerror = () => { img.style.display = 'none';  ph.style.display = 'flex'; };
+    img.onload  = () => { img.style.display = 'block'; ph.style.display = 'none'; syncNowView(t); };
+    img.onerror = () => { img.style.display = 'none';  ph.style.display = 'flex'; syncNowView(t); };
 
     img.classList.add('art-clickable');
     img.setAttribute('role', 'button');
@@ -2678,6 +2975,7 @@ function showInfo(t) {
     img.setAttribute('alt', '');
     img.style.display = 'none';
     ph.style.display  = 'flex';
+    syncNowView(t);
 
     img.classList.remove('art-clickable');
     img.removeAttribute('role');
@@ -2830,7 +3128,7 @@ function esc(str) {
 /* ════════════════════════════════════════════════════════════════════
    SPARKLE GALAXY
 ════════════════════════════════════════════════════════════════════ */
-function attachSparkle(linkEl) {
+function attachSparkle(linkEl, bindDefaultTriggers = true) {
   const wrap = document.createElement('span');
   wrap.className = 'buy-sparkle-wrap';
   linkEl.parentNode.insertBefore(wrap, linkEl);
@@ -2935,10 +3233,17 @@ function attachSparkle(linkEl) {
     setTimeout(() => { if (!running) ctx.clearRect(0, 0, W(), H); }, 220);
   }
 
-  linkEl.addEventListener('mouseenter', start);
-  linkEl.addEventListener('mouseleave', stop);
-  linkEl.addEventListener('focus',      start);
-  linkEl.addEventListener('blur',       stop);
+  if (bindDefaultTriggers) {
+    linkEl.addEventListener('mouseenter',  start);
+    linkEl.addEventListener('mouseleave',  stop);
+    linkEl.addEventListener('focus',       start);
+    linkEl.addEventListener('blur',        stop);
+    linkEl.addEventListener('touchstart',  start, { passive: true });
+    linkEl.addEventListener('touchend',    stop);
+    linkEl.addEventListener('touchcancel', stop);
+  }
+
+  return { start, stop };
 }
 
 /* ════════════════════════════════════════════════════════════════════
@@ -3077,6 +3382,7 @@ document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
   closeEmbedModal();
   closeArtModal();
+  closeNowView();
 });
 
 function closeEmbedModal() {
@@ -3107,17 +3413,251 @@ function closeArtModal() {
   $('album-art').focus();
 }
 
-$('album-art').addEventListener('click', openArtModal);
+function isMobileView() {
+  return window.matchMedia('(max-width: 600px)').matches;
+}
+
+$('art-wrap').addEventListener('click', () => {
+  isMobileView() ? openNowView() : openArtModal();
+});
 $('album-art').addEventListener('keydown', e => {
   if (e.key === 'Enter' || e.key === ' ') {
     e.preventDefault();
-    openArtModal();
+    isMobileView() ? openNowView() : openArtModal();
   }
 });
 $('art-modal-close').addEventListener('click', closeArtModal);
 $('art-modal').addEventListener('click', e => {
   if (e.target === $('art-modal')) closeArtModal();
 });
+
+/* ══ NOW-PLAYING VIEW ══ */
+let notesHintSparkle   = null;
+let notesHintDismissed = false;
+
+function openNowView() {
+  const t = S.sorted[S.current];
+  if (!t) return;
+  const nv = $('now-view');
+  nv.style.display = 'flex';
+  // Sync after display:flex, not before — the title-scroll measurement
+  // needs real layout width, which a display:none box doesn't have.
+  syncNowView(t);
+  nv.style.transform = 'translateY(100%)';
+  void nv.offsetHeight; // force reflow so the slide-up transition runs
+  nv.style.transform = 'translateY(0)';
+  if (!notesHintDismissed && notesHintSparkle) notesHintSparkle.start();
+}
+
+function closeNowView() {
+  const nv = $('now-view');
+  if (nv.style.display !== 'flex') return;
+  nv.classList.remove('dragging');
+  nv.style.transform = 'translateY(100%)';
+  closeNotesView();
+  if (notesHintSparkle) notesHintSparkle.stop();
+  setTimeout(() => { nv.style.display = 'none'; }, 280);
+}
+
+let nvTitleTimer;
+function setNowViewTitle(text) {
+  clearTimeout(nvTitleTimer);
+  const el   = $('now-view-title');
+  const wrap = $('now-view-title-wrap');
+
+  el.classList.remove('scrolling');
+  el.style.animationDuration = '';
+  el.textContent = text;
+
+  nvTitleTimer = setTimeout(() => {
+    if (el.scrollWidth <= wrap.clientWidth) return; // fits — no need to scroll
+    const padded = text + '    ◆    ';
+    el.textContent = padded + padded;
+    void el.offsetWidth;
+    const halfW = el.scrollWidth / 2;
+    const dur   = Math.max(8, halfW / 28);
+    el.style.animationDuration = `${dur.toFixed(1)}s`;
+    el.classList.add('scrolling');
+  }, 150);
+}
+
+function syncNowView(t) {
+  const img   = $('album-art');
+  const nvImg = $('now-view-art');
+  const nvPh  = $('now-view-art-ph');
+  const nvBg  = $('now-view-bg');
+  if (img.style.display === 'block' && img.src) {
+    nvImg.src = img.src;
+    nvImg.style.display = 'block';
+    nvPh.style.display  = 'none';
+    nvBg.style.backgroundImage = `url("${img.src}")`;
+  } else {
+    nvImg.style.display = 'none';
+    nvPh.style.display  = 'flex';
+    nvBg.style.backgroundImage = 'none';
+  }
+  setNowViewTitle(t.title || decodeURIComponent(t.file).replace(/\.mp3$/i, ''));
+  $('now-view-artist').textContent = t.artist || '—';
+  $('now-view-notes-text').textContent = t.comment || '—';
+}
+
+function openNotesView() {
+  $('now-view-notes').style.transform = 'translateY(0)';
+}
+
+function closeNotesView() {
+  $('now-view-notes').style.transform = 'translateY(100%)';
+}
+
+/* Swipe up from the title/artist area to reveal notes */
+(() => {
+  const meta  = document.querySelector('.now-view-meta');
+  const notes = $('now-view-notes');
+  let startY = 0, dragging = false;
+
+  meta.addEventListener('touchstart', e => {
+    startY = e.touches[0].clientY;
+    dragging = true;
+    notes.classList.add('dragging');
+    // Tease the panel with a little peek-and-bounce so it reads as draggable.
+    notes.classList.remove('peeking');
+    void notes.offsetWidth; // force reflow so re-adding the class replays the animation
+    notes.classList.add('peeking');
+    // The sparkle hint has done its job once it's been touched — gone for good.
+    if (!notesHintDismissed) {
+      notesHintDismissed = true;
+      if (notesHintSparkle) notesHintSparkle.stop();
+    }
+  }, { passive: true });
+
+  meta.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    notes.classList.remove('peeking'); // an actual drag takes over from the teaser
+    const delta = Math.min(0, e.touches[0].clientY - startY); // negative = upward
+    notes.style.transform = `translateY(calc(100% + ${delta}px))`;
+  }, { passive: true });
+
+  meta.addEventListener('touchend', e => {
+    if (!dragging) return;
+    dragging = false;
+    notes.classList.remove('dragging');
+    const endY = (e.changedTouches[0] || {}).clientY ?? startY;
+    if (endY - startY < -80) {
+      openNotesView();
+    } else {
+      closeNotesView();
+    }
+  });
+})();
+
+/* Drag the notes panel's own handle down to close just the notes. Scoped
+   to the handle (not the whole panel) so the text body underneath stays
+   natively scrollable — grabbing the handle anywhere else would have
+   hijacked every scroll gesture into a close-drag instead.
+   stopPropagation keeps this from also bubbling into the whole-view
+   dismiss-swipe below, which would otherwise close the player too. */
+(() => {
+  const notes  = $('now-view-notes');
+  const handle = $('now-view-notes-handle');
+  let startY = 0, dragY = 0, dragging = false;
+
+  handle.addEventListener('touchstart', e => {
+    startY = e.touches[0].clientY;
+    dragging = true;
+    notes.classList.add('dragging');
+    e.stopPropagation();
+  }, { passive: true });
+
+  handle.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    dragY = Math.max(0, e.touches[0].clientY - startY);
+    notes.style.transform = `translateY(${dragY}px)`;
+    e.stopPropagation();
+  }, { passive: true });
+
+  handle.addEventListener('touchend', e => {
+    if (!dragging) return;
+    dragging = false;
+    notes.classList.remove('dragging');
+    if (dragY > 100) {
+      closeNotesView();
+    } else {
+      openNotesView();
+    }
+    e.stopPropagation();
+  });
+})();
+
+/* Swipe down from anywhere else in the notes body to close it too — but
+   only when already scrolled to the top, so it doesn't fight normal
+   text scrolling. (The outer whole-view dismiss-swipe already ignores
+   any touch starting inside #now-view-notes, so this can't fall through
+   to closing the whole player.) */
+(() => {
+  const notes = $('now-view-notes');
+  let startY = 0, dragY = 0, dragging = false;
+
+  notes.addEventListener('touchstart', e => {
+    if (notes.scrollTop > 0) return; // not at the top — let native scroll handle it
+    startY = e.touches[0].clientY;
+    dragging = true;
+  }, { passive: true });
+
+  notes.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    const delta = e.touches[0].clientY - startY;
+    if (delta <= 0) { dragging = false; return; } // scrolling back up — hand off to native scroll
+    notes.classList.add('dragging');
+    dragY = delta;
+    notes.style.transform = `translateY(${dragY}px)`;
+  }, { passive: true });
+
+  notes.addEventListener('touchend', () => {
+    if (!dragging) return;
+    dragging = false;
+    notes.classList.remove('dragging');
+    if (dragY > 100) {
+      closeNotesView();
+    } else {
+      openNotesView();
+    }
+  });
+})();
+
+/* Swipe down anywhere on the view (except the seek slider) to dismiss */
+(() => {
+  const nv = $('now-view');
+  let startY = 0, dragY = 0, dragging = false;
+
+  nv.addEventListener('touchstart', e => {
+    // A touch starting inside the open notes panel should never fall through
+    // to "dismiss the whole player" — the notes panel handles its own close
+    // (via its handle) and its own scrolling; this only guards against a
+    // swipe starting elsewhere in the notes body bubbling up here.
+    if (e.target.closest('input[type="range"]') || e.target.closest('#now-view-notes')) return;
+    startY = e.touches[0].clientY;
+    dragging = true;
+    nv.classList.add('dragging');
+  }, { passive: true });
+
+  nv.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    dragY = Math.max(0, e.touches[0].clientY - startY);
+    nv.style.transform = `translateY(${dragY}px)`;
+  }, { passive: true });
+
+  nv.addEventListener('touchend', () => {
+    if (!dragging) return;
+    dragging = false;
+    nv.classList.remove('dragging');
+    if (dragY > 120) {
+      closeNowView();
+    } else {
+      nv.style.transform = 'translateY(0)';
+    }
+    dragY = 0;
+  });
+})();
 
 /* ════════════════════════════════════════════════════════════════════
    BOOT
