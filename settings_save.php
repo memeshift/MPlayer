@@ -7,8 +7,8 @@
  * │  or "design" (from the Customize modal in index.html). │
  * └──────────────────────────────────────────────────────┘
  *
- * POST section=site    csrf, site_name, icon, email, youtube, instagram,
- *                       soundcloud, rss
+ * POST section=site    csrf, site_name, icon, landing_text, email, youtube,
+ *                       instagram, soundcloud, rss
  * POST section=design  csrf, titlebar_color, controls_dock_color,
  *                       pl_item_color, bg_image, bg_repeat_x, bg_repeat_y,
  *                       bg_align, bg_fixed
@@ -49,6 +49,8 @@ if ($section === 'site') {
         $icon = $settings['icon'];
     }
     $settings['icon'] = $icon;
+
+    $settings['landing_text'] = mb_substr(sanitiseText((string)($_POST['landing_text'] ?? '')), 0, 200);
 
     $email = filter_var(trim((string)($_POST['email'] ?? '')), FILTER_VALIDATE_EMAIL);
     $settings['social'] = [

@@ -58,6 +58,9 @@ function mp_default_site_settings(): array {
         // Favicon path, set by uploading an image in settings.php. Blank
         // means favicon.php serves the bundled default mark.
         'icon' => '',
+        // Shown above the row buttons on the mobile library landing page.
+        // Blank by default so a fresh install shows nothing extra.
+        'landing_text' => '',
         // Blank by default: a fresh install shows no social icons at all
         // (applySocial() in index.html hides an icon whose value is empty).
         'social' => [
@@ -97,6 +100,7 @@ function mp_read_site_settings(): array {
     return [
         'site_name' => is_string($data['site_name'] ?? null) ? $data['site_name'] : $defaults['site_name'],
         'icon'      => is_string($data['icon'] ?? null) ? $data['icon'] : $defaults['icon'],
+        'landing_text' => is_string($data['landing_text'] ?? null) ? $data['landing_text'] : $defaults['landing_text'],
         'social'    => array_merge($defaults['social'], $data['social'] ?? []),
         'design'    => array_merge($defaults['design'], $data['design'] ?? []),
         'featured'  => array_merge($defaults['featured'], is_array($data['featured'] ?? null) ? $data['featured'] : []),

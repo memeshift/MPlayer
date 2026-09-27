@@ -1838,13 +1838,31 @@ input, select, textarea {
     background: var(--pl-bg); color: var(--pl-text);
     font-family: var(--font-ui);
   }
-  :where(#lib) button { font-family: inherit; font-size: 16px; color: inherit; background: none; border: 0; cursor: pointer; text-align: left; }
+  :where(#lib) button { font-family: inherit; font-size: 16px; color: inherit; background: none; border: 0; cursor: pointer; text-align: left; transition: opacity .1s; }
+  :where(#lib) button:active { opacity: .5; }
   #lib button:focus-visible, #lib h1:focus-visible { outline: 2px solid var(--chrome); outline-offset: 2px; }
+  /* Every lib navigation moves focus to the new h1. The browser's
+     focus-visible heuristic is meant to hide the ring for pointer/touch
+     focus and show it for keyboard focus, but it's unreliable here — a
+     swipe's touchend is outside any click event, and even a real click can
+     be a "ghost click" mobile Safari/Firefox fire on the new screen's
+     content after a swipe re-renders under the same finger position.
+     libFocusHeading() suppresses the ring explicitly whenever we don't have
+     positive evidence of real keyboard activation (see lastKeyActivatedButton
+     below), instead of trusting the heuristic.
+     outline: none alone didn't fully suppress it on-device — confirmed via
+     Safari Web Inspector that the real source is a separate, global rule
+     (:focus-visible above, "A11Y FIX 1") setting box-shadow: 0 0 0 4px
+     var(--led-glow) on every focusable element, independent of outline.
+     Suppressing both here. */
+  body.lib-nofocusring #lib h1:focus-visible { outline: none; box-shadow: none; }
   #lib-body { flex: 1; overflow-y: auto; padding: 0 16px 140px; -webkit-overflow-scrolling: touch; }
   #lib-back { width: 44px; height: 44px; margin: 12px 0 0 12px; border-radius: 50%; background: var(--titlebar-bg); color: var(--titlebar-text); font-size: 24px; text-align: center; }
   #lib h1 { margin: 16px 0 12px; font-size: 36px; font-weight: 700; }
+  .lib-note { margin: 0 0 16px; color: var(--sort-text); font-family: var(--font-info-body); font-size: 14.4px; }
   #lib h2 { margin: 28px 0 12px; font-size: 24px; font-weight: 700; }
   .lib-row { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 56px; padding: 6px 0; border-bottom: 1px solid var(--info-key); font-family: var(--font-pl); font-size: 18.4px; }
+  .lib-row:active { opacity: 1; background: var(--pl-sel-bg); }
   .lib-row-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .lib-row-sub { display: block; color: var(--sort-text); font-family: var(--font-info-body); font-size: 14.4px; }
   .lib-chev { color: var(--sort-text); font-size: 22.4px; }
@@ -1859,7 +1877,7 @@ input, select, textarea {
   .lib-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .lib-tile { display: block; min-width: 0; }
   .lib-cover { display: flex; align-items: center; justify-content: center; aspect-ratio: 1; border-radius: 10px; overflow: hidden; background: var(--pl-alt); margin-bottom: 6px; }
-  .lib-t1, .lib-t2 { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lib-t1, .lib-t2 { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.3; min-height: 1.3em; }
   .lib-t1 { font-family: var(--font-pl); font-size: 16px; font-weight: 600; }
   .lib-t2 { color: var(--sort-text); font-family: var(--font-info-body); font-size: 14.4px; }
   .lib-hero { display: block; width: 80vw; margin: 24px auto 20px; text-align: center; }
@@ -3722,7 +3740,7 @@ function closeNotesView() {
 /* ══ MOBILE LIBRARY (landing page) ══
    Screens are functions returning {title, html}; L.stack is the back stack.
    Every tap is handled by one delegated listener via data-* attributes. */
-const L = { featured: { tracks: [], albums: [] }, stack: [] };
+const L = { featured: { tracks: [], albums: [] }, landingText: '', stack: [] };
 const libEl = $('lib'), libBody = $('lib-body'), libNav = $('lib-nav');
 
 const libTitle = t => t.title || decodeURIComponent(t.file).replace(/\.mp3$/i, '');
@@ -3762,7 +3780,8 @@ function libHome() {
   const tracks = S.tracks.filter(t => L.featured.tracks.includes(t.file));
   const row = (go, ico, label) =>
     `<button type="button" class="lib-row" data-go="${go}"><span class="lib-ico" aria-hidden="true">${ico}</span><span class="lib-row-name">${label}</span><span class="lib-chev" aria-hidden="true">›</span></button>`;
-  let html = row('aliases', '\u{1F3A4}︎', 'Aliases') + row('albums', '▢', 'Albums') + row('songs', '♪', 'Songs');
+  let html = (L.landingText ? `<p class="lib-note">${esc(L.landingText)}</p>` : '') +
+    row('aliases', '\u{1F3A4}︎', 'Aliases') + row('albums', '▢', 'Albums') + row('songs', '♪', 'Songs');
   if (albums.length || tracks.length) {
     html += '<h2>Featured</h2><div class="lib-grid">' + albums.map(a => libAlbumTile(a)).join('') + tracks.map(libTrackTile).join('') + '</div>';
   }
@@ -3808,10 +3827,23 @@ function libRender() {
   libMini();
 }
 
-function libPush(fn) {
+function libPush(fn, suppressRing) {
   L.stack.push(fn);
   libRender();
-  libBody.querySelector('h1').focus({ preventScroll: true });
+  libFocusHeading(suppressRing);
+}
+
+/* Moves focus to the new screen's h1 after any lib navigation. suppressRing
+   skips the visible focus-visible ring for pointer/touch-triggered focus
+   (see the CSS comment above #lib h1:focus-visible) — pass true whenever the
+   triggering event wasn't a real keyboard activation. */
+function libFocusHeading(suppressRing) {
+  const h1 = libBody.querySelector('h1');
+  if (suppressRing) {
+    document.body.classList.add('lib-nofocusring');
+    h1.addEventListener('blur', () => document.body.classList.remove('lib-nofocusring'), { once: true });
+  }
+  h1.focus({ preventScroll: true });
 }
 
 function libMini() {
@@ -3822,17 +3854,29 @@ function libMini() {
   $('lib-mini-play').innerHTML = audio.paused ? '▶' : '⏸︎';
 }
 
+// Tracks real keyboard activation (Enter/Space on a button) so the click
+// handler below can tell it apart from a touch/mouse click. Trying to
+// detect touch directly (event.detail, a preceding touchstart) turned out
+// unreliable across engines — this instead only ever confirms the keyboard
+// case positively, and defaults to suppressing the ring for everything else.
+let lastKeyActivatedButton = null;
+document.addEventListener('keydown', e => {
+  lastKeyActivatedButton = (e.key === 'Enter' || e.key === ' ') ? e.target : null;
+}, true);
+
 libEl.addEventListener('click', e => {
   const el = e.target.closest('button');
   if (!el) return;
   const d = el.dataset;
-  if (el.id === 'lib-back') { L.stack.pop(); libRender(); libBody.querySelector('h1').focus({ preventScroll: true }); }
-  else if (d.go)    libPush(libScreens[d.go]);
-  else if (d.alias) libPush(() => ({ title: d.alias, html: S.tracks.filter(t => t.artist === d.alias).map(t => libSongRow(t)).join('') }));
+  const suppressRing = lastKeyActivatedButton !== el;
+  lastKeyActivatedButton = null;
+  if (el.id === 'lib-back') { L.stack.pop(); libRender(); libFocusHeading(suppressRing); }
+  else if (d.go)    libPush(libScreens[d.go], suppressRing);
+  else if (d.alias) libPush(() => ({ title: d.alias, html: S.tracks.filter(t => t.artist === d.alias).map(t => libSongRow(t)).join('') }), suppressRing);
   else if (d.album) libPush(() => {
     const ts = libAlbumTracks(d.album);
     return { title: d.album, hero: true, html: libAlbumHero(d.album) + (ts.length > 1 ? ts.map(t => libSongRow(t, false)).join('') : '') };
-  });
+  }, suppressRing);
   else if (d.play !== undefined) { playTrack(+d.play); openNowView(); }
   else if (d.jump)  $('lib-sec-' + d.jump).scrollIntoView();
   else if (el.id === 'lib-mini-open') openNowView();
@@ -3860,9 +3904,13 @@ audio.addEventListener('pause', libMini);
     const dx = e.changedTouches[0].clientX - startX;
     const dy = e.changedTouches[0].clientY - startY;
     if (dx > 60 && Math.abs(dx) > Math.abs(dy) * 2) {
+      // Without this, the browser still fires a synthetic click at these
+      // coordinates after touchend — landing on whatever button the new
+      // screen just rendered there and triggering an unintended second nav.
+      e.preventDefault();
       L.stack.pop();
       libRender();
-      libBody.querySelector('h1').focus({ preventScroll: true });
+      libFocusHeading(true);
     }
   });
 })();
@@ -4426,6 +4474,7 @@ init();
     applyDesign(cfg.design);
     initCustomizeMode(cfg);
     if (cfg.featured) { L.featured = cfg.featured; if (S.tracks.length) libRender(); }
+    if (cfg.landing_text) { L.landingText = cfg.landing_text; if (S.tracks.length) libRender(); }
   }).catch(function () { initCustomizeMode(null); });
 })();
 </script>
