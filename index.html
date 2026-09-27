@@ -4233,6 +4233,19 @@ init();
     var alt = hsvToHex(hsv.h, hsv.s, altV);
     return contrastRatio(alt, textHex) >= 4.5 ? alt : suggestLegibleShade(alt, [textHex]);
   }
+  /* Transport button icon/text color — always drawn on Accent Color
+     (--btn-bg/--chrome), so it's derived from Accent rather than the fixed
+     per-theme value that only worked for the shipped default accent. Prefers
+     this app's warm dark/light ink shades over harsh black/white, falling
+     back to whichever of those actually passes if neither preset does. */
+  function deriveBtnText(accentHex) {
+    var DARK = '#2a2000', LIGHT = '#f5f0e0';
+    var preferred = relLuminance(accentHex) > 0.4 ? DARK : LIGHT;
+    if (contrastRatio(accentHex, preferred) >= 4.5) return preferred;
+    var other = preferred === DARK ? LIGHT : DARK;
+    if (contrastRatio(accentHex, other) >= 4.5) return other;
+    return suggestLegibleShade(preferred, [accentHex]);
+  }
 
   function applyDesign(design) {
     if (design) lastDesign = design;
@@ -4246,6 +4259,7 @@ init();
         DESIGN_VAR_GROUPS[key].forEach(function (cssVar) { themeRoot.style.removeProperty(cssVar); });
       });
       themeRoot.style.removeProperty('--pl-alt');
+      themeRoot.style.removeProperty('--btn-text');
       return;
     }
 
@@ -4261,6 +4275,14 @@ init();
       themeRoot.style.setProperty('--pl-alt', deriveAltBg(design.bg_color, design.pl_item_color));
     } else {
       themeRoot.style.removeProperty('--pl-alt');
+    }
+    // --btn-text (transport button icon/text color) is derived from Accent
+    // Color rather than a hardcoded per-theme value, so it stays legible on
+    // top of --btn-bg/--chrome, which Accent Color also drives.
+    if (HEX_RE.test(design.titlebar_color)) {
+      themeRoot.style.setProperty('--btn-text', deriveBtnText(design.titlebar_color));
+    } else {
+      themeRoot.style.removeProperty('--btn-text');
     }
     applyBackground(design);
   }
