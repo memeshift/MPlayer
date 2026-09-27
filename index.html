@@ -1862,6 +1862,13 @@ input, select, textarea {
   .lib-t1, .lib-t2 { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .lib-t1 { font-family: var(--font-pl); font-size: 16px; font-weight: 600; }
   .lib-t2 { color: var(--sort-text); font-family: var(--font-info-body); font-size: 14.4px; }
+  .lib-hero { display: block; width: 80vw; margin: 24px auto 20px; text-align: center; }
+  .lib-hero .lib-cover { margin-bottom: 12px; }
+  .lib-hero .lib-t1 { font-size: 20px; }
+  .lib-marq.scroll { text-overflow: clip; text-align: left; }
+  .lib-marq.scroll > span { display: inline-block; animation: lib-marq 10s ease-in-out infinite alternate; }
+  @keyframes lib-marq { 0%, 15% { transform: translateX(0); } 85%, 100% { transform: translateX(calc(-1 * var(--d))); } }
+  .lib-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   #lib-mini { position: absolute; left: 12px; right: 12px; bottom: 16px; display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 30px; background: var(--titlebar-bg); color: var(--titlebar-text); box-shadow: 0 0 0 1px var(--info-key); }
   #lib-mini[hidden] { display: none; }
   #lib-mini .lib-row-sub { color: var(--titlebar-text); opacity: 0.9; }
@@ -3737,9 +3744,16 @@ function libAlbumTile(name) {
     `<span class="lib-cover">${libArt(cover)}</span><span class="lib-t1">${esc(name)}</span><span class="lib-t2">${esc(ts[0].artist || '')}</span></button>`;
 }
 
-function libSongRow(t) {
+function libAlbumHero(name) {
+  const ts = libAlbumTracks(name);
+  const cover = ts.find(t => t.has_art) || ts[0];
+  return `<button type="button" class="lib-hero" data-play="${S.sorted.indexOf(ts[0])}">` +
+    `<span class="lib-cover">${libArt(cover)}</span><span class="lib-t1 lib-marq"><span>${esc(name)}</span></span><span class="lib-t2 lib-marq"><span>${esc(ts[0].artist || '')}</span></span></button>`;
+}
+
+function libSongRow(t, thumb = true) {
   return `<button type="button" class="lib-row" data-play="${S.sorted.indexOf(t)}">` +
-    `<span class="lib-thumb sq">${libArt(t)}</span>` +
+    (thumb ? `<span class="lib-thumb sq">${libArt(t)}</span>` : '') +
     `<span class="lib-row-name">${esc(libTitle(t))}<span class="lib-row-sub">${esc(t.artist || '')}</span></span><span class="lib-chev" aria-hidden="true">›</span></button>`;
 }
 
@@ -3750,7 +3764,7 @@ function libHome() {
     `<button type="button" class="lib-row" data-go="${go}"><span class="lib-ico" aria-hidden="true">${ico}</span><span class="lib-row-name">${label}</span><span class="lib-chev" aria-hidden="true">›</span></button>`;
   let html = row('aliases', '\u{1F3A4}︎', 'Aliases') + row('albums', '▢', 'Albums') + row('songs', '♪', 'Songs');
   if (albums.length || tracks.length) {
-    html += '<h2>Featured</h2><div class="lib-grid">' + albums.map(libAlbumTile).join('') + tracks.map(libTrackTile).join('') + '</div>';
+    html += '<h2>Featured</h2><div class="lib-grid">' + albums.map(a => libAlbumTile(a)).join('') + tracks.map(libTrackTile).join('') + '</div>';
   }
   return { title: 'Library', html };
 }
@@ -3775,16 +3789,22 @@ function libAliasesScreen() {
 
 const libScreens = {
   aliases: libAliasesScreen,
-  albums: () => ({ title: 'Albums', html: '<div class="lib-grid">' + libAlbums().map(libAlbumTile).join('') + '</div>' }),
-  songs:  () => ({ title: 'Songs', html: S.sorted.map(libSongRow).join('') }),
+  albums: () => ({ title: 'Albums', html: '<div class="lib-grid">' + libAlbums().map(a => libAlbumTile(a)).join('') + '</div>' }),
+  songs:  () => ({ title: 'Songs', html: S.sorted.map(t => libSongRow(t)).join('') }),
 };
 
 function libRender() {
   const top = L.stack[L.stack.length - 1] || libHome;
-  const { title, html } = top();
+  const { title, html, hero } = top();
   libNav.innerHTML = L.stack.length ? '<button type="button" id="lib-back" aria-label="Back">‹</button>' : '';
-  libBody.innerHTML = `<h1 tabindex="-1">${esc(title)}</h1>${html}`;
+  libBody.innerHTML = `<h1 tabindex="-1"${hero ? ' class="lib-sr"' : ''}>${esc(title)}</h1>${html}`;
   libBody.scrollTop = 0;
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    libBody.querySelectorAll('.lib-marq').forEach(el => {
+      const d = el.scrollWidth - el.clientWidth;
+      if (d > 0) { el.style.setProperty('--d', d + 'px'); el.classList.add('scroll'); }
+    });
+  }
   libMini();
 }
 
@@ -3808,8 +3828,11 @@ libEl.addEventListener('click', e => {
   const d = el.dataset;
   if (el.id === 'lib-back') { L.stack.pop(); libRender(); libBody.querySelector('h1').focus({ preventScroll: true }); }
   else if (d.go)    libPush(libScreens[d.go]);
-  else if (d.alias) libPush(() => ({ title: d.alias, html: S.tracks.filter(t => t.artist === d.alias).map(libSongRow).join('') }));
-  else if (d.album) libPush(() => ({ title: d.album, html: '<div class="lib-grid">' + libAlbumTracks(d.album).map(libTrackTile).join('') + '</div>' }));
+  else if (d.alias) libPush(() => ({ title: d.alias, html: S.tracks.filter(t => t.artist === d.alias).map(t => libSongRow(t)).join('') }));
+  else if (d.album) libPush(() => {
+    const ts = libAlbumTracks(d.album);
+    return { title: d.album, hero: true, html: libAlbumHero(d.album) + (ts.length > 1 ? ts.map(t => libSongRow(t, false)).join('') : '') };
+  });
   else if (d.play !== undefined) { playTrack(+d.play); openNowView(); }
   else if (d.jump)  $('lib-sec-' + d.jump).scrollIntoView();
   else if (el.id === 'lib-mini-open') openNowView();
