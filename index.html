@@ -25,6 +25,7 @@
   --titlebar-text:   #ffffff;
 
   --disp-bg:         #0d1a0d;
+  --notes-bg:        var(--disp-bg);
   --led:             #14ff14;
   --led-glow:        rgba(20, 255, 20, 0.55);
   --led-dim:         #1a3a1a;
@@ -85,6 +86,7 @@
   --titlebar-text:   #ffffff;
 
   --disp-bg:         #0a141e;
+  --notes-bg:        var(--disp-bg);
   --led:             #007998;
   --led-glow:        rgba(0, 121, 152, 0.6);
   --led-dim:         #0a2a34;
@@ -1092,7 +1094,7 @@ body {
   z-index: 5;
   display: flex;
   flex-direction: column;
-  background: var(--disp-bg);
+  background: var(--notes-bg);
   transform: translateY(100%);
   transition: transform 0.28s ease;
   padding: 12px 24px 24px;
@@ -4225,13 +4227,17 @@ init();
     var scoreWhite = Math.min.apply(null, against.map(function (o) { return contrastRatio('#FFFFFF', o); }));
     return scoreBlack >= scoreWhite ? '#000000' : '#FFFFFF';
   }
-  /* Alternating playlist-row shade — a subtle lightness step off Background,
-     nudged further if that step would make it hard to read Playlist Text. */
-  function deriveAltBg(bgHex, textHex) {
+  /* A surface shade derived from Background — a subtle lightness step, so it
+     still reads as "the same background" rather than a different color —
+     nudged further if that step would make any color in `against` hard to
+     read on it. Shared by --pl-alt (against Playlist Text) and --notes-bg
+     (against Playlist Text and Accent, both drawn on the notes popup). */
+  function deriveSurfaceShade(bgHex, against) {
     var hsv = hexToHsv(bgHex);
     var altV = hsv.v < 0.5 ? Math.min(1, hsv.v + 0.06) : Math.max(0, hsv.v - 0.06);
     var alt = hsvToHex(hsv.h, hsv.s, altV);
-    return contrastRatio(alt, textHex) >= 4.5 ? alt : suggestLegibleShade(alt, [textHex]);
+    var passes = against.every(function (o) { return contrastRatio(alt, o) >= 4.5; });
+    return passes ? alt : suggestLegibleShade(alt, against);
   }
   /* Transport button icon/text color — always drawn on Accent Color
      (--btn-bg/--chrome), so it's derived from Accent rather than the fixed
@@ -4260,6 +4266,7 @@ init();
       });
       themeRoot.style.removeProperty('--pl-alt');
       themeRoot.style.removeProperty('--btn-text');
+      themeRoot.style.removeProperty('--notes-bg');
       return;
     }
 
@@ -4268,13 +4275,19 @@ init();
       if (!val || !HEX_RE.test(val)) return;
       DESIGN_VAR_GROUPS[key].forEach(function (cssVar) { themeRoot.style.setProperty(cssVar, val); });
     });
-    // --pl-alt (alternating playlist row shade) is derived from Background rather
-    // than a hardcoded per-theme value, so it always stays legible against
-    // whatever Playlist Text color is currently set.
+    // --pl-alt (alternating playlist row shade) and --notes-bg (now-playing
+    // notes popup) are derived from Background rather than hardcoded per-theme
+    // values, so they always stay legible against whatever text is drawn on
+    // top of them.
     if (HEX_RE.test(design.bg_color) && HEX_RE.test(design.pl_item_color)) {
-      themeRoot.style.setProperty('--pl-alt', deriveAltBg(design.bg_color, design.pl_item_color));
+      themeRoot.style.setProperty('--pl-alt', deriveSurfaceShade(design.bg_color, [design.pl_item_color]));
     } else {
       themeRoot.style.removeProperty('--pl-alt');
+    }
+    if (HEX_RE.test(design.bg_color) && HEX_RE.test(design.pl_item_color) && HEX_RE.test(design.titlebar_color)) {
+      themeRoot.style.setProperty('--notes-bg', deriveSurfaceShade(design.bg_color, [design.pl_item_color, design.titlebar_color]));
+    } else {
+      themeRoot.style.removeProperty('--notes-bg');
     }
     // --btn-text (transport button icon/text color) is derived from Accent
     // Color rather than a hardcoded per-theme value, so it stays legible on
