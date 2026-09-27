@@ -4009,8 +4009,12 @@ init();
   min-width: 44px; min-height: 44px;
 }
 #mp-customize-modal .mp-close-btn:focus-visible { outline: 3px solid #707070; outline-offset: 2px; }
-#mp-customize-modal .mp-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
-#mp-customize-modal .mp-body-intro { margin: 0; font-size: 14px; color: #c8b86a; }
+#mp-customize-modal .mp-body { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+.mp-section { display: flex; flex-direction: column; gap: 16px; }
+.mp-section-title {
+  margin: 0; font-family: 'Lora', Georgia, serif; font-size: 16px;
+  border-bottom: 1px solid #554e30; padding-bottom: 8px;
+}
 
 /* Two-column design area: wheel left, color fields right — mirrors reference/reference-UI-dialog-widget.jpg */
 .mp-design-cols { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
@@ -4209,7 +4213,7 @@ init();
       '<div id="mp-customize-modal" role="dialog" aria-modal="true" aria-labelledby="mp-customize-title">'
       + '<header><h2 id="mp-customize-title">Customize</h2><button type="button" class="mp-close-btn" id="mp-customize-close" aria-label="Close">×</button></header>'
       + '<div class="mp-body">'
-      + '<p class="mp-body-intro">Customize your player and preview your changes live before saving.</p>'
+      + '<section class="mp-section"><h3 class="mp-section-title">Colors</h3>'
       + '<div class="mp-design-cols">'
       +   '<div id="mp-wheel"><div id="mp-wheel-ring" tabindex="0" role="slider" aria-label="Hue" aria-valuemin="0" aria-valuemax="360" aria-valuenow="0">'
       +     '<div class="mp-wheel-marker" id="mp-wheel-hue-marker"></div>'
@@ -4225,6 +4229,8 @@ init();
       + '</div>'
       + '<div class="mp-randomize-row"><button type="button" class="mp-randomize-btn" id="mp-customize-randomize">🎲 Randomize Colors</button></div>'
       + '<div class="mp-restore-link"><a href="#" id="mp-customize-restore">restore defaults</a></div>'
+      + '</section>'
+      + '<section class="mp-section"><h3 class="mp-section-title">Background Image</h3>'
       + '<div class="mp-row" id="mp-bg-current-row" hidden><span id="mp-bg-current">Background Image: <span id="mp-bg-filename"></span><a href="#" id="mp-bg-delete">delete</a></span></div>'
       + '<div class="mp-row"><label for="mp-bg-file">Background Image</label><input type="file" id="mp-bg-file" accept="image/jpeg,image/png,image/gif,image/webp"></div>'
       + '<div class="mp-row"><label for="mp-bg-size">Background Behavior</label><select id="mp-bg-size"><option value="contain">Default</option><option value="cover">Cover</option><option value="auto">Auto</option></select></div>'
@@ -4232,6 +4238,7 @@ init();
       + '<div class="mp-row"><label for="mp-bg-align">Align</label><select id="mp-bg-align"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></div>'
       + '<div class="mp-row"><label><input type="checkbox" id="mp-bg-fixed"> Fixed position</label></div>'
       + '<div class="mp-error" id="mp-customize-error" hidden></div>'
+      + '</section>'
       + '</div>'
       + '<footer><span class="mp-footer-spacer"></span><button type="button" class="mp-btn mp-btn-cancel" id="mp-customize-cancel">Cancel</button><button type="button" class="mp-btn mp-btn-save" id="mp-customize-save">Save</button></footer>'
       + '</div>';
