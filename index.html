@@ -4160,6 +4160,80 @@ init();
 
   var lastDesign = null;
 
+  /* ── hex <-> hsv, shared by the wheel, the hex text inputs, and the derived
+     vars below — hoisted out of buildCustomizeModal() so applyDesign() can
+     use them too on every page load, not just while the admin modal is open. */
+  function hexToRgb(hex) {
+    var n = parseInt(hex.slice(1), 16);
+    return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+  }
+  function rgbToHex(r, g, b) {
+    return '#' + [r, g, b].map(function (c) {
+      return Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, '0');
+    }).join('').toUpperCase();
+  }
+  function rgbToHsv(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    var max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+    var h = 0;
+    if (d !== 0) {
+      if (max === r) h = 60 * (((g - b) / d) % 6);
+      else if (max === g) h = 60 * ((b - r) / d + 2);
+      else h = 60 * ((r - g) / d + 4);
+    }
+    if (h < 0) h += 360;
+    return { h: h, s: max === 0 ? 0 : d / max, v: max };
+  }
+  function hsvToRgb(h, s, v) {
+    var c = v * s, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = v - c, r, g, b;
+    if (h < 60) { r = c; g = x; b = 0; } else if (h < 120) { r = x; g = c; b = 0; }
+    else if (h < 180) { r = 0; g = c; b = x; } else if (h < 240) { r = 0; g = x; b = c; }
+    else if (h < 300) { r = x; g = 0; b = c; } else { r = c; g = 0; b = x; }
+    return { r: (r + m) * 255, g: (g + m) * 255, b: (b + m) * 255 };
+  }
+  function hexToHsv(hex) { var rgb = hexToRgb(hex); return rgbToHsv(rgb.r, rgb.g, rgb.b); }
+  function hsvToHex(h, s, v) { var rgb = hsvToRgb(h, s, v); return rgbToHex(rgb.r, rgb.g, rgb.b); }
+
+  /* ── WCAG contrast (relative luminance, per spec) ── */
+  function srgbChannelToLinear(c) { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
+  function relLuminance(hex) {
+    var rgb = hexToRgb(hex);
+    return 0.2126 * srgbChannelToLinear(rgb.r) + 0.7152 * srgbChannelToLinear(rgb.g) + 0.0722 * srgbChannelToLinear(rgb.b);
+  }
+  function contrastRatio(hexA, hexB) {
+    var la = relLuminance(hexA), lb = relLuminance(hexB);
+    return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+  }
+  /* Nearest shade at the same hue/saturation as `hex` that clears 4.5:1 against
+     every color in `against`, searching outward by lightness. Falls back to
+     whichever of pure black/white scores higher in the rare case nothing at
+     that hue/sat works (the two `against` colors themselves span almost the
+     full luminance range). */
+  function suggestLegibleShade(hex, against) {
+    var hsv = hexToHsv(hex);
+    function passes(candidate) { return against.every(function (o) { return contrastRatio(candidate, o) >= 4.5; }); }
+    for (var step = 0; step <= 50; step++) {
+      var deltas = step === 0 ? [0] : [step * 0.02, -step * 0.02];
+      for (var i = 0; i < deltas.length; i++) {
+        var v = hsv.v + deltas[i];
+        if (v < 0 || v > 1) continue;
+        var candidate = hsvToHex(hsv.h, hsv.s, v);
+        if (passes(candidate)) return candidate;
+      }
+    }
+    var scoreBlack = Math.min.apply(null, against.map(function (o) { return contrastRatio('#000000', o); }));
+    var scoreWhite = Math.min.apply(null, against.map(function (o) { return contrastRatio('#FFFFFF', o); }));
+    return scoreBlack >= scoreWhite ? '#000000' : '#FFFFFF';
+  }
+  /* Alternating playlist-row shade — a subtle lightness step off Background,
+     nudged further if that step would make it hard to read Playlist Text. */
+  function deriveAltBg(bgHex, textHex) {
+    var hsv = hexToHsv(bgHex);
+    var altV = hsv.v < 0.5 ? Math.min(1, hsv.v + 0.06) : Math.max(0, hsv.v - 0.06);
+    var alt = hsvToHex(hsv.h, hsv.s, altV);
+    return contrastRatio(alt, textHex) >= 4.5 ? alt : suggestLegibleShade(alt, [textHex]);
+  }
+
   function applyDesign(design) {
     if (design) lastDesign = design;
     else design = lastDesign;
@@ -4171,6 +4245,7 @@ init();
       Object.keys(DESIGN_VAR_GROUPS).forEach(function (key) {
         DESIGN_VAR_GROUPS[key].forEach(function (cssVar) { themeRoot.style.removeProperty(cssVar); });
       });
+      themeRoot.style.removeProperty('--pl-alt');
       return;
     }
 
@@ -4179,6 +4254,14 @@ init();
       if (!val || !HEX_RE.test(val)) return;
       DESIGN_VAR_GROUPS[key].forEach(function (cssVar) { themeRoot.style.setProperty(cssVar, val); });
     });
+    // --pl-alt (alternating playlist row shade) is derived from Background rather
+    // than a hardcoded per-theme value, so it always stays legible against
+    // whatever Playlist Text color is currently set.
+    if (HEX_RE.test(design.bg_color) && HEX_RE.test(design.pl_item_color)) {
+      themeRoot.style.setProperty('--pl-alt', deriveAltBg(design.bg_color, design.pl_item_color));
+    } else {
+      themeRoot.style.removeProperty('--pl-alt');
+    }
     applyBackground(design);
   }
   window.MP_reapplyDesign = applyDesign;
@@ -4327,48 +4410,8 @@ init();
     var pendingBgDataUrl = null;
     var pendingBgDeleted = false;
 
-    /* ── hex <-> hsv, shared by the wheel and the hex text inputs ── */
-    function hexToRgb(hex) {
-      var n = parseInt(hex.slice(1), 16);
-      return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
-    }
-    function rgbToHex(r, g, b) {
-      return '#' + [r, g, b].map(function (c) {
-        return Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, '0');
-      }).join('').toUpperCase();
-    }
-    function rgbToHsv(r, g, b) {
-      r /= 255; g /= 255; b /= 255;
-      var max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
-      var h = 0;
-      if (d !== 0) {
-        if (max === r) h = 60 * (((g - b) / d) % 6);
-        else if (max === g) h = 60 * ((b - r) / d + 2);
-        else h = 60 * ((r - g) / d + 4);
-      }
-      if (h < 0) h += 360;
-      return { h: h, s: max === 0 ? 0 : d / max, v: max };
-    }
-    function hsvToRgb(h, s, v) {
-      var c = v * s, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = v - c, r, g, b;
-      if (h < 60) { r = c; g = x; b = 0; } else if (h < 120) { r = x; g = c; b = 0; }
-      else if (h < 180) { r = 0; g = c; b = x; } else if (h < 240) { r = 0; g = x; b = c; }
-      else if (h < 300) { r = x; g = 0; b = c; } else { r = c; g = 0; b = x; }
-      return { r: (r + m) * 255, g: (g + m) * 255, b: (b + m) * 255 };
-    }
-    function hexToHsv(hex) { var rgb = hexToRgb(hex); return rgbToHsv(rgb.r, rgb.g, rgb.b); }
-    function hsvToHex(h, s, v) { var rgb = hsvToRgb(h, s, v); return rgbToHex(rgb.r, rgb.g, rgb.b); }
-
-    /* ── WCAG contrast (relative luminance, per spec) ── */
-    function srgbChannelToLinear(c) { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
-    function relLuminance(hex) {
-      var rgb = hexToRgb(hex);
-      return 0.2126 * srgbChannelToLinear(rgb.r) + 0.7152 * srgbChannelToLinear(rgb.g) + 0.0722 * srgbChannelToLinear(rgb.b);
-    }
-    function contrastRatio(hexA, hexB) {
-      var la = relLuminance(hexA), lb = relLuminance(hexB);
-      return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
-    }
+    /* hexToRgb, hsvToHex, contrastRatio, suggestLegibleShade, etc. are defined
+       at the top of this IIFE, shared with applyDesign()'s --pl-alt derivation. */
     /* Random rejection sampling until every pair that's actually drawn text-on-background
        together in the live UI clears WCAG AA (4.5:1):
          (a,b) Accent text on Dock background — the selected/now-playing row
@@ -4399,25 +4442,6 @@ init();
     /* ── Background legibility: warn + suggest a nearby passing shade ──
        Only nudges Background itself (never the text colors), per the same
        "background sits under Accent or Playlist Text" pairing as above. */
-    function suggestLegibleBg(bgHex, againstHexes) {
-      var hsv = hexToHsv(bgHex);
-      function passes(hex) { return againstHexes.every(function (o) { return contrastRatio(hex, o) >= 4.5; }); }
-      for (var step = 0; step <= 50; step++) {
-        var deltas = step === 0 ? [0] : [step * 0.02, -step * 0.02];
-        for (var i = 0; i < deltas.length; i++) {
-          var v = hsv.v + deltas[i];
-          if (v < 0 || v > 1) continue;
-          var hex = hsvToHex(hsv.h, hsv.s, v);
-          if (passes(hex)) return hex;
-        }
-      }
-      // ponytail: only reachable if the two text colors themselves already span
-      // almost the full luminance range, leaving no lightness that clears both —
-      // fall back to whichever pure black/white scores higher against them.
-      var scoreBlack = Math.min.apply(null, againstHexes.map(function (o) { return contrastRatio('#000000', o); }));
-      var scoreWhite = Math.min.apply(null, againstHexes.map(function (o) { return contrastRatio('#FFFFFF', o); }));
-      return scoreBlack >= scoreWhite ? '#000000' : '#FFFFFF';
-    }
     var pendingBgSuggestion = null;
     function checkBgLegibility() {
       var bg = els.bgColor.value;
@@ -4425,7 +4449,7 @@ init();
       var against = [els.titlebar.value, els.pl.value].filter(function (h) { return HEX_RE.test(h); });
       var failing = against.some(function (h) { return contrastRatio(bg, h) < 4.5; });
       if (!failing) { els.bgWarning.hidden = true; pendingBgSuggestion = null; return; }
-      pendingBgSuggestion = suggestLegibleBg(bg, against);
+      pendingBgSuggestion = suggestLegibleShade(bg, against);
       els.bgWarningText.textContent = 'Hard to read against Accent Color / Playlist Text.';
       els.bgWarningFix.textContent = 'Use ' + pendingBgSuggestion + ' instead';
       els.bgWarningFix.style.background = pendingBgSuggestion;
