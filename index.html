@@ -1827,6 +1827,47 @@ input, select, textarea {
   }
 }
 
+/* ════════════════════════════════════════════════════════════════════════
+   MOBILE LIBRARY (landing page) — #lib in the markup, "MOBILE LIBRARY" in JS
+════════════════════════════════════════════════════════════════════════ */
+#lib { display: none; }
+@media (max-width: 600px) {
+  #lib.on {
+    position: fixed; inset: 0; z-index: 200;
+    display: flex; flex-direction: column;
+    background: var(--pl-bg); color: var(--pl-text);
+    font-family: var(--font-ui);
+  }
+  :where(#lib) button { font-family: inherit; font-size: 16px; color: inherit; background: none; border: 0; cursor: pointer; text-align: left; }
+  #lib button:focus-visible, #lib h1:focus-visible { outline: 2px solid var(--chrome); outline-offset: 2px; }
+  #lib-body { flex: 1; overflow-y: auto; padding: 0 16px 140px; -webkit-overflow-scrolling: touch; }
+  #lib-back { width: 44px; height: 44px; margin: 12px 0 0 12px; border-radius: 50%; background: var(--titlebar-bg); color: var(--titlebar-text); font-size: 24px; text-align: center; }
+  #lib h1 { margin: 16px 0 12px; font-size: 36px; font-weight: 700; }
+  #lib h2 { margin: 28px 0 12px; font-size: 24px; font-weight: 700; }
+  .lib-row { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 56px; padding: 6px 0; border-bottom: 1px solid var(--info-key); font-family: var(--font-pl); font-size: 18.4px; }
+  .lib-row-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lib-row-sub { display: block; color: var(--sort-text); font-family: var(--font-info-body); font-size: 14.4px; }
+  .lib-chev { color: var(--sort-text); font-size: 22.4px; }
+  .lib-ico { width: 32px; text-align: center; color: var(--chrome); font-size: 24px; }
+  .lib-thumb { flex: none; width: 52px; height: 52px; border-radius: 50%; overflow: hidden; background: var(--pl-alt); display: flex; align-items: center; justify-content: center; }
+  .lib-thumb.sq { border-radius: 6px; }
+  .lib-thumb img, .lib-cover img { width: 100%; height: 100%; object-fit: cover; }
+  .lib-ph { color: var(--sort-text); font-size: 22.4px; }
+  .lib-letter { margin: 20px 0 4px; color: var(--chrome); font-size: 17.6px; font-weight: 700; }
+  .lib-index { position: absolute; right: 2px; top: 110px; bottom: 140px; display: flex; flex-direction: column; justify-content: space-around; }
+  #lib .lib-index button { padding: 0 6px; min-height: 22px; color: var(--chrome); font-size: 12px; font-weight: 700; }
+  .lib-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .lib-tile { display: block; min-width: 0; }
+  .lib-cover { display: flex; align-items: center; justify-content: center; aspect-ratio: 1; border-radius: 10px; overflow: hidden; background: var(--pl-alt); margin-bottom: 6px; }
+  .lib-t1, .lib-t2 { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lib-t1 { font-family: var(--font-pl); font-size: 16px; font-weight: 600; }
+  .lib-t2 { color: var(--sort-text); font-family: var(--font-info-body); font-size: 14.4px; }
+  #lib-mini { position: absolute; left: 12px; right: 12px; bottom: 16px; display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 30px; background: var(--titlebar-bg); color: var(--titlebar-text); box-shadow: 0 0 0 1px var(--info-key); }
+  #lib-mini[hidden] { display: none; }
+  #lib-mini .lib-row-sub { color: var(--titlebar-text); opacity: 0.9; }
+  #lib-mini-open { flex: 1; display: flex; align-items: center; gap: 12px; min-width: 0; min-height: 44px; }
+  #lib-mini-play { width: 44px; height: 44px; font-size: 22.4px; text-align: center; }
+}
 </style>
 
 </head>
@@ -2165,6 +2206,17 @@ input, select, textarea {
     </div>
   </div>
 
+
+  <!-- ══ MOBILE LIBRARY (landing page, ≤600px) ══ -->
+  <div id="lib" aria-label="Library">
+    <div id="lib-nav"></div>
+    <div id="lib-body"></div>
+    <div id="lib-mini" hidden>
+      <button type="button" id="lib-mini-open" aria-label="Open now playing"></button>
+      <button type="button" id="lib-mini-play" aria-label="Play or pause">&#9654;</button>
+    </div>
+  </div>
+
 </div><!-- /app -->
 
 <audio id="audio" preload="none" playsinline x-webkit-airplay="allow"
@@ -2244,6 +2296,7 @@ async function init() {
 
     S.tracks = data;
     S.sorted = [...data];
+    libInit(!!urlParam);
 
     $('pl-status').style.display = 'none';
     renderPlaylist();
@@ -3659,6 +3712,117 @@ function closeNotesView() {
   });
 })();
 
+/* ══ MOBILE LIBRARY (landing page) ══
+   Screens are functions returning {title, html}; L.stack is the back stack.
+   Every tap is handled by one delegated listener via data-* attributes. */
+const L = { featured: { tracks: [], albums: [] }, stack: [] };
+const libEl = $('lib'), libBody = $('lib-body'), libNav = $('lib-nav');
+
+const libTitle = t => t.title || decodeURIComponent(t.file).replace(/\.mp3$/i, '');
+const libArt   = t => t.has_art ? `<img src="art.php?f=${t.file}&v=${t.mtime}" alt="" loading="lazy">` : '<span class="lib-ph" aria-hidden="true">♪</span>';
+const libByTrack = (a, b) => (parseInt(a.track, 10) || 0) - (parseInt(b.track, 10) || 0);
+const libAlbums  = () => [...new Set(S.tracks.map(t => t.album).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+const libAliases = () => [...new Set(S.tracks.map(t => t.artist).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+const libAlbumTracks = name => S.tracks.filter(t => t.album === name).sort(libByTrack);
+
+function libTrackTile(t) {
+  return `<button type="button" class="lib-tile" data-play="${S.sorted.indexOf(t)}">` +
+    `<span class="lib-cover">${libArt(t)}</span><span class="lib-t1">${esc(libTitle(t))}</span><span class="lib-t2">${esc(t.artist || '')}</span></button>`;
+}
+
+function libAlbumTile(name) {
+  const ts = libAlbumTracks(name);
+  const cover = ts.find(t => t.has_art) || ts[0];
+  return `<button type="button" class="lib-tile" data-album="${esc(name)}">` +
+    `<span class="lib-cover">${libArt(cover)}</span><span class="lib-t1">${esc(name)}</span><span class="lib-t2">${esc(ts[0].artist || '')}</span></button>`;
+}
+
+function libSongRow(t) {
+  return `<button type="button" class="lib-row" data-play="${S.sorted.indexOf(t)}">` +
+    `<span class="lib-thumb sq">${libArt(t)}</span>` +
+    `<span class="lib-row-name">${esc(libTitle(t))}<span class="lib-row-sub">${esc(t.artist || '')}</span></span><span class="lib-chev" aria-hidden="true">›</span></button>`;
+}
+
+function libHome() {
+  const albums = L.featured.albums.filter(a => libAlbumTracks(a).length);
+  const tracks = S.tracks.filter(t => L.featured.tracks.includes(t.file));
+  const row = (go, ico, label) =>
+    `<button type="button" class="lib-row" data-go="${go}"><span class="lib-ico" aria-hidden="true">${ico}</span><span class="lib-row-name">${label}</span><span class="lib-chev" aria-hidden="true">›</span></button>`;
+  let html = row('aliases', '\u{1F3A4}︎', 'Aliases') + row('albums', '▢', 'Albums') + row('songs', '♪', 'Songs');
+  if (albums.length || tracks.length) {
+    html += '<h2>Featured</h2><div class="lib-grid">' + albums.map(libAlbumTile).join('') + tracks.map(libTrackTile).join('') + '</div>';
+  }
+  return { title: 'Library', html };
+}
+
+function libAliasesScreen() {
+  const groups = {};
+  libAliases().forEach(a => { const k = /[a-z]/i.test(a[0]) ? a[0].toUpperCase() : '#'; (groups[k] = groups[k] || []).push(a); });
+  const keys = Object.keys(groups).sort();
+  let html = '';
+  keys.forEach(k => {
+    html += `<div class="lib-letter" id="lib-sec-${k === '#' ? 'num' : k}" aria-hidden="true">${k}</div>`;
+    groups[k].forEach(a => {
+      const t = S.tracks.find(x => x.artist === a && x.has_art);
+      html += `<button type="button" class="lib-row" data-alias="${esc(a)}"><span class="lib-thumb">${t ? libArt(t) : '<span class="lib-ph" aria-hidden="true">♪</span>'}</span>` +
+        `<span class="lib-row-name">${esc(a)}</span><span class="lib-chev" aria-hidden="true">›</span></button>`;
+    });
+  });
+  html += '<nav class="lib-index" aria-label="Jump to letter">' +
+    keys.map(k => `<button type="button" data-jump="${k === '#' ? 'num' : k}">${k}</button>`).join('') + '</nav>';
+  return { title: 'Aliases', html };
+}
+
+const libScreens = {
+  aliases: libAliasesScreen,
+  albums: () => ({ title: 'Albums', html: '<div class="lib-grid">' + libAlbums().map(libAlbumTile).join('') + '</div>' }),
+  songs:  () => ({ title: 'Songs', html: S.sorted.map(libSongRow).join('') }),
+};
+
+function libRender() {
+  const top = L.stack[L.stack.length - 1] || libHome;
+  const { title, html } = top();
+  libNav.innerHTML = L.stack.length ? '<button type="button" id="lib-back" aria-label="Back">‹</button>' : '';
+  libBody.innerHTML = `<h1 tabindex="-1">${esc(title)}</h1>${html}`;
+  libBody.scrollTop = 0;
+  libMini();
+}
+
+function libPush(fn) {
+  L.stack.push(fn);
+  libRender();
+  libBody.querySelector('h1').focus({ preventScroll: true });
+}
+
+function libMini() {
+  const t = S.sorted[S.current];
+  $('lib-mini').hidden = !t;
+  if (!t) return;
+  $('lib-mini-open').innerHTML = `<span class="lib-thumb sq">${libArt(t)}</span><span class="lib-row-name">${esc(libTitle(t))}<span class="lib-row-sub">${esc(t.artist || '')}</span></span>`;
+  $('lib-mini-play').innerHTML = audio.paused ? '▶' : '⏸︎';
+}
+
+libEl.addEventListener('click', e => {
+  const el = e.target.closest('button');
+  if (!el) return;
+  const d = el.dataset;
+  if (el.id === 'lib-back') { L.stack.pop(); libRender(); libBody.querySelector('h1').focus({ preventScroll: true }); }
+  else if (d.go)    libPush(libScreens[d.go]);
+  else if (d.alias) libPush(() => ({ title: d.alias, html: S.tracks.filter(t => t.artist === d.alias).map(libSongRow).join('') }));
+  else if (d.album) libPush(() => ({ title: d.album, html: '<div class="lib-grid">' + libAlbumTracks(d.album).map(libTrackTile).join('') + '</div>' }));
+  else if (d.play !== undefined) { playTrack(+d.play); openNowView(); }
+  else if (d.jump)  $('lib-sec-' + d.jump).scrollIntoView();
+  else if (el.id === 'lib-mini-open') openNowView();
+  else if (el.id === 'lib-mini-play') togglePlayPause();
+});
+audio.addEventListener('play', libMini);
+audio.addEventListener('pause', libMini);
+
+function libInit(skip) {
+  if (!skip) libEl.classList.add('on');
+  libRender();
+}
+
 /* ════════════════════════════════════════════════════════════════════
    BOOT
 ════════════════════════════════════════════════════════════════════ */
@@ -4212,6 +4376,7 @@ init();
     applySocial(cfg.social);
     applyDesign(cfg.design);
     initCustomizeMode(cfg);
+    if (cfg.featured) { L.featured = cfg.featured; if (S.tracks.length) libRender(); }
   }).catch(function () { initCustomizeMode(null); });
 })();
 </script>

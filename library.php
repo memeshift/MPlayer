@@ -141,6 +141,8 @@ body.select-mode .list-actions { position: sticky; top: 0; z-index: 10; backgrou
       <div class="field"><label>Buy link<input type="url" name="buy_url" maxlength="500" placeholder="https://"></label></div>
       <div class="field"><label>More-info link<input type="url" name="info_url" maxlength="500" placeholder="https://"></label></div>
       <div class="field"><label class="checkbox-field"><input type="checkbox" name="download_enabled"> Allow visitors to download this track</label></div>
+      <div class="field"><label class="checkbox-field"><input type="checkbox" name="feature_track"> Feature this track on the landing page</label></div>
+      <div class="field"><label class="checkbox-field"><input type="checkbox" name="feature_album"> Feature this track's album on the landing page</label></div>
       <div class="row-actions">
         <button type="button" class="delete-btn">Delete track</button>
         <button type="submit" class="save-btn">Save changes</button>
@@ -225,6 +227,8 @@ body.select-mode .list-actions { position: sticky; top: 0; z-index: 10; backgrou
     editForm.querySelector('[name=buy_url]').value = t.buy_url || '';
     editForm.querySelector('[name=info_url]').value = t.info_url || '';
     editForm.querySelector('[name=download_enabled]').checked = !!t.download_enabled;
+    editForm.querySelector('[name=feature_track]').checked = !!t.feature_track;
+    editForm.querySelector('[name=feature_album]').checked = !!t.feature_album;
 
     const editArt = editForm.querySelector('.edit-art-preview');
     const editPreviewWrap = editForm.querySelector('.art-preview-wrap');

@@ -67,6 +67,9 @@ function mp_default_site_settings(): array {
             'soundcloud' => '',
             'rss'        => '',
         ],
+        // Filenames (URL-encoded, as scan.php reports them) and album names
+        // shown under "Featured" on the mobile landing page.
+        'featured' => ['tracks' => [], 'albums' => []],
         'design' => [
             'titlebar_color'     => '#FAC946',
             'controls_dock_color'=> '#007998',
@@ -96,6 +99,7 @@ function mp_read_site_settings(): array {
         'icon'      => is_string($data['icon'] ?? null) ? $data['icon'] : $defaults['icon'],
         'social'    => array_merge($defaults['social'], $data['social'] ?? []),
         'design'    => array_merge($defaults['design'], $data['design'] ?? []),
+        'featured'  => array_merge($defaults['featured'], is_array($data['featured'] ?? null) ? $data['featured'] : []),
     ];
 }
 

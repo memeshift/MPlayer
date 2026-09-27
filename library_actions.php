@@ -10,7 +10,8 @@
  *
  * GET  ?action=list
  * POST action=edit    file, title, artist, album, year, track, comment,
- *                      buy_url, info_url, download_enabled=1|0, csrf, keep_art=1|0, optional art
+ *                      buy_url, info_url, download_enabled=1|0, feature_track=1|0,
+ *                      feature_album=1|0, csrf, keep_art=1|0, optional art
  * POST action=delete   file, csrf
  */
 
@@ -58,6 +59,7 @@ if ($action === 'list') {
     $files = array_merge($files, $filesUpper);
     sort($files);
 
+    $featured = mp_read_site_settings()['featured'];
     $tracks = [];
     foreach ($files as $filepath) {
         $real = realpath($filepath);
@@ -71,6 +73,8 @@ if ($action === 'list') {
         $tags['file'] = rawurlencode($filename);
         $tags['filesize'] = filesize($real) ?: 0;
         $tags['mtime']    = filemtime($real) ?: 0;
+        $tags['feature_track'] = in_array($tags['file'], $featured['tracks'], true);
+        $tags['feature_album'] = $tags['album'] !== '' && in_array($tags['album'], $featured['albums'], true);
         $tracks[] = $tags;
     }
 
@@ -143,6 +147,19 @@ if ($action === 'edit') {
         echo json_encode(['error' => 'Could not write tags to the file.']);
         exit;
     }
+
+    // Featured flags live in the settings JSON, not the MP3 — see auth.php.
+    // ponytail: albums are matched by name, so renaming a featured album
+    // leaves a stale entry that matches nothing; add cleanup if that bites.
+    $settings = mp_read_site_settings();
+    $fileKey = rawurlencode(basename($path));
+    $settings['featured']['tracks'] = array_values(array_diff($settings['featured']['tracks'], [$fileKey]));
+    if (!empty($_POST['feature_track'])) $settings['featured']['tracks'][] = $fileKey;
+    if ($tags['album'] !== '') {
+        $settings['featured']['albums'] = array_values(array_diff($settings['featured']['albums'], [$tags['album']]));
+        if (!empty($_POST['feature_album'])) $settings['featured']['albums'][] = $tags['album'];
+    }
+    mp_write_site_settings($settings);
 
     mp_log_event('library_edited:' . basename($path));
     echo json_encode(['ok' => true]);
