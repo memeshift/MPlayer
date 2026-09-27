@@ -4017,6 +4017,8 @@ init();
 .mp-color-fields { display: flex; flex-direction: column; gap: 10px; flex: 1; min-width: 220px; }
 .mp-row { display: flex; align-items: center; justify-content: flex-end; gap: 10px; text-align: right; flex-wrap: wrap; }
 .mp-row > label:first-child { font-family: 'Lora', Georgia, serif; font-size: 15px; }
+.mp-color-label { display: flex; flex-direction: column; align-items: flex-end; }
+.mp-color-hint { font-size: 11px; color: #96895c; margin-top: 2px; }
 .mp-swatch-input { display: flex; align-items: stretch; }
 .mp-swatch { width: 2.5em; border: 1px solid #554e30; border-radius: 4px 0 0 4px; }
 .mp-swatch-input input[type=text] {
@@ -4197,9 +4199,9 @@ init();
       +     '</div>'
       +   '</div></div>'
       +   '<div class="mp-color-fields">'
-      +     '<div class="mp-row"><label for="mp-color-titlebar">Main Title Bar:</label><span class="mp-swatch-input"><span class="mp-swatch" id="mp-color-titlebar-swatch"></span><input type="text" id="mp-color-titlebar"></span></div>'
-      +     '<div class="mp-row"><label for="mp-color-dock">Accent Controls Dock:</label><span class="mp-swatch-input"><span class="mp-swatch" id="mp-color-dock-swatch"></span><input type="text" id="mp-color-dock"></span></div>'
-      +     '<div class="mp-row"><label for="mp-color-pl">Playlist Items:</label><span class="mp-swatch-input"><span class="mp-swatch" id="mp-color-pl-swatch"></span><input type="text" id="mp-color-pl"></span></div>'
+      +     '<div class="mp-row"><span class="mp-color-label"><label for="mp-color-titlebar">Accent Color:</label><small class="mp-color-hint">Buttons, sliders, and the now-playing highlight</small></span><span class="mp-swatch-input"><span class="mp-swatch" id="mp-color-titlebar-swatch"></span><input type="text" id="mp-color-titlebar"></span></div>'
+      +     '<div class="mp-row"><span class="mp-color-label"><label for="mp-color-dock">Title Bar &amp; Highlights:</label><small class="mp-color-hint">Title bar background, selected track, and active controls</small></span><span class="mp-swatch-input"><span class="mp-swatch" id="mp-color-dock-swatch"></span><input type="text" id="mp-color-dock"></span></div>'
+      +     '<div class="mp-row"><span class="mp-color-label"><label for="mp-color-pl">Playlist Text:</label><small class="mp-color-hint">Track names and info in the playlist</small></span><span class="mp-swatch-input"><span class="mp-swatch" id="mp-color-pl-swatch"></span><input type="text" id="mp-color-pl"></span></div>'
       +     '<div class="mp-row mp-restore-link"><a href="#" id="mp-customize-restore">restore defaults</a></div>'
       +   '</div>'
       + '</div>'
