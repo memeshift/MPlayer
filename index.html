@@ -1850,12 +1850,12 @@ input, select, textarea {
      libFocusHeading() suppresses the ring explicitly whenever we don't have
      positive evidence of real keyboard activation (see lastKeyActivatedButton
      below), instead of trusting the heuristic.
-     outline: none alone didn't fully suppress it on-device (confirmed via
-     Safari Web Inspector: this rule wins, outline computes to none, ring
-     still rendered) — WebKit can draw its own native focus ring independent
-     of the outline box, controlled by the legacy -webkit-focus-ring-color
-     property instead. */
-  body.lib-nofocusring #lib h1:focus-visible { outline: none; -webkit-focus-ring-color: transparent; }
+     outline: none alone didn't fully suppress it on-device — confirmed via
+     Safari Web Inspector that the real source is a separate, global rule
+     (:focus-visible above, "A11Y FIX 1") setting box-shadow: 0 0 0 4px
+     var(--led-glow) on every focusable element, independent of outline.
+     Suppressing both here. */
+  body.lib-nofocusring #lib h1:focus-visible { outline: none; box-shadow: none; }
   #lib-body { flex: 1; overflow-y: auto; padding: 0 16px 140px; -webkit-overflow-scrolling: touch; }
   #lib-back { width: 44px; height: 44px; margin: 12px 0 0 12px; border-radius: 50%; background: var(--titlebar-bg); color: var(--titlebar-text); font-size: 24px; text-align: center; }
   #lib h1 { margin: 16px 0 12px; font-size: 36px; font-weight: 700; }
