@@ -1838,7 +1838,8 @@ input, select, textarea {
     background: var(--pl-bg); color: var(--pl-text);
     font-family: var(--font-ui);
   }
-  :where(#lib) button { font-family: inherit; font-size: 16px; color: inherit; background: none; border: 0; cursor: pointer; text-align: left; }
+  :where(#lib) button { font-family: inherit; font-size: 16px; color: inherit; background: none; border: 0; cursor: pointer; text-align: left; transition: opacity .1s; }
+  :where(#lib) button:active { opacity: .5; }
   #lib button:focus-visible, #lib h1:focus-visible { outline: 2px solid var(--chrome); outline-offset: 2px; }
   /* Swipe-back moves focus to the new h1 via a raw touchend, outside any
      click event, so the browser's focus-visible heuristic can't tell this
