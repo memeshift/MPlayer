@@ -4009,23 +4009,73 @@ init();
   min-width: 44px; min-height: 44px;
 }
 #mp-customize-modal .mp-close-btn:focus-visible { outline: 3px solid #707070; outline-offset: 2px; }
-#mp-customize-modal .mp-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
-#mp-customize-modal .mp-body-intro { margin: 0; font-size: 14px; color: #c8b86a; }
+#mp-customize-modal .mp-body { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+.mp-section { display: flex; flex-direction: column; gap: 16px; }
+.mp-section-title {
+  margin: 0; font-family: 'Lora', Georgia, serif; font-size: 16px;
+  border-bottom: 1px solid #554e30; padding-bottom: 8px;
+}
 
 /* Two-column design area: wheel left, color fields right — mirrors reference/reference-UI-dialog-widget.jpg */
 .mp-design-cols { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
 .mp-color-fields { display: flex; flex-direction: column; gap: 10px; flex: 1; min-width: 220px; }
-.mp-row { display: flex; align-items: center; justify-content: flex-end; gap: 10px; text-align: right; flex-wrap: wrap; }
+.mp-row { display: flex; align-items: center; justify-content: flex-end; gap: 10px; text-align: right; flex-wrap: nowrap; }
 .mp-row > label:first-child { font-family: 'Lora', Georgia, serif; font-size: 15px; }
-.mp-swatch-input { display: flex; align-items: stretch; }
+.mp-form-row { justify-content: space-between; text-align: left; }
+.mp-form-row > label:first-child { text-align: left; }
+.mp-color-label { display: flex; flex-direction: column; align-items: flex-end; flex: 1 1 auto; min-width: 0; }
+.mp-bg-label { display: flex; flex-direction: column; align-items: flex-start; }
+.mp-label-row { display: flex; align-items: center; gap: 6px; }
+.mp-hint-btn {
+  width: 20px; height: 20px; padding: 0; border-radius: 50%; border: 1px solid #554e30;
+  background: #141410; color: #c8b86a; font-family: 'Lora', Georgia, serif; font-size: 12px;
+  line-height: 1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex: none;
+}
+.mp-hint-btn:hover, .mp-hint-btn:focus-visible { color: #FAC946; border-color: #FAC946; }
+.mp-hint-btn:focus-visible { outline: 2px solid #707070; outline-offset: 2px; }
+/* Click/tap-only toggletip — never :hover, so it works on touch and doesn't
+   fight the article's guidance against hover-only reveal on touch devices. */
+.mp-hint-text { display: none; font-size: 11px; color: #96895c; margin-top: 2px; }
+.mp-hint-text.is-visible { display: block; }
+.mp-swatch-input { display: flex; align-items: stretch; flex: none; }
 .mp-swatch { width: 2.5em; border: 1px solid #554e30; border-radius: 4px 0 0 4px; }
 .mp-swatch-input input[type=text] {
   width: 100px; font-family: 'Lora', Georgia, serif; color: #FAC946; background: #141410;
   border: 1px solid #554e30; border-left: none; border-radius: 0 4px 4px 0; padding: 10px 12px; min-height: 44px;
 }
-.mp-restore-link { align-self: flex-end; }
+.mp-randomize-btn {
+  width: 100%; min-height: 48px; border: none; border-radius: 6px;
+  font-family: 'Lora', Georgia, serif; font-size: 16px; font-weight: 700;
+  color: #141410; cursor: pointer;
+  background: linear-gradient(90deg, #ff5f6d, #ffc371, #47e0a1, #4fa8f7, #b967ff);
+}
+.mp-randomize-btn:hover { filter: brightness(1.08); }
+.mp-randomize-btn:focus-visible { outline: 3px solid #707070; outline-offset: 2px; }
+.mp-restore-link { text-align: right; }
 .mp-restore-link a, .mp-restore-link a:visited { color: #c8b86a; text-decoration: underline; cursor: pointer; font-size: 14px; }
 .mp-restore-link a:hover, .mp-restore-link a:focus-visible { color: #FAC946; }
+
+/* ── Background image dropzone + thumbnail — matches upload.php's cover-art pattern ── */
+#mp-bg-row { position: relative; }
+.art-preview-wrap { position: relative; margin-bottom: 10px; }
+.mp-bg-preview { display: block; width: 100%; max-height: 160px; object-fit: cover; border-radius: 6px; border: 1px solid #554e30; }
+.art-remove-btn {
+  position: absolute; top: -10px; right: -10px; width: 28px; height: 28px; min-width: 28px; min-height: 28px;
+  border-radius: 50%; background: #ff6b6b; color: #fff; border: 2px solid #141410; font-size: 16px; line-height: 1; padding: 0; cursor: pointer;
+}
+.art-remove-btn:hover { background: #ff8a8a; }
+.art-remove-btn:focus-visible { outline: 3px solid #707070; outline-offset: 2px; }
+.art-dropzone {
+  position: relative; display: block; width: 100%; border: 2px dashed #554e30; border-radius: 6px;
+  padding: 20px 16px; text-align: center; color: #c8b86a; background: #141410; cursor: pointer;
+  font-family: 'Lora', Georgia, serif;
+}
+.art-dropzone:hover, .art-dropzone.drag-over { border-color: #fcd97c; color: #FAC946; }
+.art-dropzone-title { display: block; font-weight: bold; color: #FAC946; }
+.art-dropzone .hint { display: block; margin-top: 4px; margin-bottom: 0; font-size: 13px; color: #c8b86a; }
+.art-dropzone input[type=file] {
+  position: absolute; inset: 0; width: 100%; height: 100%; min-height: 0; opacity: 0; cursor: pointer; padding: 0; border: none;
+}
 
 /* ── Hand-built HSV wheel (ring = hue, inner square = saturation/value) ── */
 #mp-wheel { position: relative; width: 170px; height: 170px; flex: none; }
@@ -4188,7 +4238,7 @@ init();
       '<div id="mp-customize-modal" role="dialog" aria-modal="true" aria-labelledby="mp-customize-title">'
       + '<header><h2 id="mp-customize-title">Customize</h2><button type="button" class="mp-close-btn" id="mp-customize-close" aria-label="Close">×</button></header>'
       + '<div class="mp-body">'
-      + '<p class="mp-body-intro">Customize your player and preview your changes live before saving.</p>'
+      + '<section class="mp-section"><h3 class="mp-section-title">Colors</h3>'
       + '<div class="mp-design-cols">'
       +   '<div id="mp-wheel"><div id="mp-wheel-ring" tabindex="0" role="slider" aria-label="Hue" aria-valuemin="0" aria-valuemax="360" aria-valuenow="0">'
       +     '<div class="mp-wheel-marker" id="mp-wheel-hue-marker"></div>'
@@ -4197,19 +4247,32 @@ init();
       +     '</div>'
       +   '</div></div>'
       +   '<div class="mp-color-fields">'
-      +     '<div class="mp-row"><label for="mp-color-titlebar">Main Title Bar:</label><span class="mp-swatch-input"><span class="mp-swatch" id="mp-color-titlebar-swatch"></span><input type="text" id="mp-color-titlebar"></span></div>'
-      +     '<div class="mp-row"><label for="mp-color-dock">Accent Controls Dock:</label><span class="mp-swatch-input"><span class="mp-swatch" id="mp-color-dock-swatch"></span><input type="text" id="mp-color-dock"></span></div>'
-      +     '<div class="mp-row"><label for="mp-color-pl">Playlist Items:</label><span class="mp-swatch-input"><span class="mp-swatch" id="mp-color-pl-swatch"></span><input type="text" id="mp-color-pl"></span></div>'
-      +     '<div class="mp-row mp-restore-link"><a href="#" id="mp-customize-restore">restore defaults</a></div>'
+      +     '<div class="mp-row"><span class="mp-color-label"><span class="mp-label-row"><label for="mp-color-titlebar">Accent Color:</label><button type="button" class="mp-hint-btn" aria-label="What does Accent Color affect?" aria-expanded="false" aria-controls="mp-hint-titlebar">?</button></span><small class="mp-hint-text" id="mp-hint-titlebar" role="status">Buttons, sliders, and the now-playing highlight</small></span><span class="mp-swatch-input"><span class="mp-swatch" id="mp-color-titlebar-swatch"></span><input type="text" id="mp-color-titlebar"></span></div>'
+      +     '<div class="mp-row"><span class="mp-color-label"><span class="mp-label-row"><label for="mp-color-dock">Title Bar &amp; Highlights:</label><button type="button" class="mp-hint-btn" aria-label="What does Title Bar &amp; Highlights affect?" aria-expanded="false" aria-controls="mp-hint-dock">?</button></span><small class="mp-hint-text" id="mp-hint-dock" role="status">Title bar background, selected track, and active controls</small></span><span class="mp-swatch-input"><span class="mp-swatch" id="mp-color-dock-swatch"></span><input type="text" id="mp-color-dock"></span></div>'
+      +     '<div class="mp-row"><span class="mp-color-label"><span class="mp-label-row"><label for="mp-color-pl">Playlist Text:</label><button type="button" class="mp-hint-btn" aria-label="What does Playlist Text affect?" aria-expanded="false" aria-controls="mp-hint-pl">?</button></span><small class="mp-hint-text" id="mp-hint-pl" role="status">Track names and info in the playlist</small></span><span class="mp-swatch-input"><span class="mp-swatch" id="mp-color-pl-swatch"></span><input type="text" id="mp-color-pl"></span></div>'
       +   '</div>'
       + '</div>'
-      + '<div class="mp-row" id="mp-bg-current-row" hidden><span id="mp-bg-current">Background Image: <span id="mp-bg-filename"></span><a href="#" id="mp-bg-delete">delete</a></span></div>'
-      + '<div class="mp-row"><label for="mp-bg-file">Background Image</label><input type="file" id="mp-bg-file" accept="image/jpeg,image/png,image/gif,image/webp"></div>'
-      + '<div class="mp-row"><label for="mp-bg-size">Background Behavior</label><select id="mp-bg-size"><option value="contain">Default</option><option value="cover">Cover</option><option value="auto">Auto</option></select></div>'
-      + '<div class="mp-row"><label id="mp-bg-repeat-label">Repeat</label><div class="mp-checkbox-group" role="group" aria-labelledby="mp-bg-repeat-label"><label><input type="checkbox" id="mp-bg-repeat-x"> Horizontally</label><label><input type="checkbox" id="mp-bg-repeat-y"> Vertically</label></div></div>'
-      + '<div class="mp-row"><label for="mp-bg-align">Align</label><select id="mp-bg-align"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></div>'
-      + '<div class="mp-row"><label><input type="checkbox" id="mp-bg-fixed"> Fixed position</label></div>'
+      + '<div class="mp-randomize-row"><button type="button" class="mp-randomize-btn" id="mp-customize-randomize">🎲 Randomize Colors</button></div>'
+      + '<div class="mp-restore-link"><a href="#" id="mp-customize-restore">restore defaults</a></div>'
+      + '</section>'
+      + '<section class="mp-section"><h3 class="mp-section-title">Background Image</h3>'
+      + '<div id="mp-bg-row">'
+      +   '<div id="mp-bg-preview-wrap" class="art-preview-wrap" hidden>'
+      +     '<img id="mp-bg-preview" class="art-preview mp-bg-preview" alt="">'
+      +     '<button type="button" id="mp-bg-remove-btn" class="art-remove-btn" aria-label="Remove background image">&times;</button>'
+      +   '</div>'
+      +   '<label id="mp-bg-dropzone" class="art-dropzone" for="mp-bg-file">'
+      +     '<span id="mp-bg-dropzone-title" class="art-dropzone-title">Add background image</span>'
+      +     '<span class="hint">JPEG, PNG, GIF, or WebP. Drop a file or click to browse.</span>'
+      +     '<input type="file" id="mp-bg-file" accept="image/jpeg,image/png,image/gif,image/webp">'
+      +   '</label>'
+      + '</div>'
+      + '<div class="mp-row mp-form-row"><label for="mp-bg-size">Background Behavior</label><select id="mp-bg-size"><option value="contain">Fit (no crop)</option><option value="cover">Fill screen (crops edges)</option><option value="auto">Original size</option></select></div>'
+      + '<div class="mp-row mp-form-row"><span class="mp-bg-label"><span class="mp-label-row"><label id="mp-bg-repeat-label">Repeat</label><button type="button" class="mp-hint-btn" aria-label="What does Repeat do?" aria-expanded="false" aria-controls="mp-hint-repeat">?</button></span><small class="mp-hint-text" id="mp-hint-repeat" role="status">Tiles the image across the background if it doesn\'t fill the whole space.</small></span><div class="mp-checkbox-group" role="group" aria-labelledby="mp-bg-repeat-label"><label><input type="checkbox" id="mp-bg-repeat-x"> Horizontally</label><label><input type="checkbox" id="mp-bg-repeat-y"> Vertically</label></div></div>'
+      + '<div class="mp-row mp-form-row"><span class="mp-bg-label"><span class="mp-label-row"><label for="mp-bg-align">Align</label><button type="button" class="mp-hint-btn" aria-label="What does Align do?" aria-expanded="false" aria-controls="mp-hint-align">?</button></span><small class="mp-hint-text" id="mp-hint-align" role="status">Where the image sits when it doesn\'t fill the whole background.</small></span><select id="mp-bg-align"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></div>'
+      + '<div class="mp-row mp-form-row"><span class="mp-bg-label"><span class="mp-label-row"><label><input type="checkbox" id="mp-bg-fixed"> Fixed position</label><button type="button" class="mp-hint-btn" aria-label="What does Fixed position do?" aria-expanded="false" aria-controls="mp-hint-fixed">?</button></span><small class="mp-hint-text" id="mp-hint-fixed" role="status">Keeps the background still while the page scrolls, instead of scrolling with it.</small></span></div>'
       + '<div class="mp-error" id="mp-customize-error" hidden></div>'
+      + '</section>'
       + '</div>'
       + '<footer><span class="mp-footer-spacer"></span><button type="button" class="mp-btn mp-btn-cancel" id="mp-customize-cancel">Cancel</button><button type="button" class="mp-btn mp-btn-save" id="mp-customize-save">Save</button></footer>'
       + '</div>';
@@ -4222,8 +4285,9 @@ init();
       bgFile: document.getElementById('mp-bg-file'), bgSize: document.getElementById('mp-bg-size'),
       bgRepeatX: document.getElementById('mp-bg-repeat-x'), bgRepeatY: document.getElementById('mp-bg-repeat-y'),
       bgAlign: document.getElementById('mp-bg-align'), bgFixed: document.getElementById('mp-bg-fixed'),
-      bgCurrentRow: document.getElementById('mp-bg-current-row'), bgFilename: document.getElementById('mp-bg-filename'),
-      bgDelete: document.getElementById('mp-bg-delete'),
+      bgPreviewWrap: document.getElementById('mp-bg-preview-wrap'), bgPreview: document.getElementById('mp-bg-preview'),
+      bgRemoveBtn: document.getElementById('mp-bg-remove-btn'), bgDropzone: document.getElementById('mp-bg-dropzone'),
+      bgDropzoneTitle: document.getElementById('mp-bg-dropzone-title'),
       wheelRing: document.getElementById('mp-wheel-ring'), wheelSv: document.getElementById('mp-wheel-sv'),
       hueMarker: document.getElementById('mp-wheel-hue-marker'), svMarker: document.getElementById('mp-wheel-sv-marker'),
       error: document.getElementById('mp-customize-error'),
@@ -4279,6 +4343,34 @@ init();
     }
     function hexToHsv(hex) { var rgb = hexToRgb(hex); return rgbToHsv(rgb.r, rgb.g, rgb.b); }
     function hsvToHex(h, s, v) { var rgb = hsvToRgb(h, s, v); return rgbToHex(rgb.r, rgb.g, rgb.b); }
+
+    /* ── WCAG contrast (relative luminance, per spec) ── */
+    function srgbChannelToLinear(c) { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
+    function relLuminance(hex) {
+      var rgb = hexToRgb(hex);
+      return 0.2126 * srgbChannelToLinear(rgb.r) + 0.7152 * srgbChannelToLinear(rgb.g) + 0.0722 * srgbChannelToLinear(rgb.b);
+    }
+    function contrastRatio(hexA, hexB) {
+      var la = relLuminance(hexA), lb = relLuminance(hexB);
+      return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+    }
+    /* Random rejection sampling until all 3 colors pass WCAG AA (4.5:1) against each other.
+       ponytail: bounded retry loop, not a solver — color space is large enough that a passing
+       triple almost always turns up in a handful of tries; falls back to the last draw if not. */
+    function randomizeColors() {
+      var MIN_CONTRAST = 4.5, MAX_TRIES = 500, a, b, c;
+      for (var i = 0; i < MAX_TRIES; i++) {
+        a = hsvToHex(Math.random() * 360, 0.55 + Math.random() * 0.4, 0.15 + Math.random() * 0.8);
+        b = hsvToHex(Math.random() * 360, 0.55 + Math.random() * 0.4, 0.15 + Math.random() * 0.8);
+        c = hsvToHex(Math.random() * 360, 0.55 + Math.random() * 0.4, 0.15 + Math.random() * 0.8);
+        if (contrastRatio(a, b) >= MIN_CONTRAST && contrastRatio(a, c) >= MIN_CONTRAST && contrastRatio(b, c) >= MIN_CONTRAST) break;
+      }
+      els.titlebar.value = a; updateSwatch('titlebar');
+      els.dock.value = b; updateSwatch('dock');
+      els.pl.value = c; updateSwatch('pl');
+      syncWheelFromActive();
+      preview();
+    }
 
     /* ── shared color wheel: edits whichever hex field last had focus ── */
     var activeField = 'titlebar';
@@ -4360,15 +4452,16 @@ init();
       positionMarkers(); setActiveFromWheel(); e.preventDefault();
     });
 
-    function bgFilename(path) {
-      if (!path) return '';
-      return path.split('/').pop().split('?')[0];
-    }
-    function updateBgCurrentRow() {
-      if (pendingBgFile) { els.bgFilename.textContent = pendingBgFile.name; els.bgCurrentRow.hidden = false; }
-      else if (pendingBgDeleted) { els.bgCurrentRow.hidden = true; }
-      else if (design.bg_image) { els.bgFilename.textContent = bgFilename(design.bg_image); els.bgCurrentRow.hidden = false; }
-      else { els.bgCurrentRow.hidden = true; }
+    function updateBgPreview() {
+      var src = (pendingBgFile && pendingBgDataUrl) ? pendingBgDataUrl : (!pendingBgDeleted && design.bg_image ? design.bg_image : null);
+      if (src) {
+        els.bgPreview.src = src;
+        els.bgPreviewWrap.hidden = false;
+        els.bgDropzoneTitle.textContent = 'Update background image';
+      } else {
+        els.bgPreviewWrap.hidden = true;
+        els.bgDropzoneTitle.textContent = 'Add background image';
+      }
     }
 
     function preview() {
@@ -4390,23 +4483,33 @@ init();
     els.bgRepeatY.addEventListener('change', preview);
     els.bgAlign.addEventListener('change', preview);
     els.bgFixed.addEventListener('change', preview);
-    els.bgFile.addEventListener('change', function () {
-      pendingBgFile = this.files[0] || null;
+    function handleBgFile(file) {
+      pendingBgFile = file || null;
       pendingBgDataUrl = null;
       pendingBgDeleted = false;
-      updateBgCurrentRow();
+      updateBgPreview();
       if (!pendingBgFile) { preview(); return; }
       var reader = new FileReader();
-      reader.onload = function () { pendingBgDataUrl = reader.result; preview(); };
+      reader.onload = function () { pendingBgDataUrl = reader.result; updateBgPreview(); preview(); };
       reader.readAsDataURL(pendingBgFile);
+    }
+    els.bgFile.addEventListener('change', function () { handleBgFile(this.files[0]); });
+    ['dragover', 'dragenter'].forEach(function (evt) {
+      els.bgDropzone.addEventListener(evt, function (e) { e.preventDefault(); els.bgDropzone.classList.add('drag-over'); });
     });
-    els.bgDelete.addEventListener('click', function (e) {
-      e.preventDefault();
+    ['dragleave', 'drop'].forEach(function (evt) {
+      els.bgDropzone.addEventListener(evt, function (e) { e.preventDefault(); els.bgDropzone.classList.remove('drag-over'); });
+    });
+    els.bgDropzone.addEventListener('drop', function (e) {
+      var f = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (f) handleBgFile(f);
+    });
+    els.bgRemoveBtn.addEventListener('click', function () {
       pendingBgDeleted = true;
       pendingBgFile = null;
       pendingBgDataUrl = null;
       els.bgFile.value = '';
-      updateBgCurrentRow();
+      updateBgPreview();
       preview();
     });
 
@@ -4424,7 +4527,7 @@ init();
       pendingBgDeleted = false;
       els.bgFile.value = '';
       design.bg_image = DEFAULT_DESIGN.bg_image;
-      updateBgCurrentRow();
+      updateBgPreview();
       syncWheelFromActive();
       preview();
     }
@@ -4444,9 +4547,31 @@ init();
     document.getElementById('mp-customize-close').addEventListener('click', cancel);
     document.getElementById('mp-customize-cancel').addEventListener('click', cancel);
     document.getElementById('mp-customize-restore').addEventListener('click', function (e) { e.preventDefault(); resetToDefaults(); });
+    document.getElementById('mp-customize-randomize').addEventListener('click', function (e) { e.preventDefault(); randomizeColors(); });
+    var hintBtns = overlay.querySelectorAll('.mp-hint-btn');
+    function closeAllHints() {
+      var anyOpen = false;
+      hintBtns.forEach(function (btn) {
+        if (btn.getAttribute('aria-expanded') === 'true') anyOpen = true;
+        document.getElementById(btn.getAttribute('aria-controls')).classList.remove('is-visible');
+        btn.setAttribute('aria-expanded', 'false');
+      });
+      return anyOpen;
+    }
+    hintBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var hint = document.getElementById(btn.getAttribute('aria-controls'));
+        var wasOpen = hint.classList.contains('is-visible');
+        closeAllHints();
+        if (!wasOpen) { hint.classList.add('is-visible'); btn.setAttribute('aria-expanded', 'true'); }
+      });
+    });
     overlay.addEventListener('click', function (e) { if (e.target === overlay) cancel(); });
     document.addEventListener('keydown', function onEsc(e) {
-      if (e.key === 'Escape' && document.body.contains(overlay)) { cancel(); document.removeEventListener('keydown', onEsc); }
+      if (e.key !== 'Escape' || !document.body.contains(overlay)) return;
+      if (closeAllHints()) return;
+      cancel();
+      document.removeEventListener('keydown', onEsc);
     });
 
     els.save.addEventListener('click', function () {
@@ -4491,7 +4616,7 @@ init();
     });
 
     updateSwatch('titlebar'); updateSwatch('dock'); updateSwatch('pl');
-    updateBgCurrentRow();
+    updateBgPreview();
     syncWheelFromActive();
     preview();
   }
