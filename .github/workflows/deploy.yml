@@ -4,6 +4,13 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      target:
+        description: 'Deploy target'
+        required: true
+        type: choice
+        options: [test, production]
+        default: test
 
 jobs:
   deploy-staging:
@@ -23,8 +30,25 @@ jobs:
             **/.git*
             **/.github/**
 
+  deploy-test:
+    if: github.event_name == 'workflow_dispatch' && inputs.target == 'test'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to test.memeshift.com
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST_TEST }}
+          username: ${{ secrets.FTP_USER_TEST }}
+          password: ${{ secrets.FTP_PASS_TEST }}
+          protocol: ftps
+          server-dir: /public_html/
+          exclude: |
+            **/.git*
+            **/.github/**
+
   deploy-production:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' && inputs.target == 'production'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

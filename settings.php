@@ -68,6 +68,12 @@ body { max-width: 640px; }
   </div>
 
   <div class="field">
+    <label for="landing_text">Library landing text</label>
+    <input type="text" id="landing_text" name="landing_text" maxlength="200" value="<?php echo htmlspecialchars($settings['landing_text'], ENT_QUOTES, 'UTF-8'); ?>">
+    <p class="hint">Shown above the row buttons on the mobile library landing page. Leave blank to hide.</p>
+  </div>
+
+  <div class="field">
     <label for="email">Email</label>
     <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($social['email'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="you@example.com">
   </div>
