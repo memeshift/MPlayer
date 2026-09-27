@@ -3780,11 +3780,11 @@ function libHome() {
   const tracks = S.tracks.filter(t => L.featured.tracks.includes(t.file));
   const row = (go, ico, label) =>
     `<button type="button" class="lib-row" data-go="${go}"><span class="lib-ico" aria-hidden="true">${ico}</span><span class="lib-row-name">${label}</span><span class="lib-chev" aria-hidden="true">›</span></button>`;
-  let html = (L.landingText ? `<p class="lib-note">${esc(L.landingText)}</p>` : '') +
-    row('aliases', '\u{1F3A4}︎', 'Aliases') + row('albums', '▢', 'Albums') + row('songs', '♪', 'Songs');
+  let html = L.landingText ? `<p class="lib-note">${esc(L.landingText)}</p>` : '';
   if (albums.length || tracks.length) {
     html += '<h2>Featured</h2><div class="lib-grid">' + albums.map(a => libAlbumTile(a)).join('') + tracks.map(libTrackTile).join('') + '</div>';
   }
+  html += '<div class="lib-nav-rows">' + row('aliases', '\u{1F3A4}︎', 'Aliases') + row('albums', '▢', 'Albums') + row('songs', '♪', 'Songs') + '</div>';
   return { title: 'Music', html };
 }
 
