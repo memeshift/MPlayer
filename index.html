@@ -4021,6 +4021,8 @@ init();
 .mp-color-fields { display: flex; flex-direction: column; gap: 10px; flex: 1; min-width: 220px; }
 .mp-row { display: flex; align-items: center; justify-content: flex-end; gap: 10px; text-align: right; flex-wrap: nowrap; }
 .mp-row > label:first-child { font-family: 'Lora', Georgia, serif; font-size: 15px; }
+.mp-form-row { justify-content: space-between; text-align: left; }
+.mp-form-row > label:first-child { text-align: left; }
 .mp-color-label { display: flex; flex-direction: column; align-items: flex-end; flex: 1 1 auto; min-width: 0; position: relative; }
 .mp-label-row { display: flex; align-items: center; gap: 6px; }
 .mp-hint-btn {
@@ -4264,10 +4266,10 @@ init();
       +     '<input type="file" id="mp-bg-file" accept="image/jpeg,image/png,image/gif,image/webp">'
       +   '</label>'
       + '</div>'
-      + '<div class="mp-row"><label for="mp-bg-size">Background Behavior</label><select id="mp-bg-size"><option value="contain">Default</option><option value="cover">Cover</option><option value="auto">Auto</option></select></div>'
-      + '<div class="mp-row"><label id="mp-bg-repeat-label">Repeat</label><div class="mp-checkbox-group" role="group" aria-labelledby="mp-bg-repeat-label"><label><input type="checkbox" id="mp-bg-repeat-x"> Horizontally</label><label><input type="checkbox" id="mp-bg-repeat-y"> Vertically</label></div></div>'
-      + '<div class="mp-row"><label for="mp-bg-align">Align</label><select id="mp-bg-align"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></div>'
-      + '<div class="mp-row"><label><input type="checkbox" id="mp-bg-fixed"> Fixed position</label></div>'
+      + '<div class="mp-row mp-form-row"><label for="mp-bg-size">Background Behavior</label><select id="mp-bg-size"><option value="contain">Default</option><option value="cover">Cover</option><option value="auto">Auto</option></select></div>'
+      + '<div class="mp-row mp-form-row"><label id="mp-bg-repeat-label">Repeat</label><div class="mp-checkbox-group" role="group" aria-labelledby="mp-bg-repeat-label"><label><input type="checkbox" id="mp-bg-repeat-x"> Horizontally</label><label><input type="checkbox" id="mp-bg-repeat-y"> Vertically</label></div></div>'
+      + '<div class="mp-row mp-form-row"><label for="mp-bg-align">Align</label><select id="mp-bg-align"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></div>'
+      + '<div class="mp-row mp-form-row"><label><input type="checkbox" id="mp-bg-fixed"> Fixed position</label></div>'
       + '<div class="mp-error" id="mp-customize-error" hidden></div>'
       + '</section>'
       + '</div>'
