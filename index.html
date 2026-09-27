@@ -4017,9 +4017,10 @@ init();
 .mp-color-fields { display: flex; flex-direction: column; gap: 10px; flex: 1; min-width: 220px; }
 .mp-row { display: flex; align-items: center; justify-content: flex-end; gap: 10px; text-align: right; flex-wrap: wrap; }
 .mp-row > label:first-child { font-family: 'Lora', Georgia, serif; font-size: 15px; }
-.mp-color-label { display: flex; flex-direction: column; align-items: flex-end; }
+.mp-color-fields .mp-row { flex-wrap: nowrap; }
+.mp-color-label { display: flex; flex-direction: column; align-items: flex-end; flex: 1 1 auto; min-width: 0; }
 .mp-color-hint { font-size: 11px; color: #96895c; margin-top: 2px; }
-.mp-swatch-input { display: flex; align-items: stretch; }
+.mp-swatch-input { display: flex; align-items: stretch; flex: none; }
 .mp-swatch { width: 2.5em; border: 1px solid #554e30; border-radius: 4px 0 0 4px; }
 .mp-swatch-input input[type=text] {
   width: 100px; font-family: 'Lora', Georgia, serif; color: #FAC946; background: #141410;
