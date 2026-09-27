@@ -74,6 +74,12 @@ body { max-width: 640px; }
   </div>
 
   <div class="field">
+    <label for="alias_label">Alias row label</label>
+    <input type="text" id="alias_label" name="alias_label" maxlength="30" value="<?php echo htmlspecialchars($settings['alias_label'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="Aliases">
+    <p class="hint">Library row that groups tracks by artist name. Rename it to whatever fits how you release music — "Monikers", "Projects", "Collaborations".</p>
+  </div>
+
+  <div class="field">
     <label for="email">Email</label>
     <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($social['email'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="you@example.com">
   </div>

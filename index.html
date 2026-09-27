@@ -3787,7 +3787,7 @@ function closeNotesView() {
 /* ══ MOBILE LIBRARY (landing page) ══
    Screens are functions returning {title, html}; L.stack is the back stack.
    Every tap is handled by one delegated listener via data-* attributes. */
-const L = { featured: { tracks: [], albums: [] }, landingText: '', stack: [] };
+const L = { featured: { tracks: [], albums: [] }, landingText: '', aliasLabel: 'Aliases', stack: [] };
 const libEl = $('lib'), libBody = $('lib-body'), libNav = $('lib-nav');
 
 const libTitle = t => t.title || decodeURIComponent(t.file).replace(/\.mp3$/i, '');
@@ -3831,7 +3831,7 @@ function libHome() {
   if (albums.length || tracks.length) {
     html += '<h2>Featured</h2><div class="lib-grid">' + albums.map(a => libAlbumTile(a)).join('') + tracks.map(libTrackTile).join('') + '</div>';
   }
-  html += '<div class="lib-nav-rows">' + row('aliases', '\u{1F3A4}︎', 'Aliases') + row('albums', '▢', 'Albums') + row('songs', '♪', 'Songs') + '</div>';
+  html += '<div class="lib-nav-rows">' + row('aliases', '\u{1F3A4}︎', esc(L.aliasLabel)) + row('albums', '▢', 'Albums') + row('songs', '♪', 'Songs') + '</div>';
   return { title: 'Music', html };
 }
 
@@ -3850,7 +3850,7 @@ function libAliasesScreen() {
   });
   html += '<nav class="lib-index" aria-label="Jump to letter">' +
     keys.map(k => `<button type="button" data-jump="${k === '#' ? 'num' : k}">${k}</button>`).join('') + '</nav>';
-  return { title: 'Aliases', html };
+  return { title: L.aliasLabel, html };
 }
 
 const libScreens = {
@@ -4802,6 +4802,7 @@ init();
     initCustomizeMode(cfg);
     if (cfg.featured) { L.featured = cfg.featured; if (S.tracks.length) libRender(); }
     if (cfg.landing_text) { L.landingText = cfg.landing_text; if (S.tracks.length) libRender(); }
+    if (cfg.alias_label) { L.aliasLabel = cfg.alias_label; if (S.tracks.length) libRender(); }
   }).catch(function () { initCustomizeMode(null); });
 })();
 </script>
