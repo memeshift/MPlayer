@@ -4011,10 +4011,8 @@ init();
 #mp-customize-modal .mp-close-btn:focus-visible { outline: 3px solid #707070; outline-offset: 2px; }
 #mp-customize-modal .mp-body { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
 .mp-section { display: flex; flex-direction: column; gap: 16px; }
-.mp-section-title {
-  margin: 0; font-family: 'Lora', Georgia, serif; font-size: 16px;
-  border-bottom: 1px solid #554e30; padding-bottom: 8px;
-}
+.mp-section + .mp-section { border-top: 1px solid #554e30; padding-top: 20px; }
+.mp-section-title { margin: 0; font-family: 'Lora', Georgia, serif; font-size: 16px; }
 
 /* Two-column design area: wheel left, color fields right — mirrors reference/reference-UI-dialog-widget.jpg */
 .mp-design-cols { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
