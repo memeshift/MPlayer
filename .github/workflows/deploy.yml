@@ -43,7 +43,10 @@ jobs:
           username: ${{ secrets.FTP_USER_TEST }}
           password: ${{ secrets.FTP_PASS_TEST }}
           protocol: ftps
-          server-dir: /public_html/
+          # This FTP account's home directory is already the docroot (unlike
+          # the other targets' accounts, homed one level up) — server-dir
+          # "/public_html/" here created a wrong nested public_html/public_html/.
+          server-dir: /
           exclude: |
             **/.git*
             **/.git*/**
