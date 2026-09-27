@@ -1135,6 +1135,28 @@ body {
   color: rgba(255,255,255,0.5);
   margin-bottom: 10px;
 }
+.now-view-notes-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+  margin-bottom: 20px;
+}
+.now-view-notes-meta-key {
+  font-family: var(--font-info);
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 2px;
+}
+.now-view-notes-meta-val {
+  font-family: var(--font-info-body);
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--pl-text);
+  word-break: break-word;
+}
+.now-view-notes-meta-val a { color: inherit; }
 .now-view-notes-text {
   font-family: var(--font-info-body);
   font-size: 16px;
@@ -2203,7 +2225,7 @@ input, select, textarea {
         <span class="now-view-title" id="now-view-title">—</span>
       </div>
       <div class="now-view-artist" id="now-view-artist">—</div>
-      <div class="now-view-notes-hint" id="now-view-notes-hint" aria-hidden="true">▲ notes</div>
+      <div class="now-view-notes-hint" id="now-view-notes-hint" aria-hidden="true">▲ Notes</div>
     </div>
     <div class="now-view-seek-row">
       <span class="now-view-time" id="now-view-time-cur">0:00</span>
@@ -2227,6 +2249,7 @@ input, select, textarea {
 
     <div class="now-view-notes" id="now-view-notes" aria-hidden="true">
       <div class="now-view-notes-handle" id="now-view-notes-handle" aria-hidden="true"></div>
+      <div class="now-view-notes-meta" id="now-view-notes-meta"></div>
       <div class="now-view-notes-label">NOTES</div>
       <div class="now-view-notes-text" id="now-view-notes-text">—</div>
     </div>
@@ -3204,6 +3227,14 @@ function esc(str) {
     .replace(/'/g,  '&#39;');
 }
 
+// Only http(s) URLs are safe to drop into an href — blocks javascript: etc.
+function safeHttpUrl(u) {
+  try {
+    const p = new URL(u, location.href);
+    return (p.protocol === 'http:' || p.protocol === 'https:') ? p.href : '#';
+  } catch { return '#'; }
+}
+
 /* ════════════════════════════════════════════════════════════════════
    SPARKLE GALAXY
 ════════════════════════════════════════════════════════════════════ */
@@ -3578,6 +3609,19 @@ function syncNowView(t) {
   setNowViewTitle(t.title || decodeURIComponent(t.file).replace(/\.mp3$/i, ''));
   $('now-view-artist').textContent = t.artist || '—';
   $('now-view-notes-text').textContent = t.comment || '—';
+
+  const metaFields = [
+    ['TITLE',  t.title],
+    ['ARTIST', t.artist],
+    ['ALBUM',  t.album],
+    ['YEAR',   t.year],
+    ['TRACK',  t.track],
+    t.buy_url  ? ['BUY',  `<a href="${esc(safeHttpUrl(t.buy_url))}" target="_blank" rel="noopener noreferrer">»buy/support</a>`]  : null,
+    t.info_url ? ['INFO', `<a href="${esc(safeHttpUrl(t.info_url))}" target="_blank" rel="noopener noreferrer">»more info</a>`] : null,
+  ].filter(f => f && f[1]);
+  $('now-view-notes-meta').innerHTML = metaFields.map(([key, val]) =>
+    `<div class="now-view-notes-meta-item"><div class="now-view-notes-meta-key">${key}</div><div class="now-view-notes-meta-val">${key === 'BUY' || key === 'INFO' ? val : esc(val)}</div></div>`
+  ).join('');
 }
 
 function openNotesView() {
