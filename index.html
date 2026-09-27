@@ -4052,6 +4052,28 @@ init();
 .mp-restore-link a, .mp-restore-link a:visited { color: #c8b86a; text-decoration: underline; cursor: pointer; font-size: 14px; }
 .mp-restore-link a:hover, .mp-restore-link a:focus-visible { color: #FAC946; }
 
+/* ── Background image dropzone + thumbnail — matches upload.php's cover-art pattern ── */
+#mp-bg-row { position: relative; }
+.art-preview-wrap { position: relative; margin-bottom: 10px; }
+.mp-bg-preview { display: block; width: 100%; max-height: 160px; object-fit: cover; border-radius: 6px; border: 1px solid #554e30; }
+.art-remove-btn {
+  position: absolute; top: -10px; right: -10px; width: 28px; height: 28px; min-width: 28px; min-height: 28px;
+  border-radius: 50%; background: #ff6b6b; color: #fff; border: 2px solid #141410; font-size: 16px; line-height: 1; padding: 0; cursor: pointer;
+}
+.art-remove-btn:hover { background: #ff8a8a; }
+.art-remove-btn:focus-visible { outline: 3px solid #707070; outline-offset: 2px; }
+.art-dropzone {
+  position: relative; display: block; width: 100%; border: 2px dashed #554e30; border-radius: 6px;
+  padding: 20px 16px; text-align: center; color: #c8b86a; background: #141410; cursor: pointer;
+  font-family: 'Lora', Georgia, serif;
+}
+.art-dropzone:hover, .art-dropzone.drag-over { border-color: #fcd97c; color: #FAC946; }
+.art-dropzone-title { display: block; font-weight: bold; color: #FAC946; }
+.art-dropzone .hint { display: block; margin-top: 4px; margin-bottom: 0; font-size: 13px; color: #c8b86a; }
+.art-dropzone input[type=file] {
+  position: absolute; inset: 0; width: 100%; height: 100%; min-height: 0; opacity: 0; cursor: pointer; padding: 0; border: none;
+}
+
 /* ── Hand-built HSV wheel (ring = hue, inner square = saturation/value) ── */
 #mp-wheel { position: relative; width: 170px; height: 170px; flex: none; }
 #mp-wheel-ring {
@@ -4231,8 +4253,17 @@ init();
       + '<div class="mp-restore-link"><a href="#" id="mp-customize-restore">restore defaults</a></div>'
       + '</section>'
       + '<section class="mp-section"><h3 class="mp-section-title">Background Image</h3>'
-      + '<div class="mp-row" id="mp-bg-current-row" hidden><span id="mp-bg-current">Background Image: <span id="mp-bg-filename"></span><a href="#" id="mp-bg-delete">delete</a></span></div>'
-      + '<div class="mp-row"><label for="mp-bg-file">Background Image</label><input type="file" id="mp-bg-file" accept="image/jpeg,image/png,image/gif,image/webp"></div>'
+      + '<div id="mp-bg-row">'
+      +   '<div id="mp-bg-preview-wrap" class="art-preview-wrap" hidden>'
+      +     '<img id="mp-bg-preview" class="art-preview mp-bg-preview" alt="">'
+      +     '<button type="button" id="mp-bg-remove-btn" class="art-remove-btn" aria-label="Remove background image">&times;</button>'
+      +   '</div>'
+      +   '<label id="mp-bg-dropzone" class="art-dropzone" for="mp-bg-file">'
+      +     '<span id="mp-bg-dropzone-title" class="art-dropzone-title">Add background image</span>'
+      +     '<span class="hint">JPEG, PNG, GIF, or WebP. Drop a file or click to browse.</span>'
+      +     '<input type="file" id="mp-bg-file" accept="image/jpeg,image/png,image/gif,image/webp">'
+      +   '</label>'
+      + '</div>'
       + '<div class="mp-row"><label for="mp-bg-size">Background Behavior</label><select id="mp-bg-size"><option value="contain">Default</option><option value="cover">Cover</option><option value="auto">Auto</option></select></div>'
       + '<div class="mp-row"><label id="mp-bg-repeat-label">Repeat</label><div class="mp-checkbox-group" role="group" aria-labelledby="mp-bg-repeat-label"><label><input type="checkbox" id="mp-bg-repeat-x"> Horizontally</label><label><input type="checkbox" id="mp-bg-repeat-y"> Vertically</label></div></div>'
       + '<div class="mp-row"><label for="mp-bg-align">Align</label><select id="mp-bg-align"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></div>'
@@ -4251,8 +4282,9 @@ init();
       bgFile: document.getElementById('mp-bg-file'), bgSize: document.getElementById('mp-bg-size'),
       bgRepeatX: document.getElementById('mp-bg-repeat-x'), bgRepeatY: document.getElementById('mp-bg-repeat-y'),
       bgAlign: document.getElementById('mp-bg-align'), bgFixed: document.getElementById('mp-bg-fixed'),
-      bgCurrentRow: document.getElementById('mp-bg-current-row'), bgFilename: document.getElementById('mp-bg-filename'),
-      bgDelete: document.getElementById('mp-bg-delete'),
+      bgPreviewWrap: document.getElementById('mp-bg-preview-wrap'), bgPreview: document.getElementById('mp-bg-preview'),
+      bgRemoveBtn: document.getElementById('mp-bg-remove-btn'), bgDropzone: document.getElementById('mp-bg-dropzone'),
+      bgDropzoneTitle: document.getElementById('mp-bg-dropzone-title'),
       wheelRing: document.getElementById('mp-wheel-ring'), wheelSv: document.getElementById('mp-wheel-sv'),
       hueMarker: document.getElementById('mp-wheel-hue-marker'), svMarker: document.getElementById('mp-wheel-sv-marker'),
       error: document.getElementById('mp-customize-error'),
@@ -4417,15 +4449,16 @@ init();
       positionMarkers(); setActiveFromWheel(); e.preventDefault();
     });
 
-    function bgFilename(path) {
-      if (!path) return '';
-      return path.split('/').pop().split('?')[0];
-    }
-    function updateBgCurrentRow() {
-      if (pendingBgFile) { els.bgFilename.textContent = pendingBgFile.name; els.bgCurrentRow.hidden = false; }
-      else if (pendingBgDeleted) { els.bgCurrentRow.hidden = true; }
-      else if (design.bg_image) { els.bgFilename.textContent = bgFilename(design.bg_image); els.bgCurrentRow.hidden = false; }
-      else { els.bgCurrentRow.hidden = true; }
+    function updateBgPreview() {
+      var src = (pendingBgFile && pendingBgDataUrl) ? pendingBgDataUrl : (!pendingBgDeleted && design.bg_image ? design.bg_image : null);
+      if (src) {
+        els.bgPreview.src = src;
+        els.bgPreviewWrap.hidden = false;
+        els.bgDropzoneTitle.textContent = 'Update background image';
+      } else {
+        els.bgPreviewWrap.hidden = true;
+        els.bgDropzoneTitle.textContent = 'Add background image';
+      }
     }
 
     function preview() {
@@ -4447,23 +4480,33 @@ init();
     els.bgRepeatY.addEventListener('change', preview);
     els.bgAlign.addEventListener('change', preview);
     els.bgFixed.addEventListener('change', preview);
-    els.bgFile.addEventListener('change', function () {
-      pendingBgFile = this.files[0] || null;
+    function handleBgFile(file) {
+      pendingBgFile = file || null;
       pendingBgDataUrl = null;
       pendingBgDeleted = false;
-      updateBgCurrentRow();
+      updateBgPreview();
       if (!pendingBgFile) { preview(); return; }
       var reader = new FileReader();
-      reader.onload = function () { pendingBgDataUrl = reader.result; preview(); };
+      reader.onload = function () { pendingBgDataUrl = reader.result; updateBgPreview(); preview(); };
       reader.readAsDataURL(pendingBgFile);
+    }
+    els.bgFile.addEventListener('change', function () { handleBgFile(this.files[0]); });
+    ['dragover', 'dragenter'].forEach(function (evt) {
+      els.bgDropzone.addEventListener(evt, function (e) { e.preventDefault(); els.bgDropzone.classList.add('drag-over'); });
     });
-    els.bgDelete.addEventListener('click', function (e) {
-      e.preventDefault();
+    ['dragleave', 'drop'].forEach(function (evt) {
+      els.bgDropzone.addEventListener(evt, function (e) { e.preventDefault(); els.bgDropzone.classList.remove('drag-over'); });
+    });
+    els.bgDropzone.addEventListener('drop', function (e) {
+      var f = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (f) handleBgFile(f);
+    });
+    els.bgRemoveBtn.addEventListener('click', function () {
       pendingBgDeleted = true;
       pendingBgFile = null;
       pendingBgDataUrl = null;
       els.bgFile.value = '';
-      updateBgCurrentRow();
+      updateBgPreview();
       preview();
     });
 
@@ -4481,7 +4524,7 @@ init();
       pendingBgDeleted = false;
       els.bgFile.value = '';
       design.bg_image = DEFAULT_DESIGN.bg_image;
-      updateBgCurrentRow();
+      updateBgPreview();
       syncWheelFromActive();
       preview();
     }
@@ -4556,7 +4599,7 @@ init();
     });
 
     updateSwatch('titlebar'); updateSwatch('dock'); updateSwatch('pl');
-    updateBgCurrentRow();
+    updateBgPreview();
     syncWheelFromActive();
     preview();
   }
