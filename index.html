@@ -4023,7 +4023,8 @@ init();
 .mp-row > label:first-child { font-family: 'Lora', Georgia, serif; font-size: 15px; }
 .mp-form-row { justify-content: space-between; text-align: left; }
 .mp-form-row > label:first-child { text-align: left; }
-.mp-color-label { display: flex; flex-direction: column; align-items: flex-end; flex: 1 1 auto; min-width: 0; position: relative; }
+.mp-color-label { display: flex; flex-direction: column; align-items: flex-end; flex: 1 1 auto; min-width: 0; }
+.mp-bg-label { display: flex; flex-direction: column; align-items: flex-start; }
 .mp-label-row { display: flex; align-items: center; gap: 6px; }
 .mp-hint-btn {
   width: 20px; height: 20px; padding: 0; border-radius: 50%; border: 1px solid #554e30;
@@ -4032,10 +4033,10 @@ init();
 }
 .mp-hint-btn:hover, .mp-hint-btn:focus-visible { color: #FAC946; border-color: #FAC946; }
 .mp-hint-btn:focus-visible { outline: 2px solid #707070; outline-offset: 2px; }
-.mp-color-hint { display: none; font-size: 11px; color: #96895c; margin-top: 2px; }
-.mp-label-row:hover ~ .mp-color-hint,
-.mp-hint-btn:focus-visible ~ .mp-color-hint,
-.mp-color-hint.is-visible { display: block; }
+/* Click/tap-only toggletip — never :hover, so it works on touch and doesn't
+   fight the article's guidance against hover-only reveal on touch devices. */
+.mp-hint-text { display: none; font-size: 11px; color: #96895c; margin-top: 2px; }
+.mp-hint-text.is-visible { display: block; }
 .mp-swatch-input { display: flex; align-items: stretch; flex: none; }
 .mp-swatch { width: 2.5em; border: 1px solid #554e30; border-radius: 4px 0 0 4px; }
 .mp-swatch-input input[type=text] {
@@ -4246,9 +4247,9 @@ init();
       +     '</div>'
       +   '</div></div>'
       +   '<div class="mp-color-fields">'
-      +     '<div class="mp-row"><span class="mp-color-label"><span class="mp-label-row"><label for="mp-color-titlebar">Accent Color:</label><button type="button" class="mp-hint-btn" aria-label="What does Accent Color affect?" aria-expanded="false" aria-controls="mp-hint-titlebar">?</button></span><small class="mp-color-hint" id="mp-hint-titlebar">Buttons, sliders, and the now-playing highlight</small></span><span class="mp-swatch-input"><span class="mp-swatch" id="mp-color-titlebar-swatch"></span><input type="text" id="mp-color-titlebar"></span></div>'
-      +     '<div class="mp-row"><span class="mp-color-label"><span class="mp-label-row"><label for="mp-color-dock">Title Bar &amp; Highlights:</label><button type="button" class="mp-hint-btn" aria-label="What does Title Bar &amp; Highlights affect?" aria-expanded="false" aria-controls="mp-hint-dock">?</button></span><small class="mp-color-hint" id="mp-hint-dock">Title bar background, selected track, and active controls</small></span><span class="mp-swatch-input"><span class="mp-swatch" id="mp-color-dock-swatch"></span><input type="text" id="mp-color-dock"></span></div>'
-      +     '<div class="mp-row"><span class="mp-color-label"><span class="mp-label-row"><label for="mp-color-pl">Playlist Text:</label><button type="button" class="mp-hint-btn" aria-label="What does Playlist Text affect?" aria-expanded="false" aria-controls="mp-hint-pl">?</button></span><small class="mp-color-hint" id="mp-hint-pl">Track names and info in the playlist</small></span><span class="mp-swatch-input"><span class="mp-swatch" id="mp-color-pl-swatch"></span><input type="text" id="mp-color-pl"></span></div>'
+      +     '<div class="mp-row"><span class="mp-color-label"><span class="mp-label-row"><label for="mp-color-titlebar">Accent Color:</label><button type="button" class="mp-hint-btn" aria-label="What does Accent Color affect?" aria-expanded="false" aria-controls="mp-hint-titlebar">?</button></span><small class="mp-hint-text" id="mp-hint-titlebar" role="status">Buttons, sliders, and the now-playing highlight</small></span><span class="mp-swatch-input"><span class="mp-swatch" id="mp-color-titlebar-swatch"></span><input type="text" id="mp-color-titlebar"></span></div>'
+      +     '<div class="mp-row"><span class="mp-color-label"><span class="mp-label-row"><label for="mp-color-dock">Title Bar &amp; Highlights:</label><button type="button" class="mp-hint-btn" aria-label="What does Title Bar &amp; Highlights affect?" aria-expanded="false" aria-controls="mp-hint-dock">?</button></span><small class="mp-hint-text" id="mp-hint-dock" role="status">Title bar background, selected track, and active controls</small></span><span class="mp-swatch-input"><span class="mp-swatch" id="mp-color-dock-swatch"></span><input type="text" id="mp-color-dock"></span></div>'
+      +     '<div class="mp-row"><span class="mp-color-label"><span class="mp-label-row"><label for="mp-color-pl">Playlist Text:</label><button type="button" class="mp-hint-btn" aria-label="What does Playlist Text affect?" aria-expanded="false" aria-controls="mp-hint-pl">?</button></span><small class="mp-hint-text" id="mp-hint-pl" role="status">Track names and info in the playlist</small></span><span class="mp-swatch-input"><span class="mp-swatch" id="mp-color-pl-swatch"></span><input type="text" id="mp-color-pl"></span></div>'
       +   '</div>'
       + '</div>'
       + '<div class="mp-randomize-row"><button type="button" class="mp-randomize-btn" id="mp-customize-randomize">🎲 Randomize Colors</button></div>'
@@ -4266,10 +4267,10 @@ init();
       +     '<input type="file" id="mp-bg-file" accept="image/jpeg,image/png,image/gif,image/webp">'
       +   '</label>'
       + '</div>'
-      + '<div class="mp-row mp-form-row"><label for="mp-bg-size">Background Behavior</label><select id="mp-bg-size"><option value="contain">Default</option><option value="cover">Cover</option><option value="auto">Auto</option></select></div>'
-      + '<div class="mp-row mp-form-row"><label id="mp-bg-repeat-label">Repeat</label><div class="mp-checkbox-group" role="group" aria-labelledby="mp-bg-repeat-label"><label><input type="checkbox" id="mp-bg-repeat-x"> Horizontally</label><label><input type="checkbox" id="mp-bg-repeat-y"> Vertically</label></div></div>'
-      + '<div class="mp-row mp-form-row"><label for="mp-bg-align">Align</label><select id="mp-bg-align"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></div>'
-      + '<div class="mp-row mp-form-row"><label><input type="checkbox" id="mp-bg-fixed"> Fixed position</label></div>'
+      + '<div class="mp-row mp-form-row"><label for="mp-bg-size">Background Behavior</label><select id="mp-bg-size"><option value="contain">Fit (no crop)</option><option value="cover">Fill screen (crops edges)</option><option value="auto">Original size</option></select></div>'
+      + '<div class="mp-row mp-form-row"><span class="mp-bg-label"><span class="mp-label-row"><label id="mp-bg-repeat-label">Repeat</label><button type="button" class="mp-hint-btn" aria-label="What does Repeat do?" aria-expanded="false" aria-controls="mp-hint-repeat">?</button></span><small class="mp-hint-text" id="mp-hint-repeat" role="status">Tiles the image across the background if it doesn\'t fill the whole space.</small></span><div class="mp-checkbox-group" role="group" aria-labelledby="mp-bg-repeat-label"><label><input type="checkbox" id="mp-bg-repeat-x"> Horizontally</label><label><input type="checkbox" id="mp-bg-repeat-y"> Vertically</label></div></div>'
+      + '<div class="mp-row mp-form-row"><span class="mp-bg-label"><span class="mp-label-row"><label for="mp-bg-align">Align</label><button type="button" class="mp-hint-btn" aria-label="What does Align do?" aria-expanded="false" aria-controls="mp-hint-align">?</button></span><small class="mp-hint-text" id="mp-hint-align" role="status">Where the image sits when it doesn\'t fill the whole background.</small></span><select id="mp-bg-align"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></div>'
+      + '<div class="mp-row mp-form-row"><span class="mp-bg-label"><span class="mp-label-row"><label><input type="checkbox" id="mp-bg-fixed"> Fixed position</label><button type="button" class="mp-hint-btn" aria-label="What does Fixed position do?" aria-expanded="false" aria-controls="mp-hint-fixed">?</button></span><small class="mp-hint-text" id="mp-hint-fixed" role="status">Keeps the background still while the page scrolls, instead of scrolling with it.</small></span></div>'
       + '<div class="mp-error" id="mp-customize-error" hidden></div>'
       + '</section>'
       + '</div>'
@@ -4547,16 +4548,30 @@ init();
     document.getElementById('mp-customize-cancel').addEventListener('click', cancel);
     document.getElementById('mp-customize-restore').addEventListener('click', function (e) { e.preventDefault(); resetToDefaults(); });
     document.getElementById('mp-customize-randomize').addEventListener('click', function (e) { e.preventDefault(); randomizeColors(); });
-    overlay.querySelectorAll('.mp-hint-btn').forEach(function (btn) {
+    var hintBtns = overlay.querySelectorAll('.mp-hint-btn');
+    function closeAllHints() {
+      var anyOpen = false;
+      hintBtns.forEach(function (btn) {
+        if (btn.getAttribute('aria-expanded') === 'true') anyOpen = true;
+        document.getElementById(btn.getAttribute('aria-controls')).classList.remove('is-visible');
+        btn.setAttribute('aria-expanded', 'false');
+      });
+      return anyOpen;
+    }
+    hintBtns.forEach(function (btn) {
       btn.addEventListener('click', function () {
         var hint = document.getElementById(btn.getAttribute('aria-controls'));
-        var open = hint.classList.toggle('is-visible');
-        btn.setAttribute('aria-expanded', open);
+        var wasOpen = hint.classList.contains('is-visible');
+        closeAllHints();
+        if (!wasOpen) { hint.classList.add('is-visible'); btn.setAttribute('aria-expanded', 'true'); }
       });
     });
     overlay.addEventListener('click', function (e) { if (e.target === overlay) cancel(); });
     document.addEventListener('keydown', function onEsc(e) {
-      if (e.key === 'Escape' && document.body.contains(overlay)) { cancel(); document.removeEventListener('keydown', onEsc); }
+      if (e.key !== 'Escape' || !document.body.contains(overlay)) return;
+      if (closeAllHints()) return;
+      cancel();
+      document.removeEventListener('keydown', onEsc);
     });
 
     els.save.addEventListener('click', function () {
