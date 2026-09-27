@@ -77,6 +77,7 @@ function mp_default_site_settings(): array {
             'titlebar_color'     => '#FAC946',
             'controls_dock_color'=> '#007998',
             'pl_item_color'      => '#d4c07a',
+            'bg_color'           => '#141410',
             // Blank by default — a fresh install has no background photo.
             // When set, the value must always be applied explicitly (see
             // index.html's applyBackground()): the theme's own --bg-image

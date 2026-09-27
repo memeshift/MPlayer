@@ -10,8 +10,8 @@
  * POST section=site    csrf, site_name, icon, landing_text, email, youtube,
  *                       instagram, soundcloud, rss
  * POST section=design  csrf, titlebar_color, controls_dock_color,
- *                       pl_item_color, bg_image, bg_repeat_x, bg_repeat_y,
- *                       bg_align, bg_fixed
+ *                       pl_item_color, bg_color, bg_image, bg_repeat_x,
+ *                       bg_repeat_y, bg_align, bg_fixed
  */
 
 require_once __DIR__ . '/config.php';
@@ -82,6 +82,7 @@ if ($section === 'site') {
         'titlebar_color'      => ss_hexColor((string)($_POST['titlebar_color'] ?? ''), $settings['design']['titlebar_color']),
         'controls_dock_color' => ss_hexColor((string)($_POST['controls_dock_color'] ?? ''), $settings['design']['controls_dock_color']),
         'pl_item_color'       => ss_hexColor((string)($_POST['pl_item_color'] ?? ''), $settings['design']['pl_item_color']),
+        'bg_color'            => ss_hexColor((string)($_POST['bg_color'] ?? ''), $settings['design']['bg_color']),
         'bg_image'            => $bgImage,
         'bg_size'             => $size,
         'bg_repeat_x'         => !empty($_POST['bg_repeat_x']),
