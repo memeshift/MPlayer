@@ -1044,7 +1044,7 @@ body {
   position: relative;
   text-align: center;
   padding: 0 24px;
-  color: #fff;
+  color: var(--pl-text);
 }
 .now-view-title-wrap {
   overflow: hidden;
@@ -1135,11 +1135,33 @@ body {
   color: rgba(255,255,255,0.5);
   margin-bottom: 10px;
 }
+.now-view-notes-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+  margin-bottom: 20px;
+}
+.now-view-notes-meta-key {
+  font-family: var(--font-info);
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--chrome);
+  margin-bottom: 2px;
+}
+.now-view-notes-meta-val {
+  font-family: var(--font-info-body);
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--pl-text);
+  word-break: break-word;
+}
+.now-view-notes-meta-val a { color: inherit; }
 .now-view-notes-text {
   font-family: var(--font-info-body);
   font-size: 16px;
   line-height: 1.5;
-  color: #fff;
+  color: var(--pl-text);
   white-space: pre-wrap;
 }
 .now-view-seek-row {
@@ -1182,7 +1204,7 @@ body {
 .now-view-btn {
   background: none;
   border: none;
-  color: #fff;
+  color: var(--pl-text);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1859,8 +1881,9 @@ input, select, textarea {
   #lib-body { flex: 1; overflow-y: auto; padding: 0 16px 140px; -webkit-overflow-scrolling: touch; }
   #lib-back { width: 44px; height: 44px; margin: 12px 0 0 12px; border-radius: 50%; background: var(--titlebar-bg); color: var(--titlebar-text); font-size: 24px; text-align: center; }
   #lib h1 { margin: 16px 0 12px; font-size: 36px; font-weight: 700; }
-  .lib-note { margin: 0 0 16px; color: var(--sort-text); font-family: var(--font-info-body); font-size: 14.4px; }
+  .lib-note { margin: 0 0 16px; color: var(--chrome); font-family: var(--font-info-body); font-size: 14.4px; }
   #lib h2 { margin: 28px 0 12px; font-size: 24px; font-weight: 700; }
+  .lib-nav-rows { margin-top: 28px; border-top: 1px solid var(--info-key); }
   .lib-row { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 56px; padding: 6px 0; border-bottom: 1px solid var(--info-key); font-family: var(--font-pl); font-size: 18.4px; }
   .lib-row:active { opacity: 1; background: var(--pl-sel-bg); }
   .lib-row-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -2202,7 +2225,7 @@ input, select, textarea {
         <span class="now-view-title" id="now-view-title">—</span>
       </div>
       <div class="now-view-artist" id="now-view-artist">—</div>
-      <div class="now-view-notes-hint" id="now-view-notes-hint" aria-hidden="true">▲ notes</div>
+      <div class="now-view-notes-hint" id="now-view-notes-hint" aria-hidden="true">▲ Notes</div>
     </div>
     <div class="now-view-seek-row">
       <span class="now-view-time" id="now-view-time-cur">0:00</span>
@@ -2226,6 +2249,7 @@ input, select, textarea {
 
     <div class="now-view-notes" id="now-view-notes" aria-hidden="true">
       <div class="now-view-notes-handle" id="now-view-notes-handle" aria-hidden="true"></div>
+      <div class="now-view-notes-meta" id="now-view-notes-meta"></div>
       <div class="now-view-notes-label">NOTES</div>
       <div class="now-view-notes-text" id="now-view-notes-text">—</div>
     </div>
@@ -3203,6 +3227,14 @@ function esc(str) {
     .replace(/'/g,  '&#39;');
 }
 
+// Only http(s) URLs are safe to drop into an href — blocks javascript: etc.
+function safeHttpUrl(u) {
+  try {
+    const p = new URL(u, location.href);
+    return (p.protocol === 'http:' || p.protocol === 'https:') ? p.href : '#';
+  } catch { return '#'; }
+}
+
 /* ════════════════════════════════════════════════════════════════════
    SPARKLE GALAXY
 ════════════════════════════════════════════════════════════════════ */
@@ -3227,9 +3259,9 @@ function attachSparkle(linkEl, bindDefaultTriggers = true) {
   function W() { return cvs.width || W_fallback; }
 
   function themeColors() {
-    return app.dataset.theme === 'mplayer'
-      ? ['#FAC946', '#fcd97c', '#007998']
-      : ['#14ff14', '#00cc00', '#ffffff'];
+    if (app.dataset.theme !== 'mplayer') return ['#14ff14', '#00cc00', '#ffffff'];
+    const cs = getComputedStyle(app);
+    return ['--chrome', '--chrome-hi', '--titlebar-bg'].map(v => cs.getPropertyValue(v).trim());
   }
 
   const MARGIN = 22;
@@ -3577,6 +3609,19 @@ function syncNowView(t) {
   setNowViewTitle(t.title || decodeURIComponent(t.file).replace(/\.mp3$/i, ''));
   $('now-view-artist').textContent = t.artist || '—';
   $('now-view-notes-text').textContent = t.comment || '—';
+
+  const metaFields = [
+    ['TITLE',  t.title],
+    ['ARTIST', t.artist],
+    ['ALBUM',  t.album],
+    ['YEAR',   t.year],
+    ['TRACK',  t.track],
+    t.buy_url  ? ['BUY',  `<a href="${esc(safeHttpUrl(t.buy_url))}" target="_blank" rel="noopener noreferrer">»buy/support</a>`]  : null,
+    t.info_url ? ['INFO', `<a href="${esc(safeHttpUrl(t.info_url))}" target="_blank" rel="noopener noreferrer">»more info</a>`] : null,
+  ].filter(f => f && f[1]);
+  $('now-view-notes-meta').innerHTML = metaFields.map(([key, val]) =>
+    `<div class="now-view-notes-meta-item"><div class="now-view-notes-meta-key">${key}</div><div class="now-view-notes-meta-val">${key === 'BUY' || key === 'INFO' ? val : esc(val)}</div></div>`
+  ).join('');
 }
 
 function openNotesView() {
@@ -3780,11 +3825,11 @@ function libHome() {
   const tracks = S.tracks.filter(t => L.featured.tracks.includes(t.file));
   const row = (go, ico, label) =>
     `<button type="button" class="lib-row" data-go="${go}"><span class="lib-ico" aria-hidden="true">${ico}</span><span class="lib-row-name">${label}</span><span class="lib-chev" aria-hidden="true">›</span></button>`;
-  let html = (L.landingText ? `<p class="lib-note">${esc(L.landingText)}</p>` : '') +
-    row('aliases', '\u{1F3A4}︎', 'Aliases') + row('albums', '▢', 'Albums') + row('songs', '♪', 'Songs');
+  let html = L.landingText ? `<p class="lib-note">${esc(L.landingText)}</p>` : '';
   if (albums.length || tracks.length) {
     html += '<h2>Featured</h2><div class="lib-grid">' + albums.map(a => libAlbumTile(a)).join('') + tracks.map(libTrackTile).join('') + '</div>';
   }
+  html += '<div class="lib-nav-rows">' + row('aliases', '\u{1F3A4}︎', 'Aliases') + row('albums', '▢', 'Albums') + row('songs', '♪', 'Songs') + '</div>';
   return { title: 'Music', html };
 }
 
