@@ -3841,6 +3841,32 @@ libEl.addEventListener('click', e => {
 audio.addEventListener('play', libMini);
 audio.addEventListener('pause', libMini);
 
+/* Swipe right anywhere on a library screen (except near the left edge, which
+   iOS reserves for its own back-navigation gesture) to pop the lib stack. */
+(() => {
+  let startX = 0, startY = 0, tracking = false;
+
+  libBody.addEventListener('touchstart', e => {
+    if (e.touches[0].clientX < 24) { tracking = false; return; }
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    tracking = true;
+  }, { passive: true });
+
+  libBody.addEventListener('touchend', e => {
+    if (!tracking) return;
+    tracking = false;
+    if (!L.stack.length) return;
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = e.changedTouches[0].clientY - startY;
+    if (dx > 60 && Math.abs(dx) > Math.abs(dy) * 2) {
+      L.stack.pop();
+      libRender();
+      libBody.querySelector('h1').focus({ preventScroll: true });
+    }
+  });
+})();
+
 function libInit(skip) {
   if (!skip) libEl.classList.add('on');
   libRender();
