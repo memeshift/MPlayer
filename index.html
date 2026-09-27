@@ -3849,23 +3849,22 @@ function libMini() {
   $('lib-mini-play').innerHTML = audio.paused ? '▶' : '⏸︎';
 }
 
-// Set by the touchstart handler below on any touch inside the library,
-// cleared on any keydown or once a click consumes it — the actual signal
-// for "was this click touch-triggered", since event.detail isn't reliable
-// for that across browsers (see the click handler below).
-let lastLibInputWasTouch = false;
-document.addEventListener('keydown', () => { lastLibInputWasTouch = false; }, true);
+// Tracks real keyboard activation (Enter/Space on a button) so the click
+// handler below can tell it apart from a touch/mouse click. Trying to
+// detect touch directly (event.detail, a preceding touchstart) turned out
+// unreliable across engines — this instead only ever confirms the keyboard
+// case positively, and defaults to suppressing the ring for everything else.
+let lastKeyActivatedButton = null;
+document.addEventListener('keydown', e => {
+  lastKeyActivatedButton = (e.key === 'Enter' || e.key === ' ') ? e.target : null;
+}, true);
 
 libEl.addEventListener('click', e => {
   const el = e.target.closest('button');
   if (!el) return;
   const d = el.dataset;
-  // event.detail === 0 is the textbook "keyboard-triggered click" signal,
-  // but it's unreliable on iOS WebKit — a real tap reports detail 0 there
-  // too. lastLibInputWasTouch (set by the touchstart handler below, cleared
-  // on any keydown) is the actual signal: was a touch the last input.
-  const suppressRing = lastLibInputWasTouch;
-  lastLibInputWasTouch = false;
+  const suppressRing = lastKeyActivatedButton !== el;
+  lastKeyActivatedButton = null;
   if (el.id === 'lib-back') { L.stack.pop(); libRender(); libFocusHeading(suppressRing); }
   else if (d.go)    libPush(libScreens[d.go], suppressRing);
   else if (d.alias) libPush(() => ({ title: d.alias, html: S.tracks.filter(t => t.artist === d.alias).map(t => libSongRow(t)).join('') }), suppressRing);
@@ -3887,7 +3886,6 @@ audio.addEventListener('pause', libMini);
   let startX = 0, startY = 0, tracking = false;
 
   libBody.addEventListener('touchstart', e => {
-    lastLibInputWasTouch = true;
     if (e.touches[0].clientX < 24) { tracking = false; return; }
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
