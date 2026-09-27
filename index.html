@@ -25,6 +25,7 @@
   --titlebar-text:   #ffffff;
 
   --disp-bg:         #0d1a0d;
+  --notes-bg:        var(--disp-bg);
   --led:             #14ff14;
   --led-glow:        rgba(20, 255, 20, 0.55);
   --led-dim:         #1a3a1a;
@@ -85,6 +86,7 @@
   --titlebar-text:   #ffffff;
 
   --disp-bg:         #0a141e;
+  --notes-bg:        var(--disp-bg);
   --led:             #007998;
   --led-glow:        rgba(0, 121, 152, 0.6);
   --led-dim:         #0a2a34;
@@ -1092,7 +1094,7 @@ body {
   z-index: 5;
   display: flex;
   flex-direction: column;
-  background: var(--disp-bg);
+  background: var(--notes-bg);
   transform: translateY(100%);
   transition: transform 0.28s ease;
   padding: 12px 24px 24px;
@@ -4011,10 +4013,8 @@ init();
 #mp-customize-modal .mp-close-btn:focus-visible { outline: 3px solid #707070; outline-offset: 2px; }
 #mp-customize-modal .mp-body { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
 .mp-section { display: flex; flex-direction: column; gap: 16px; }
-.mp-section-title {
-  margin: 0; font-family: 'Lora', Georgia, serif; font-size: 16px;
-  border-bottom: 1px solid #554e30; padding-bottom: 8px;
-}
+.mp-section + .mp-section { border-top: 1px solid #554e30; padding-top: 20px; }
+.mp-section-title { margin: 0; font-family: 'Lora', Georgia, serif; font-size: 16px; }
 
 /* Two-column design area: wheel left, color fields right — mirrors reference/reference-UI-dialog-widget.jpg */
 .mp-design-cols { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
@@ -4035,7 +4035,7 @@ init();
 .mp-hint-btn:focus-visible { outline: 2px solid #707070; outline-offset: 2px; }
 /* Click/tap-only toggletip — never :hover, so it works on touch and doesn't
    fight the article's guidance against hover-only reveal on touch devices. */
-.mp-hint-text { display: none; font-size: 11px; color: #96895c; margin-top: 2px; }
+.mp-hint-text { display: none; font-size: 15px; color: #96895c; margin-top: 2px; }
 .mp-hint-text.is-visible { display: block; }
 .mp-swatch-input { display: flex; align-items: stretch; flex: none; }
 .mp-swatch { width: 2.5em; border: 1px solid #554e30; border-radius: 4px 0 0 4px; }
@@ -4051,6 +4051,16 @@ init();
 }
 .mp-randomize-btn:hover { filter: brightness(1.08); }
 .mp-randomize-btn:focus-visible { outline: 3px solid #707070; outline-offset: 2px; }
+.mp-legibility-warning {
+  display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap;
+  text-align: right; font-size: 13px; color: #ffb0b0; margin-top: -4px;
+}
+.mp-legibility-warning[hidden] { display: none; }
+.mp-legibility-fix {
+  font-family: 'Lora', Georgia, serif; font-size: 13px; font-weight: 700; color: #141410;
+  border: 1px solid #554e30; border-radius: 4px; padding: 4px 10px; cursor: pointer; min-height: 28px;
+}
+.mp-legibility-fix:focus-visible { outline: 2px solid #707070; outline-offset: 2px; }
 .mp-restore-link { text-align: right; }
 .mp-restore-link a, .mp-restore-link a:visited { color: #c8b86a; text-decoration: underline; cursor: pointer; font-size: 14px; }
 .mp-restore-link a:hover, .mp-restore-link a:focus-visible { color: #FAC946; }
@@ -4132,11 +4142,12 @@ init();
   var DESIGN_VAR_GROUPS = {
     titlebar_color: ['--chrome', '--pl-now-text', '--btn-bg', '--info-val', '--slider-thumb-bg'],
     controls_dock_color: ['--titlebar-bg', '--led', '--pl-sel-bg', '--btn-active-col', '--sort-sel-bg'],
-    pl_item_color: ['--pl-text']
+    pl_item_color: ['--pl-text'],
+    bg_color: ['--pl-bg']
   };
   var SOCIAL_IDS = { email: 'social-email', youtube: 'social-youtube', instagram: 'social-instagram', soundcloud: 'social-soundcloud', rss: 'social-rss' };
   var DEFAULT_DESIGN = {
-    titlebar_color: '#FAC946', controls_dock_color: '#007998', pl_item_color: '#d4c07a',
+    titlebar_color: '#FAC946', controls_dock_color: '#007998', pl_item_color: '#d4c07a', bg_color: '#141410',
     bg_image: '',
     bg_size: 'contain', bg_repeat_x: true, bg_repeat_y: true, bg_align: 'right', bg_fixed: false
   };
@@ -4151,6 +4162,97 @@ init();
 
   var lastDesign = null;
 
+  /* ── hex <-> hsv, shared by the wheel, the hex text inputs, and the derived
+     vars below — hoisted out of buildCustomizeModal() so applyDesign() can
+     use them too on every page load, not just while the admin modal is open. */
+  function hexToRgb(hex) {
+    var n = parseInt(hex.slice(1), 16);
+    return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+  }
+  function rgbToHex(r, g, b) {
+    return '#' + [r, g, b].map(function (c) {
+      return Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, '0');
+    }).join('').toUpperCase();
+  }
+  function rgbToHsv(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    var max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+    var h = 0;
+    if (d !== 0) {
+      if (max === r) h = 60 * (((g - b) / d) % 6);
+      else if (max === g) h = 60 * ((b - r) / d + 2);
+      else h = 60 * ((r - g) / d + 4);
+    }
+    if (h < 0) h += 360;
+    return { h: h, s: max === 0 ? 0 : d / max, v: max };
+  }
+  function hsvToRgb(h, s, v) {
+    var c = v * s, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = v - c, r, g, b;
+    if (h < 60) { r = c; g = x; b = 0; } else if (h < 120) { r = x; g = c; b = 0; }
+    else if (h < 180) { r = 0; g = c; b = x; } else if (h < 240) { r = 0; g = x; b = c; }
+    else if (h < 300) { r = x; g = 0; b = c; } else { r = c; g = 0; b = x; }
+    return { r: (r + m) * 255, g: (g + m) * 255, b: (b + m) * 255 };
+  }
+  function hexToHsv(hex) { var rgb = hexToRgb(hex); return rgbToHsv(rgb.r, rgb.g, rgb.b); }
+  function hsvToHex(h, s, v) { var rgb = hsvToRgb(h, s, v); return rgbToHex(rgb.r, rgb.g, rgb.b); }
+
+  /* ── WCAG contrast (relative luminance, per spec) ── */
+  function srgbChannelToLinear(c) { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
+  function relLuminance(hex) {
+    var rgb = hexToRgb(hex);
+    return 0.2126 * srgbChannelToLinear(rgb.r) + 0.7152 * srgbChannelToLinear(rgb.g) + 0.0722 * srgbChannelToLinear(rgb.b);
+  }
+  function contrastRatio(hexA, hexB) {
+    var la = relLuminance(hexA), lb = relLuminance(hexB);
+    return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+  }
+  /* Nearest shade at the same hue/saturation as `hex` that clears 4.5:1 against
+     every color in `against`, searching outward by lightness. Falls back to
+     whichever of pure black/white scores higher in the rare case nothing at
+     that hue/sat works (the two `against` colors themselves span almost the
+     full luminance range). */
+  function suggestLegibleShade(hex, against) {
+    var hsv = hexToHsv(hex);
+    function passes(candidate) { return against.every(function (o) { return contrastRatio(candidate, o) >= 4.5; }); }
+    for (var step = 0; step <= 50; step++) {
+      var deltas = step === 0 ? [0] : [step * 0.02, -step * 0.02];
+      for (var i = 0; i < deltas.length; i++) {
+        var v = hsv.v + deltas[i];
+        if (v < 0 || v > 1) continue;
+        var candidate = hsvToHex(hsv.h, hsv.s, v);
+        if (passes(candidate)) return candidate;
+      }
+    }
+    var scoreBlack = Math.min.apply(null, against.map(function (o) { return contrastRatio('#000000', o); }));
+    var scoreWhite = Math.min.apply(null, against.map(function (o) { return contrastRatio('#FFFFFF', o); }));
+    return scoreBlack >= scoreWhite ? '#000000' : '#FFFFFF';
+  }
+  /* A surface shade derived from Background — a subtle lightness step, so it
+     still reads as "the same background" rather than a different color —
+     nudged further if that step would make any color in `against` hard to
+     read on it. Shared by --pl-alt (against Playlist Text) and --notes-bg
+     (against Playlist Text and Accent, both drawn on the notes popup). */
+  function deriveSurfaceShade(bgHex, against) {
+    var hsv = hexToHsv(bgHex);
+    var altV = hsv.v < 0.5 ? Math.min(1, hsv.v + 0.06) : Math.max(0, hsv.v - 0.06);
+    var alt = hsvToHex(hsv.h, hsv.s, altV);
+    var passes = against.every(function (o) { return contrastRatio(alt, o) >= 4.5; });
+    return passes ? alt : suggestLegibleShade(alt, against);
+  }
+  /* Transport button icon/text color — always drawn on Accent Color
+     (--btn-bg/--chrome), so it's derived from Accent rather than the fixed
+     per-theme value that only worked for the shipped default accent. Prefers
+     this app's warm dark/light ink shades over harsh black/white, falling
+     back to whichever of those actually passes if neither preset does. */
+  function deriveBtnText(accentHex) {
+    var DARK = '#2a2000', LIGHT = '#f5f0e0';
+    var preferred = relLuminance(accentHex) > 0.4 ? DARK : LIGHT;
+    if (contrastRatio(accentHex, preferred) >= 4.5) return preferred;
+    var other = preferred === DARK ? LIGHT : DARK;
+    if (contrastRatio(accentHex, other) >= 4.5) return other;
+    return suggestLegibleShade(preferred, [accentHex]);
+  }
+
   function applyDesign(design) {
     if (design) lastDesign = design;
     else design = lastDesign;
@@ -4162,6 +4264,9 @@ init();
       Object.keys(DESIGN_VAR_GROUPS).forEach(function (key) {
         DESIGN_VAR_GROUPS[key].forEach(function (cssVar) { themeRoot.style.removeProperty(cssVar); });
       });
+      themeRoot.style.removeProperty('--pl-alt');
+      themeRoot.style.removeProperty('--btn-text');
+      themeRoot.style.removeProperty('--notes-bg');
       return;
     }
 
@@ -4170,6 +4275,28 @@ init();
       if (!val || !HEX_RE.test(val)) return;
       DESIGN_VAR_GROUPS[key].forEach(function (cssVar) { themeRoot.style.setProperty(cssVar, val); });
     });
+    // --pl-alt (alternating playlist row shade) and --notes-bg (now-playing
+    // notes popup) are derived from Background rather than hardcoded per-theme
+    // values, so they always stay legible against whatever text is drawn on
+    // top of them.
+    if (HEX_RE.test(design.bg_color) && HEX_RE.test(design.pl_item_color)) {
+      themeRoot.style.setProperty('--pl-alt', deriveSurfaceShade(design.bg_color, [design.pl_item_color]));
+    } else {
+      themeRoot.style.removeProperty('--pl-alt');
+    }
+    if (HEX_RE.test(design.bg_color) && HEX_RE.test(design.pl_item_color) && HEX_RE.test(design.titlebar_color)) {
+      themeRoot.style.setProperty('--notes-bg', deriveSurfaceShade(design.bg_color, [design.pl_item_color, design.titlebar_color]));
+    } else {
+      themeRoot.style.removeProperty('--notes-bg');
+    }
+    // --btn-text (transport button icon/text color) is derived from Accent
+    // Color rather than a hardcoded per-theme value, so it stays legible on
+    // top of --btn-bg/--chrome, which Accent Color also drives.
+    if (HEX_RE.test(design.titlebar_color)) {
+      themeRoot.style.setProperty('--btn-text', deriveBtnText(design.titlebar_color));
+    } else {
+      themeRoot.style.removeProperty('--btn-text');
+    }
     applyBackground(design);
   }
   window.MP_reapplyDesign = applyDesign;
@@ -4250,6 +4377,8 @@ init();
       +     '<div class="mp-row"><span class="mp-color-label"><span class="mp-label-row"><label for="mp-color-titlebar">Accent Color:</label><button type="button" class="mp-hint-btn" aria-label="What does Accent Color affect?" aria-expanded="false" aria-controls="mp-hint-titlebar">?</button></span><small class="mp-hint-text" id="mp-hint-titlebar" role="status">Buttons, sliders, and the now-playing highlight</small></span><span class="mp-swatch-input"><span class="mp-swatch" id="mp-color-titlebar-swatch"></span><input type="text" id="mp-color-titlebar"></span></div>'
       +     '<div class="mp-row"><span class="mp-color-label"><span class="mp-label-row"><label for="mp-color-dock">Title Bar &amp; Highlights:</label><button type="button" class="mp-hint-btn" aria-label="What does Title Bar &amp; Highlights affect?" aria-expanded="false" aria-controls="mp-hint-dock">?</button></span><small class="mp-hint-text" id="mp-hint-dock" role="status">Title bar background, selected track, and active controls</small></span><span class="mp-swatch-input"><span class="mp-swatch" id="mp-color-dock-swatch"></span><input type="text" id="mp-color-dock"></span></div>'
       +     '<div class="mp-row"><span class="mp-color-label"><span class="mp-label-row"><label for="mp-color-pl">Playlist Text:</label><button type="button" class="mp-hint-btn" aria-label="What does Playlist Text affect?" aria-expanded="false" aria-controls="mp-hint-pl">?</button></span><small class="mp-hint-text" id="mp-hint-pl" role="status">Track names and info in the playlist</small></span><span class="mp-swatch-input"><span class="mp-swatch" id="mp-color-pl-swatch"></span><input type="text" id="mp-color-pl"></span></div>'
+      +     '<div class="mp-row"><span class="mp-color-label"><span class="mp-label-row"><label for="mp-color-bg">Background:</label><button type="button" class="mp-hint-btn" aria-label="What does Background affect?" aria-expanded="false" aria-controls="mp-hint-bg">?</button></span><small class="mp-hint-text" id="mp-hint-bg" role="status">Playlist and library view background</small></span><span class="mp-swatch-input"><span class="mp-swatch" id="mp-color-bg-swatch"></span><input type="text" id="mp-color-bg"></span></div>'
+      +     '<div class="mp-legibility-warning" id="mp-bg-warning" role="alert" hidden><span id="mp-bg-warning-text"></span> <button type="button" class="mp-legibility-fix" id="mp-bg-warning-fix"></button></div>'
       +   '</div>'
       + '</div>'
       + '<div class="mp-randomize-row"><button type="button" class="mp-randomize-btn" id="mp-customize-randomize">🎲 Randomize Colors</button></div>'
@@ -4263,7 +4392,7 @@ init();
       +   '</div>'
       +   '<label id="mp-bg-dropzone" class="art-dropzone" for="mp-bg-file">'
       +     '<span id="mp-bg-dropzone-title" class="art-dropzone-title">Add background image</span>'
-      +     '<span class="hint">JPEG, PNG, GIF, or WebP. Drop a file or click to browse.</span>'
+      +     '<span class="hint">JPEG, PNG, GIF, or WebP. Drop a file or click to browse. 5MB limit. Even animated GIFs work.</span>'
       +     '<input type="file" id="mp-bg-file" accept="image/jpeg,image/png,image/gif,image/webp">'
       +   '</label>'
       + '</div>'
@@ -4282,6 +4411,9 @@ init();
       titlebar: document.getElementById('mp-color-titlebar'), titlebarSwatch: document.getElementById('mp-color-titlebar-swatch'),
       dock: document.getElementById('mp-color-dock'), dockSwatch: document.getElementById('mp-color-dock-swatch'),
       pl: document.getElementById('mp-color-pl'), plSwatch: document.getElementById('mp-color-pl-swatch'),
+      bgColor: document.getElementById('mp-color-bg'), bgColorSwatch: document.getElementById('mp-color-bg-swatch'),
+      bgWarning: document.getElementById('mp-bg-warning'), bgWarningText: document.getElementById('mp-bg-warning-text'),
+      bgWarningFix: document.getElementById('mp-bg-warning-fix'),
       bgFile: document.getElementById('mp-bg-file'), bgSize: document.getElementById('mp-bg-size'),
       bgRepeatX: document.getElementById('mp-bg-repeat-x'), bgRepeatY: document.getElementById('mp-bg-repeat-y'),
       bgAlign: document.getElementById('mp-bg-align'), bgFixed: document.getElementById('mp-bg-fixed'),
@@ -4293,11 +4425,12 @@ init();
       error: document.getElementById('mp-customize-error'),
       save: document.getElementById('mp-customize-save')
     };
-    var colorFieldEls = { titlebar: els.titlebar, dock: els.dock, pl: els.pl };
-    var colorSwatchEls = { titlebar: els.titlebarSwatch, dock: els.dockSwatch, pl: els.plSwatch };
+    var colorFieldEls = { titlebar: els.titlebar, dock: els.dock, pl: els.pl, bgColor: els.bgColor };
+    var colorSwatchEls = { titlebar: els.titlebarSwatch, dock: els.dockSwatch, pl: els.plSwatch, bgColor: els.bgColorSwatch };
     els.titlebar.value = design.titlebar_color;
     els.dock.value = design.controls_dock_color;
     els.pl.value = design.pl_item_color;
+    els.bgColor.value = design.bg_color;
     els.bgSize.value = design.bg_size;
     els.bgRepeatX.checked = !!design.bg_repeat_x;
     els.bgRepeatY.checked = !!design.bg_repeat_y;
@@ -4312,64 +4445,51 @@ init();
     var pendingBgDataUrl = null;
     var pendingBgDeleted = false;
 
-    /* ── hex <-> hsv, shared by the wheel and the hex text inputs ── */
-    function hexToRgb(hex) {
-      var n = parseInt(hex.slice(1), 16);
-      return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
-    }
-    function rgbToHex(r, g, b) {
-      return '#' + [r, g, b].map(function (c) {
-        return Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, '0');
-      }).join('').toUpperCase();
-    }
-    function rgbToHsv(r, g, b) {
-      r /= 255; g /= 255; b /= 255;
-      var max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
-      var h = 0;
-      if (d !== 0) {
-        if (max === r) h = 60 * (((g - b) / d) % 6);
-        else if (max === g) h = 60 * ((b - r) / d + 2);
-        else h = 60 * ((r - g) / d + 4);
-      }
-      if (h < 0) h += 360;
-      return { h: h, s: max === 0 ? 0 : d / max, v: max };
-    }
-    function hsvToRgb(h, s, v) {
-      var c = v * s, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = v - c, r, g, b;
-      if (h < 60) { r = c; g = x; b = 0; } else if (h < 120) { r = x; g = c; b = 0; }
-      else if (h < 180) { r = 0; g = c; b = x; } else if (h < 240) { r = 0; g = x; b = c; }
-      else if (h < 300) { r = x; g = 0; b = c; } else { r = c; g = 0; b = x; }
-      return { r: (r + m) * 255, g: (g + m) * 255, b: (b + m) * 255 };
-    }
-    function hexToHsv(hex) { var rgb = hexToRgb(hex); return rgbToHsv(rgb.r, rgb.g, rgb.b); }
-    function hsvToHex(h, s, v) { var rgb = hsvToRgb(h, s, v); return rgbToHex(rgb.r, rgb.g, rgb.b); }
-
-    /* ── WCAG contrast (relative luminance, per spec) ── */
-    function srgbChannelToLinear(c) { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
-    function relLuminance(hex) {
-      var rgb = hexToRgb(hex);
-      return 0.2126 * srgbChannelToLinear(rgb.r) + 0.7152 * srgbChannelToLinear(rgb.g) + 0.0722 * srgbChannelToLinear(rgb.b);
-    }
-    function contrastRatio(hexA, hexB) {
-      var la = relLuminance(hexA), lb = relLuminance(hexB);
-      return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
-    }
-    /* Random rejection sampling until all 3 colors pass WCAG AA (4.5:1) against each other.
-       ponytail: bounded retry loop, not a solver — color space is large enough that a passing
-       triple almost always turns up in a handful of tries; falls back to the last draw if not. */
+    /* hexToRgb, hsvToHex, contrastRatio, suggestLegibleShade, etc. are defined
+       at the top of this IIFE, shared with applyDesign()'s --pl-alt derivation. */
+    /* Random rejection sampling until every pair that's actually drawn text-on-background
+       together in the live UI clears WCAG AA (4.5:1):
+         (a,b) Accent text on Dock background — the selected/now-playing row
+         (a,d) Accent icons/letters on Background — library view
+         (c,d) Playlist Text on Background — playlist rows and library view text
+       Dock (b) and Playlist Text (c) are never drawn on each other or on Background
+       together, so those pairs are intentionally NOT constrained — three colors
+       constrained pairwise against a fourth quickly becomes unsatisfiable within the
+       [0,1] luminance range (verified: ~0% success rate), so only real UI adjacencies
+       are enforced, not every possible pair.
+       ponytail: bounded retry loop, not a solver — verified empirically to succeed
+       within the cap; falls back to the last draw in the astronomically unlikely case
+       it doesn't. */
     function randomizeColors() {
-      var MIN_CONTRAST = 4.5, MAX_TRIES = 500, a, b, c;
+      var MIN_CONTRAST = 4.5, MAX_TRIES = 3000, a, b, c, d;
+      function randHex() { return hsvToHex(Math.random() * 360, 0.55 + Math.random() * 0.4, 0.15 + Math.random() * 0.8); }
       for (var i = 0; i < MAX_TRIES; i++) {
-        a = hsvToHex(Math.random() * 360, 0.55 + Math.random() * 0.4, 0.15 + Math.random() * 0.8);
-        b = hsvToHex(Math.random() * 360, 0.55 + Math.random() * 0.4, 0.15 + Math.random() * 0.8);
-        c = hsvToHex(Math.random() * 360, 0.55 + Math.random() * 0.4, 0.15 + Math.random() * 0.8);
-        if (contrastRatio(a, b) >= MIN_CONTRAST && contrastRatio(a, c) >= MIN_CONTRAST && contrastRatio(b, c) >= MIN_CONTRAST) break;
+        a = randHex(); b = randHex(); c = randHex(); d = randHex();
+        if (contrastRatio(a, b) >= MIN_CONTRAST && contrastRatio(a, d) >= MIN_CONTRAST && contrastRatio(c, d) >= MIN_CONTRAST) break;
       }
       els.titlebar.value = a; updateSwatch('titlebar');
       els.dock.value = b; updateSwatch('dock');
       els.pl.value = c; updateSwatch('pl');
+      els.bgColor.value = d; updateSwatch('bgColor');
       syncWheelFromActive();
       preview();
+    }
+    /* ── Background legibility: warn + suggest a nearby passing shade ──
+       Only nudges Background itself (never the text colors), per the same
+       "background sits under Accent or Playlist Text" pairing as above. */
+    var pendingBgSuggestion = null;
+    function checkBgLegibility() {
+      var bg = els.bgColor.value;
+      if (!HEX_RE.test(bg)) { els.bgWarning.hidden = true; return; }
+      var against = [els.titlebar.value, els.pl.value].filter(function (h) { return HEX_RE.test(h); });
+      var failing = against.some(function (h) { return contrastRatio(bg, h) < 4.5; });
+      if (!failing) { els.bgWarning.hidden = true; pendingBgSuggestion = null; return; }
+      pendingBgSuggestion = suggestLegibleShade(bg, against);
+      els.bgWarningText.textContent = 'Hard to read against Accent Color / Playlist Text.';
+      els.bgWarningFix.textContent = 'Use ' + pendingBgSuggestion + ' instead';
+      els.bgWarningFix.style.background = pendingBgSuggestion;
+      els.bgWarningFix.style.color = relLuminance(pendingBgSuggestion) > 0.35 ? '#141410' : '#f5f0e0';
+      els.bgWarning.hidden = false;
     }
 
     /* ── shared color wheel: edits whichever hex field last had focus ── */
@@ -4469,6 +4589,7 @@ init();
         titlebar_color: els.titlebar.value,
         controls_dock_color: els.dock.value,
         pl_item_color: els.pl.value,
+        bg_color: els.bgColor.value,
         bg_image: pendingBgDeleted && !pendingBgFile ? '' : (pendingBgDataUrl || design.bg_image),
         bg_size: els.bgSize.value,
         bg_repeat_x: els.bgRepeatX.checked,
@@ -4476,6 +4597,7 @@ init();
         bg_align: els.bgAlign.value,
         bg_fixed: els.bgFixed.checked
       });
+      checkBgLegibility();
     }
 
     els.bgSize.addEventListener('change', preview);
@@ -4517,6 +4639,7 @@ init();
       els.titlebar.value = DEFAULT_DESIGN.titlebar_color; updateSwatch('titlebar');
       els.dock.value = DEFAULT_DESIGN.controls_dock_color; updateSwatch('dock');
       els.pl.value = DEFAULT_DESIGN.pl_item_color; updateSwatch('pl');
+      els.bgColor.value = DEFAULT_DESIGN.bg_color; updateSwatch('bgColor');
       els.bgSize.value = DEFAULT_DESIGN.bg_size;
       els.bgRepeatX.checked = DEFAULT_DESIGN.bg_repeat_x;
       els.bgRepeatY.checked = DEFAULT_DESIGN.bg_repeat_y;
@@ -4548,6 +4671,13 @@ init();
     document.getElementById('mp-customize-cancel').addEventListener('click', cancel);
     document.getElementById('mp-customize-restore').addEventListener('click', function (e) { e.preventDefault(); resetToDefaults(); });
     document.getElementById('mp-customize-randomize').addEventListener('click', function (e) { e.preventDefault(); randomizeColors(); });
+    els.bgWarningFix.addEventListener('click', function () {
+      if (!pendingBgSuggestion) return;
+      els.bgColor.value = pendingBgSuggestion;
+      updateSwatch('bgColor');
+      if (activeField === 'bgColor') syncWheelFromActive();
+      preview();
+    });
     var hintBtns = overlay.querySelectorAll('.mp-hint-btn');
     function closeAllHints() {
       var anyOpen = false;
@@ -4596,6 +4726,7 @@ init();
         fd.set('titlebar_color', els.titlebar.value);
         fd.set('controls_dock_color', els.dock.value);
         fd.set('pl_item_color', els.pl.value);
+        fd.set('bg_color', els.bgColor.value);
         fd.set('bg_image', res.data.path || (pendingBgDeleted ? '' : design.bg_image));
         fd.set('bg_size', els.bgSize.value);
         if (els.bgRepeatX.checked) fd.set('bg_repeat_x', '1');
@@ -4615,7 +4746,7 @@ init();
       });
     });
 
-    updateSwatch('titlebar'); updateSwatch('dock'); updateSwatch('pl');
+    updateSwatch('titlebar'); updateSwatch('dock'); updateSwatch('pl'); updateSwatch('bgColor');
     updateBgPreview();
     syncWheelFromActive();
     preview();
