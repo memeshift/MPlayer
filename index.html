@@ -4026,6 +4026,15 @@ init();
   width: 100px; font-family: 'Lora', Georgia, serif; color: #FAC946; background: #141410;
   border: 1px solid #554e30; border-left: none; border-radius: 0 4px 4px 0; padding: 10px 12px; min-height: 44px;
 }
+.mp-randomize-row { justify-content: stretch; }
+.mp-randomize-btn {
+  width: 100%; min-height: 48px; border: none; border-radius: 6px;
+  font-family: 'Lora', Georgia, serif; font-size: 16px; font-weight: 700;
+  color: #141410; cursor: pointer;
+  background: linear-gradient(90deg, #ff5f6d, #ffc371, #47e0a1, #4fa8f7, #b967ff);
+}
+.mp-randomize-btn:hover { filter: brightness(1.08); }
+.mp-randomize-btn:focus-visible { outline: 3px solid #707070; outline-offset: 2px; }
 .mp-restore-link { align-self: flex-end; }
 .mp-restore-link a, .mp-restore-link a:visited { color: #c8b86a; text-decoration: underline; cursor: pointer; font-size: 14px; }
 .mp-restore-link a:hover, .mp-restore-link a:focus-visible { color: #FAC946; }
@@ -4203,6 +4212,7 @@ init();
       +     '<div class="mp-row"><span class="mp-color-label"><label for="mp-color-titlebar">Accent Color:</label><small class="mp-color-hint">Buttons, sliders, and the now-playing highlight</small></span><span class="mp-swatch-input"><span class="mp-swatch" id="mp-color-titlebar-swatch"></span><input type="text" id="mp-color-titlebar"></span></div>'
       +     '<div class="mp-row"><span class="mp-color-label"><label for="mp-color-dock">Title Bar &amp; Highlights:</label><small class="mp-color-hint">Title bar background, selected track, and active controls</small></span><span class="mp-swatch-input"><span class="mp-swatch" id="mp-color-dock-swatch"></span><input type="text" id="mp-color-dock"></span></div>'
       +     '<div class="mp-row"><span class="mp-color-label"><label for="mp-color-pl">Playlist Text:</label><small class="mp-color-hint">Track names and info in the playlist</small></span><span class="mp-swatch-input"><span class="mp-swatch" id="mp-color-pl-swatch"></span><input type="text" id="mp-color-pl"></span></div>'
+      +     '<div class="mp-row mp-randomize-row"><button type="button" class="mp-randomize-btn" id="mp-customize-randomize">🎲 Randomize Colors</button></div>'
       +     '<div class="mp-row mp-restore-link"><a href="#" id="mp-customize-restore">restore defaults</a></div>'
       +   '</div>'
       + '</div>'
@@ -4282,6 +4292,34 @@ init();
     }
     function hexToHsv(hex) { var rgb = hexToRgb(hex); return rgbToHsv(rgb.r, rgb.g, rgb.b); }
     function hsvToHex(h, s, v) { var rgb = hsvToRgb(h, s, v); return rgbToHex(rgb.r, rgb.g, rgb.b); }
+
+    /* ── WCAG contrast (relative luminance, per spec) ── */
+    function srgbChannelToLinear(c) { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
+    function relLuminance(hex) {
+      var rgb = hexToRgb(hex);
+      return 0.2126 * srgbChannelToLinear(rgb.r) + 0.7152 * srgbChannelToLinear(rgb.g) + 0.0722 * srgbChannelToLinear(rgb.b);
+    }
+    function contrastRatio(hexA, hexB) {
+      var la = relLuminance(hexA), lb = relLuminance(hexB);
+      return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+    }
+    /* Random rejection sampling until all 3 colors pass WCAG AA (4.5:1) against each other.
+       ponytail: bounded retry loop, not a solver — color space is large enough that a passing
+       triple almost always turns up in a handful of tries; falls back to the last draw if not. */
+    function randomizeColors() {
+      var MIN_CONTRAST = 4.5, MAX_TRIES = 500, a, b, c;
+      for (var i = 0; i < MAX_TRIES; i++) {
+        a = hsvToHex(Math.random() * 360, 0.55 + Math.random() * 0.4, 0.15 + Math.random() * 0.8);
+        b = hsvToHex(Math.random() * 360, 0.55 + Math.random() * 0.4, 0.15 + Math.random() * 0.8);
+        c = hsvToHex(Math.random() * 360, 0.55 + Math.random() * 0.4, 0.15 + Math.random() * 0.8);
+        if (contrastRatio(a, b) >= MIN_CONTRAST && contrastRatio(a, c) >= MIN_CONTRAST && contrastRatio(b, c) >= MIN_CONTRAST) break;
+      }
+      els.titlebar.value = a; updateSwatch('titlebar');
+      els.dock.value = b; updateSwatch('dock');
+      els.pl.value = c; updateSwatch('pl');
+      syncWheelFromActive();
+      preview();
+    }
 
     /* ── shared color wheel: edits whichever hex field last had focus ── */
     var activeField = 'titlebar';
@@ -4447,6 +4485,7 @@ init();
     document.getElementById('mp-customize-close').addEventListener('click', cancel);
     document.getElementById('mp-customize-cancel').addEventListener('click', cancel);
     document.getElementById('mp-customize-restore').addEventListener('click', function (e) { e.preventDefault(); resetToDefaults(); });
+    document.getElementById('mp-customize-randomize').addEventListener('click', function (e) { e.preventDefault(); randomizeColors(); });
     overlay.addEventListener('click', function (e) { if (e.target === overlay) cancel(); });
     document.addEventListener('keydown', function onEsc(e) {
       if (e.key === 'Escape' && document.body.contains(overlay)) { cancel(); document.removeEventListener('keydown', onEsc); }
