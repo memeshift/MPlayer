@@ -4127,6 +4127,13 @@ init();
 #mp-customize-modal .mp-btn-cancel:hover { background: rgba(250, 201, 70, 0.08); color: #FAC946; }
 #mp-customize-modal .mp-btn:focus-visible { outline: 3px solid #707070; outline-offset: 2px; }
 #mp-customize-modal .mp-error { color: #ff6b6b; font-size: 14px; }
+/* Matches library.php's save-confirmation toast (.msg / .msg-success) */
+#mp-customize-modal .mp-msg {
+  border-radius: 4px; padding: 12px 14px; margin: 0; font-size: 0.95rem;
+  transition-property: opacity; transition-timing-function: linear;
+}
+#mp-customize-modal .mp-msg.fade-out { opacity: 0; }
+#mp-customize-modal .mp-msg-success { background: #06282e; color: #FAC946; border: 1px solid #6fd6ef; }
 [hidden] { display: none !important; }
 </style>
 <script>
@@ -4401,6 +4408,7 @@ init();
       + '<div class="mp-row mp-form-row"><span class="mp-bg-label"><span class="mp-label-row"><label for="mp-bg-align">Align</label><button type="button" class="mp-hint-btn" aria-label="What does Align do?" aria-expanded="false" aria-controls="mp-hint-align">?</button></span><small class="mp-hint-text" id="mp-hint-align" role="status">Where the image sits when it doesn\'t fill the whole background.</small></span><select id="mp-bg-align"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select></div>'
       + '<div class="mp-row mp-form-row"><span class="mp-bg-label"><span class="mp-label-row"><label><input type="checkbox" id="mp-bg-fixed"> Fixed position</label><button type="button" class="mp-hint-btn" aria-label="What does Fixed position do?" aria-expanded="false" aria-controls="mp-hint-fixed">?</button></span><small class="mp-hint-text" id="mp-hint-fixed" role="status">Keeps the background still while the page scrolls, instead of scrolling with it.</small></span></div>'
       + '<div class="mp-error" id="mp-customize-error" hidden></div>'
+      + '<div class="mp-msg mp-msg-success" id="mp-customize-success" hidden></div>'
       + '</section>'
       + '</div>'
       + '<footer><span class="mp-footer-spacer"></span><button type="button" class="mp-btn mp-btn-cancel" id="mp-customize-cancel">Cancel</button><button type="button" class="mp-btn mp-btn-save" id="mp-customize-save">Save</button></footer>'
@@ -4423,6 +4431,7 @@ init();
       wheelRing: document.getElementById('mp-wheel-ring'), wheelSv: document.getElementById('mp-wheel-sv'),
       hueMarker: document.getElementById('mp-wheel-hue-marker'), svMarker: document.getElementById('mp-wheel-sv-marker'),
       error: document.getElementById('mp-customize-error'),
+      success: document.getElementById('mp-customize-success'),
       save: document.getElementById('mp-customize-save')
     };
     var colorFieldEls = { titlebar: els.titlebar, dock: els.dock, pl: els.pl, bgColor: els.bgColor };
@@ -4660,6 +4669,22 @@ init();
       badge.remove();
     }
 
+    /* Matches library.php's showOrderSaved(): fade the message out over 2s,
+       then hide it and close the modal — same timing, same pattern. */
+    function showSaveSuccess() {
+      els.success.textContent = 'Saved.';
+      els.success.hidden = false;
+      els.success.classList.remove('fade-out');
+      els.success.style.transitionDuration = '';
+      var done = function () { closeModal(); };
+      requestAnimationFrame(function () {
+        els.success.style.transitionDuration = '2000ms';
+        requestAnimationFrame(function () { els.success.classList.add('fade-out'); });
+      });
+      els.success.addEventListener('transitionend', done, { once: true });
+      setTimeout(done, 2200);
+    }
+
     function cancel() {
       if (originalDesign.bg_image) document.body.style.setProperty('--bg-image', "url('" + originalDesign.bg_image + "')");
       else document.body.style.removeProperty('--bg-image');
@@ -4706,6 +4731,7 @@ init();
 
     els.save.addEventListener('click', function () {
       els.error.hidden = true;
+      els.success.hidden = true;
       els.save.disabled = true;
 
       var uploadStep = pendingBgFile
@@ -4737,7 +4763,7 @@ init();
           .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); });
       }).then(function (res) {
         if (!res.ok) throw new Error(res.data.error || 'Save failed.');
-        closeModal();
+        showSaveSuccess();
       }).catch(function (err) {
         els.error.hidden = false;
         els.error.textContent = err.message;
