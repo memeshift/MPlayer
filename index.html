@@ -3228,9 +3228,9 @@ function attachSparkle(linkEl, bindDefaultTriggers = true) {
   function W() { return cvs.width || W_fallback; }
 
   function themeColors() {
-    return app.dataset.theme === 'mplayer'
-      ? ['#FAC946', '#fcd97c', '#007998']
-      : ['#14ff14', '#00cc00', '#ffffff'];
+    if (app.dataset.theme !== 'mplayer') return ['#14ff14', '#00cc00', '#ffffff'];
+    const cs = getComputedStyle(app);
+    return ['--chrome', '--chrome-hi', '--titlebar-bg'].map(v => cs.getPropertyValue(v).trim());
   }
 
   const MARGIN = 22;
