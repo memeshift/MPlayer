@@ -2215,7 +2215,7 @@ input, select, textarea {
 
 
   <!-- ══ MOBILE LIBRARY (landing page, ≤600px) ══ -->
-  <div id="lib" aria-label="Library">
+  <div id="lib" aria-label="Music">
     <div id="lib-nav"></div>
     <div id="lib-body"></div>
     <div id="lib-mini" hidden>
@@ -3766,7 +3766,7 @@ function libHome() {
   if (albums.length || tracks.length) {
     html += '<h2>Featured</h2><div class="lib-grid">' + albums.map(a => libAlbumTile(a)).join('') + tracks.map(libTrackTile).join('') + '</div>';
   }
-  return { title: 'Library', html };
+  return { title: 'Music', html };
 }
 
 function libAliasesScreen() {
