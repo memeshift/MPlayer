@@ -69,8 +69,8 @@ body { max-width: 640px; }
 
   <div class="field">
     <label for="landing_text">Library landing text</label>
-    <input type="text" id="landing_text" name="landing_text" maxlength="200" value="<?php echo htmlspecialchars($settings['landing_text'], ENT_QUOTES, 'UTF-8'); ?>">
-    <p class="hint">Shown above the row buttons on the mobile library landing page. Leave blank to hide.</p>
+    <textarea id="landing_text" name="landing_text" maxlength="200" rows="3"><?php echo htmlspecialchars($settings['landing_text'], ENT_QUOTES, 'UTF-8'); ?></textarea>
+    <p class="hint">Shown above the row buttons on the mobile library landing page. Leave blank to hide. <span id="landing_text-count"></span></p>
   </div>
 
   <div class="field">
@@ -98,6 +98,14 @@ body { max-width: 640px; }
 </form>
 
 <script>
+(function () {
+  var el = document.getElementById('landing_text');
+  var count = document.getElementById('landing_text-count');
+  function update() { count.textContent = el.value.length + '/' + el.maxLength; }
+  el.addEventListener('input', update);
+  update();
+})();
+
 document.getElementById('social-form').addEventListener('submit', function (e) {
   e.preventDefault();
   var msg = document.getElementById('msg');
