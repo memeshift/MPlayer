@@ -3261,6 +3261,8 @@ function resizeCanvas() {
   canvas.width  = wrap.clientWidth  || 280;
   canvas.height = wrap.clientHeight || 42;
   drawVis();
+
+  if (window.innerWidth > 600) libEl.classList.remove('on');
 }
 
 /* ════════════════════════════════════════════════════════════════════
@@ -4022,7 +4024,7 @@ audio.addEventListener('pause', libMini);
 })();
 
 function libInit(skip) {
-  if (!skip) libEl.classList.add('on');
+  if (!skip && window.innerWidth <= 600) libEl.classList.add('on');
   libRender();
 }
 
