@@ -108,7 +108,7 @@ input[type=number], input[type=url], input[type=file], textarea {
   padding: 10px 12px;
 }
 textarea { min-height: 88px; resize: vertical; }
-.field { margin-bottom: 4px; }
+.field { margin-bottom: 4px; position: relative; }
 button, .btn {
   display: inline-flex;
   align-items: center;
