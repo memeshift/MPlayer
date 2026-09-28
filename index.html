@@ -3534,7 +3534,7 @@ function nativeShare(t) {
   if (navigator.share) {
     navigator.share({ title, text: `Listen to ${title} on ${window.SITE_NAME}`, url }).catch(() => {});
   } else {
-    navigator.clipboard.writeText(url).catch(() => {});
+    openEmbedModal(t);
   }
 }
 
