@@ -225,6 +225,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 @media (max-width: 480px) { .grid-2 { grid-template-columns: 1fr; } }
+#landing_text-count { color: var(--link); }
 CSS;
 }
 

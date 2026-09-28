@@ -194,6 +194,16 @@ document.getElementById('remove-icon-btn').addEventListener('click', function (e
   document.getElementById('icon-msg').textContent = '';
 });
 
+// On page load, show preview if icon already exists
+(function () {
+  var iconPath = document.getElementById('icon').value;
+  if (iconPath) {
+    document.getElementById('icon-preview').src = iconPath;
+    document.getElementById('icon-preview-wrap').hidden = false;
+    document.getElementById('icon-dropzone').style.display = 'none';
+  }
+})();
+
 // Drag and drop for icon
 var iconDropzone = document.getElementById('icon-dropzone');
 ['dragover', 'dragenter'].forEach(function (evt) {
