@@ -143,10 +143,10 @@ body.batch-active { max-width: 640px; }
 </head>
 <body>
 <?php echo mp_admin_nav_html('upload'); ?>
-<p class="lede">Batch upload your MP3 files below.  You can edit the tags for each file before publishing to your <a href="/?fresh=1" target="_blank">live site</a>.</p>
 <div class="page-header">
   <h1>Upload</h1>
 </div>
+<p class="lede">Batch upload your MP3 files below.  You can edit the tags for each file before publishing to your <a href="/?fresh=1" target="_blank">live site</a>.</p>
 
 <?php echo mp_sr_status_html(); ?>
 <div id="msg" role="alert"></div>

@@ -63,8 +63,6 @@ h1 {
 padding:5px 0 10px 0}
 p.lede { color: var(--text-dim);
   margin-top: 0;
-  border: 1px solid var(--border);
-  padding: 1em;
   border-radius: 1px;
 background:var(--panel);}
 form { display: flex; flex-direction: column; gap: 18px; margin-top: 24px; }

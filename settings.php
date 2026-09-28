@@ -43,10 +43,10 @@ body { max-width: 640px; }
 </head>
 <body>
 <?php echo mp_admin_nav_html('settings'); ?>
-<p class="lede">Your site's name, icon, and the social links shown in the player's title bar. Leave a social field blank to hide that icon. After saving, visit your <a href="/?fresh=1" target="_blank">live site</a> to see the changes.</p>
 <div class="page-header">
   <h1>Settings</h1>
 </div>
+<p class="lede">Your site's name, icon, and the social links shown in the player's title bar. Leave a social field blank to hide that icon. After saving, visit your <a href="/?fresh=1" target="_blank">live site</a> to see the changes.</p>
 <?php echo mp_sr_status_html(); ?>
 
 <form id="social-form">

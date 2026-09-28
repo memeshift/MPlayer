@@ -87,10 +87,10 @@ body.select-mode .list-actions { position: sticky; top: 0; z-index: 10; backgrou
 </head>
 <body>
 <?php echo mp_admin_nav_html('library'); ?>
-<p class="lede">Reorder, edit or delete your published tracks appearing on your <a href="/?fresh=1" target="_blank">live site</a>.</p>
 <div class="page-header">
   <h1>Library</h1>
 </div>
+<p class="lede">Reorder, edit or delete your published tracks appearing on your <a href="/?fresh=1" target="_blank">live site</a>.</p>
 <?php echo mp_sr_status_html(); ?>
 <div id="msg" role="alert"></div>
 <p id="empty-msg">No tracks yet — <a href="upload.php">upload one</a>.</p>
