@@ -937,6 +937,17 @@ body {
 
 .embed-modal-input:focus { outline: none; border-color: var(--led); }
 
+.embed-copy-msg {
+  font-size: clamp(10px, 0.85rem, 12px);
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--led);
+  margin-left: 8px;
+  opacity: 0;
+  transition: opacity 0.2s linear;
+}
+.embed-copy-msg.show { opacity: 1; }
+
 #album-art.art-clickable { cursor: pointer; }
 
 .art-modal-overlay {
@@ -2252,11 +2263,11 @@ input, select, textarea {
       </div>
       <div class="embed-modal-body">
         <div>
-          <div class="embed-modal-label">DIRECT LINK</div>
+          <div class="embed-modal-label">DIRECT LINK<span class="embed-copy-msg" id="embed-link-msg">Link copied</span></div>
           <textarea class="embed-modal-input" id="embed-link-text" rows="2" readonly></textarea>
         </div>
         <div>
-          <div class="embed-modal-label">EMBED CODE</div>
+          <div class="embed-modal-label">EMBED CODE<span class="embed-copy-msg" id="embed-code-msg">Embed code copied</span></div>
           <textarea class="embed-modal-input" id="embed-code-text" rows="3" readonly></textarea>
         </div>
       </div>
@@ -3552,8 +3563,16 @@ function openEmbedModal(t) {
   requestAnimationFrame(() => $('embed-modal-close').focus());
 }
 
-$('embed-link-text').addEventListener('click', function() { this.select(); });
-$('embed-code-text').addEventListener('click', function() { this.select(); });
+function copyEmbedField(inputEl, msgEl) {
+  inputEl.select();
+  navigator.clipboard.writeText(inputEl.value).then(() => {
+    msgEl.classList.add('show');
+    clearTimeout(msgEl._fadeTimer);
+    msgEl._fadeTimer = setTimeout(() => msgEl.classList.remove('show'), 1500);
+  }).catch(() => {});
+}
+$('embed-link-text').addEventListener('click', () => copyEmbedField($('embed-link-text'), $('embed-link-msg')));
+$('embed-code-text').addEventListener('click', () => copyEmbedField($('embed-code-text'), $('embed-code-msg')));
 $('embed-modal-close').addEventListener('click', closeEmbedModal);
 $('embed-modal').addEventListener('click', e => {
   if (e.target === $('embed-modal')) closeEmbedModal();
