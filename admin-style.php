@@ -231,7 +231,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .art-dropzone:hover, .art-dropzone.drag-over { border-color: var(--accent-hi); color: var(--text); }
 .art-dropzone-title { display: block; font-family: var(--font-ui); font-weight: bold; color: var(--text); }
-.art-dropzone .mp-hint-btn { display: block; margin-top: 4px; margin-bottom: 0; }
+.hint { color: var(--text-dim); font-size: 0.85rem; margin-top: 4px; }
+.art-dropzone .hint { display: block; margin-top: 4px; margin-bottom: 0; }
 .art-dropzone input[type=file] {
   position: absolute;
   inset: 0;
@@ -312,7 +313,7 @@ function mp_sr_status_html(string $text = ''): string {
  */
 function mp_hint_btn_script(): string {
     return '<script>(function(){'
-         . 'var btns=document.querySelectorAll(".mp-hint-btn");'
+         . 'var btns=document.querySelectorAll(".mp-hint-btn[aria-controls]");'
          . 'function closeAll(){btns.forEach(function(b){'
          . 'var h=document.getElementById(b.getAttribute("aria-controls"));'
          . 'h.classList.remove("is-visible");b.setAttribute("aria-expanded","false");'

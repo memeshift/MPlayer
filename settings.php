@@ -74,7 +74,7 @@ body { max-width: 640px; }
       </div>
       <label id="icon-dropzone" class="art-dropzone" for="icon_file">
         <span class="art-dropzone-title">Upload site icon</span>
-        <span class="mp-hint-btn">Drop an image here or click to browse.</span>
+        <span class="hint">Drop an image here or click to browse.</span>
         <input type="file" id="icon_file" accept="image/png,image/jpeg,image/gif,image/webp">
       </label>
       <small class="mp-hint-text" id="icon-hint">A square PNG works best. Max <?php echo (int) MAX_ART_MB; ?>MB.</small>
