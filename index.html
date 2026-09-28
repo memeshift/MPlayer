@@ -1472,6 +1472,10 @@ input[type="range"]::-moz-range-thumb {
     position: sticky;
     top: var(--mp-admin-bar-h, 0px);
     z-index: 50;
+    transition: top 0.25s ease;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .panel-main { transition: none; }
   }
 
   .panel-playlist { max-height: 240px; }
@@ -3980,12 +3984,20 @@ init();
   display: flex; gap: 4px; align-items: center;
   background: #141410; border-bottom: 1px solid #554e30;
   padding: 8px 12px; font-family: 'DM Mono', 'Courier New', monospace; font-size: 14px;
+  transform: translateY(0);
+  transition: transform 0.25s ease;
+  will-change: transform;
 }
+#mp-admin-bar.mp-admin-bar--hidden { transform: translateY(-100%); }
 #mp-admin-bar a {
   color: #c8b86a; text-decoration: none; padding: 6px 10px; border-radius: 3px;
 }
 #mp-admin-bar a:hover, #mp-admin-bar a:focus-visible { color: #FAC946; background: rgba(250, 201, 70, 0.08); }
 #mp-admin-bar a:focus-visible { outline: 2px solid #707070; outline-offset: 1px; }
+#app { transition: margin-top 0.25s ease; }
+@media (prefers-reduced-motion: reduce) {
+  #mp-admin-bar, #app { transition: none; }
+}
 
 /* ── Admin Customize mode (settings.php / stats.php / index.html?customize=1) ── */
 #mp-customize-overlay {
@@ -4348,8 +4360,45 @@ init();
         '<a href="settings.php">Settings</a>';
       document.body.prepend(bar);
       var app = document.getElementById('app');
-      if (app) app.style.marginTop = bar.offsetHeight + 'px';
-      document.documentElement.style.setProperty('--mp-admin-bar-h', bar.offsetHeight + 'px');
+      var barH = bar.offsetHeight;
+      document.documentElement.style.setProperty('--mp-admin-bar-h', barH + 'px');
+      if (app) app.style.marginTop = barH + 'px';
+
+      // Slide the bar (and the space it reserves) away on scroll-down,
+      // back on scroll-up, so it doesn't permanently eat mobile viewport.
+      var lastY = window.scrollY;
+      var hidden = false;
+      var ticking = false;
+
+      function setHidden(val) {
+        if (val === hidden) return;
+        hidden = val;
+        bar.classList.toggle('mp-admin-bar--hidden', hidden);
+        var h = hidden ? 0 : barH;
+        document.documentElement.style.setProperty('--mp-admin-bar-h', h + 'px');
+        if (app) app.style.marginTop = h + 'px';
+      }
+
+      function onScroll() {
+        var y = Math.max(window.scrollY, 0);
+        var delta = y - lastY;
+        if (y <= barH) {
+          setHidden(false);
+        } else if (delta > 4) {
+          setHidden(true);
+        } else if (delta < -4) {
+          setHidden(false);
+        }
+        lastY = y;
+        ticking = false;
+      }
+
+      window.addEventListener('scroll', function () {
+        if (!ticking) {
+          window.requestAnimationFrame(onScroll);
+          ticking = true;
+        }
+      }, { passive: true });
     }).catch(function () {});
   }
 
