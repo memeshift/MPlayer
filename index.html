@@ -2146,7 +2146,7 @@ input, select, textarea {
       </div><!-- /panel-main -->
 
       <!-- ═══ TRACK INFO PANEL ═══ -->
-      <div class="panel panel-info">
+      <div class="panel panel-info" id="panel-info" tabindex="-1">
         <div class="titlebar">
           <span class="titlebar-label">TRACK INFO</span>
         </div>
@@ -2609,6 +2609,7 @@ function playTrack(index, autoplay = true) {
   showInfo(t);
   updateMediaSession(t);
   syncNowView(t);
+  scrollToTrackInfo();
 
   /* ── A11Y FIX 3: announce track to screen readers ──
      Rollback: remove this one line.
@@ -3054,6 +3055,19 @@ function setScrollTitle(text) {
 /* ════════════════════════════════════════════════════════════════════
    INFO PANEL
 ════════════════════════════════════════════════════════════════════ */
+function scrollToTrackInfo() {
+  const panel = $('panel-info');
+  const main  = document.querySelector('.panel-main');
+  if (!panel) return;
+  const offset = main ? main.getBoundingClientRect().height : 0;
+  const top = panel.getBoundingClientRect().top + window.scrollY - offset;
+  window.scrollTo({
+    top: Math.max(0, top),
+    behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+  });
+  panel.focus({ preventScroll: true });
+}
+
 function showInfo(t) {
   $('info-artist').textContent = t.artist  || '—';
   $('info-album' ).textContent = t.album   || '—';
