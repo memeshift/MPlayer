@@ -88,7 +88,7 @@ input[type=number], input[type=url], input[type=file], textarea {
 }
 textarea { min-height: 88px; resize: vertical; }
 .field { margin-bottom: 4px; }
-.hint { color: var(--text-dim); font-size: 0.85rem; margin-top: 4px; }
+.mp-hint-btn { color: var(--text-dim); font-size: 0.85rem; margin-top: 4px; }
 button, .btn {
   display: inline-flex;
   align-items: center;
@@ -211,7 +211,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .art-dropzone:hover, .art-dropzone.drag-over { border-color: var(--accent-hi); color: var(--text); }
 .art-dropzone-title { display: block; font-family: var(--font-ui); font-weight: bold; color: var(--text); }
-.art-dropzone .hint { display: block; margin-top: 4px; margin-bottom: 0; }
+.art-dropzone .mp-hint-btn { display: block; margin-top: 4px; margin-bottom: 0; }
 .art-dropzone input[type=file] {
   position: absolute;
   inset: 0;

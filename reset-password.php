@@ -112,7 +112,7 @@ $csrf = mp_csrf_token();
     <div class="field">
       <label for="password">New password</label>
       <input type="password" id="password" name="password" autocomplete="new-password" minlength="12" required autofocus>
-      <p class="hint">At least 12 characters.</p>
+      <p class="mp-hint-btn">At least 12 characters.</p>
     </div>
     <div class="field">
       <label for="password_confirm">Confirm new password</label>

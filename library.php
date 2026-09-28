@@ -124,7 +124,7 @@ body.select-mode .list-actions { position: sticky; top: 0; z-index: 10; backgrou
         </div>
         <label class="art-dropzone">
           <span class="art-dropzone-title">Add cover art</span>
-          <span class="hint">Drop an image here, or click to browse.</span>
+          <span class="mp-hint-btn">Drop an image here, or click to browse.</span>
           <input type="file" class="art-input" name="art" accept="image/jpeg,image/png,image/gif,image/webp">
         </label>
         <input type="checkbox" class="remove-art-input" hidden>

@@ -156,7 +156,7 @@ body.batch-active { max-width: 640px; }
   <label for="file-input" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;">MP3 file(s)</label>
   <div id="drop-zone">
     <p class="art-dropzone-title">Drop MP3s here</p>
-    <p class="hint">Drop one or multiple MP3s here, or click to browse.</p>
+    <p class="mp-hint-btn">Drop one or multiple MP3s here, or click to browse.</p>
     <input type="file" id="file-input" accept=".mp3,audio/mpeg" multiple style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">
   </div>
 </div>
@@ -176,7 +176,7 @@ body.batch-active { max-width: 640px; }
               </div>
               <label id="art-dropzone" class="art-dropzone" for="art-input">
                 <span id="art-dropzone-title" class="art-dropzone-title">Add cover art</span>
-                <span class="hint">Upload a square image (JPEG, PNG, GIF, WebP) to update cover art.</span>
+                <span class="mp-hint-btn">Upload a square image (JPEG, PNG, GIF, WebP) to update cover art.</span>
                 <input type="file" id="art-input" name="art" accept="image/jpeg,image/png,image/gif,image/webp">
               </label>
               <input type="checkbox" id="remove-art-input" hidden>

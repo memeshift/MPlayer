@@ -135,18 +135,18 @@ $csrf = mp_csrf_token();
       <label for="username">Username</label>
       <input type="text" id="username" name="username" required autocomplete="username"
              value="<?php echo htmlspecialchars((string) ($_POST['username'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
-      <p class="hint">3–32 characters: letters, numbers, dot, dash or underscore.</p>
+      <p class="mp-hint-btn">3–32 characters: letters, numbers, dot, dash or underscore.</p>
     </div>
     <div class="field">
       <label for="email">Email</label>
       <input type="email" id="email" name="email" required autocomplete="email"
              value="<?php echo htmlspecialchars((string) ($_POST['email'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
-      <p class="hint">Where password-reset links are sent.</p>
+      <p class="mp-hint-btn">Where password-reset links are sent.</p>
     </div>
     <div class="field">
       <label for="password">Password</label>
       <input type="password" id="password" name="password" required autocomplete="new-password">
-      <p class="hint">At least 12 characters.</p>
+      <p class="mp-hint-btn">At least 12 characters.</p>
     </div>
     <div class="field">
       <label for="password_confirm">Confirm password</label>

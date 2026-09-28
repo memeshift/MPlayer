@@ -57,7 +57,7 @@ body { max-width: 640px; }
     <div class="field">
       <label for="site_name">Site name</label>
       <input type="text" id="site_name" name="site_name" maxlength="60" value="<?php echo htmlspecialchars($settings['site_name'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="<?php echo htmlspecialchars(mp_site_name(), ENT_QUOTES, 'UTF-8'); ?>">
-      <p class="hint">Shown in the player title bar, the browser tab, and password-reset emails.</p>
+      <p class="mp-hint-btn">Shown in the player title bar, the browser tab, and password-reset emails.</p>
     </div>
 
     <div class="field">
@@ -68,10 +68,10 @@ body { max-width: 640px; }
       </div>
       <label id="icon-dropzone" class="art-dropzone" for="icon_file">
         <span class="art-dropzone-title">Upload site icon</span>
-        <span class="hint">Drop an image here or click to browse.</span>
+        <span class="mp-hint-btn">Drop an image here or click to browse.</span>
         <input type="file" id="icon_file" accept="image/png,image/jpeg,image/gif,image/webp">
       </label>
-      <p class="hint" id="icon-hint">A square PNG works best. Max <?php echo (int) MAX_ART_MB; ?>MB.</p>
+      <p class="mp-hint-btn" id="icon-hint">A square PNG works best. Max <?php echo (int) MAX_ART_MB; ?>MB.</p>
       <div id="icon-msg" role="status"></div>
     </div>
   </div>
@@ -79,13 +79,13 @@ body { max-width: 640px; }
   <div class="field">
     <label for="landing_text">Library landing text</label>
     <textarea id="landing_text" name="landing_text" maxlength="200" rows="3"><?php echo htmlspecialchars($settings['landing_text'], ENT_QUOTES, 'UTF-8'); ?></textarea>
-    <p class="hint">Shown above the row buttons on the mobile library landing page. Leave blank to hide. <span id="landing_text-count"></span></p>
+    <p class="mp-hint-btn">Shown above the row buttons on the mobile library landing page. Leave blank to hide. <span id="landing_text-count"></span></p>
   </div>
 
   <div class="field">
     <label for="alias_label">Alias row label</label>
     <input type="text" id="alias_label" name="alias_label" maxlength="30" value="<?php echo htmlspecialchars($settings['alias_label'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="Aliases">
-    <p class="hint">Library row that groups tracks by artist name. Rename it to whatever fits how you release music — "Monikers", "Projects", "Collaborations".</p>
+    <p class="mp-hint-btn">Library row that groups tracks by artist name. Rename it to whatever fits how you release music — "Monikers", "Projects", "Collaborations".</p>
   </div>
 
   <div class="field">
