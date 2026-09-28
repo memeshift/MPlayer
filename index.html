@@ -1251,7 +1251,9 @@ body {
   gap: 0;
 }
 
-.socials-burst-canvas {
+.socials-burst-canvas,
+.mp-admin-dust-canvas,
+.mp-scrollend-dust-canvas {
   position: absolute;
   left: 50%;
   top: 50%;
@@ -1260,6 +1262,19 @@ body {
   opacity: 0;
   transition: opacity 0.1s ease-in;
   z-index: 10;
+}
+
+/* Bottom-of-list "you've reached the end" hint — fixed so it works the
+   same whether the document or #lib-body is the thing that scrolled. */
+#mp-scrollend-fx {
+  position: fixed;
+  left: 50%;
+  bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  width: 160px;
+  height: 40px;
+  pointer-events: none;
+  z-index: 9998;
 }
 
 .tbar-social {
@@ -3368,23 +3383,22 @@ function attachSparkle(linkEl, bindDefaultTriggers = true) {
 }
 
 /* ════════════════════════════════════════════════════════════════════
-   SOCIALS BURST
+   DUST BURST — a one-shot, self-fading particle puff. Used for the
+   socials "thanks for sharing" burst and for small state-change hints
+   (admin bar reappearing, scroll reaching the end of a list).
 ════════════════════════════════════════════════════════════════════ */
-function burstSocials() {
-  const container = $('socials-icons');
+function burstDust(container, canvasClass, w, h, fadeSeconds = 3.0, count = 55) {
   if (!container) return;
 
-  let cvs = container.querySelector('.socials-burst-canvas');
+  let cvs = container.querySelector('.' + canvasClass);
   if (!cvs) {
     cvs = document.createElement('canvas');
-    cvs.className = 'socials-burst-canvas';
+    cvs.className = canvasClass;
     container.appendChild(cvs);
   }
 
-  const W = container.offsetWidth  || 100;
-  const H = container.offsetHeight || 22;
-  cvs.width  = W;
-  cvs.height = H;
+  cvs.width  = w;
+  cvs.height = h;
 
   const ctx    = cvs.getContext('2d');
   const COLORS = app.dataset.theme === 'mplayer'
@@ -3393,10 +3407,10 @@ function burstSocials() {
   const MARGIN = 10;
 
   let particles = [];
-  for (let i = 0; i < 55; i++) {
+  for (let i = 0; i < count; i++) {
     particles.push({
-      x:       Math.random() * W,
-      y:       H / 2 + (Math.random() - 0.5) * H * 0.6,
+      x:       Math.random() * w,
+      y:       h / 2 + (Math.random() - 0.5) * h * 0.6,
       r:       0.5 + Math.random() * 2.0,
       alpha:   0.6 + Math.random() * 0.4,
       da:      -(0.008 + Math.random() * 0.012),
@@ -3408,15 +3422,15 @@ function burstSocials() {
   }
 
   let canvasAlpha = 1;
-  const fadeRate  = 1 / (3.0 * 60);
+  const fadeRate  = 1 / (fadeSeconds * 60);
   let rafId;
 
   cvs.style.opacity    = '1';
   cvs.style.transition = 'none';
 
   function edgeFade(p) {
-    const fx = Math.min(p.x / MARGIN, (W - p.x) / MARGIN, 1);
-    const fy = Math.min(p.y / MARGIN, (H - p.y) / MARGIN, 1);
+    const fx = Math.min(p.x / MARGIN, (w - p.x) / MARGIN, 1);
+    const fy = Math.min(p.y / MARGIN, (h - p.y) / MARGIN, 1);
     return Math.max(0, Math.min(fx, fy));
   }
 
@@ -3424,11 +3438,11 @@ function burstSocials() {
     canvasAlpha -= fadeRate;
     if (canvasAlpha <= 0) {
       cvs.style.opacity = '0';
-      ctx.clearRect(0, 0, W, H);
+      ctx.clearRect(0, 0, w, h);
       return;
     }
     cvs.style.opacity = canvasAlpha.toFixed(3);
-    ctx.clearRect(0, 0, W, H);
+    ctx.clearRect(0, 0, w, h);
     particles = particles.filter(p => p.alpha > 0);
     for (const p of particles) {
       const pulse = 0.85 + 0.15 * Math.sin(p.twinkle);
@@ -3453,8 +3467,13 @@ function burstSocials() {
     rafId = requestAnimationFrame(draw);
   }
 
-  cvs.style.opacity = '1';
   draw();
+}
+
+function burstSocials() {
+  const container = $('socials-icons');
+  if (!container) return;
+  burstDust(container, 'socials-burst-canvas', container.offsetWidth || 100, container.offsetHeight || 22);
 }
 
 /* ════════════════════════════════════════════════════════════════════
@@ -4378,22 +4397,40 @@ init();
 
       function setHidden(val) {
         if (val === hidden) return;
+        var wasHidden = hidden;
         hidden = val;
         bar.classList.toggle('mp-admin-bar--hidden', hidden);
         var h = hidden ? 0 : barH;
         document.documentElement.style.setProperty('--mp-admin-bar-h', h + 'px');
         if (app) app.style.marginTop = h + 'px';
+        // Dust it only on a genuine reappearance, never on the initial
+        // (already-visible) state at page load.
+        if (wasHidden && !hidden) {
+          burstDust(bar, 'mp-admin-dust-canvas', 160, Math.min(barH, 36));
+        }
       }
 
-      function watchScroll(target, getY) {
+      // A small fixed hint that dusts once when a scroll container is
+      // dragged all the way to its end — shared by both scroll sources.
+      var scrollEndFx = document.createElement('div');
+      scrollEndFx.id = 'mp-scrollend-fx';
+      document.body.appendChild(scrollEndFx);
+      function dustScrollEnd() {
+        burstDust(scrollEndFx, 'mp-scrollend-dust-canvas', 160, 36);
+      }
+
+      function watchScroll(target, getY, getMax) {
         var ticking = false;
+        var atBottom = false;
         function onScroll() {
           var y = Math.max(getY(), 0);
-          if (y <= 0) {
-            setHidden(false);
-          } else {
-            setHidden(true);
-          }
+          setHidden(y > 0);
+
+          var max = getMax();
+          var nowAtBottom = max > 0 && y >= max - 2;
+          if (nowAtBottom && !atBottom) dustScrollEnd();
+          atBottom = nowAtBottom;
+
           ticking = false;
         }
         target.addEventListener('scroll', function () {
@@ -4404,10 +4441,18 @@ init();
         }, { passive: true });
       }
 
-      watchScroll(window, function () { return window.scrollY; });
+      watchScroll(
+        window,
+        function () { return window.scrollY; },
+        function () { return document.documentElement.scrollHeight - window.innerHeight; }
+      );
       var libBody = document.getElementById('lib-body');
       if (libBody) {
-        watchScroll(libBody, function () { return libBody.scrollTop; });
+        watchScroll(
+          libBody,
+          function () { return libBody.scrollTop; },
+          function () { return libBody.scrollHeight - libBody.clientHeight; }
+        );
       }
     }).catch(function () {});
   }
