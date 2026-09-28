@@ -3608,7 +3608,6 @@ $('art-modal').addEventListener('click', e => {
 
 /* ══ NOW-PLAYING VIEW ══ */
 let notesHintSparkle   = null;
-let notesHintDismissed = false;
 
 function openNowView() {
   const t = S.sorted[S.current];
@@ -3621,7 +3620,9 @@ function openNowView() {
   nv.style.transform = 'translateY(100%)';
   void nv.offsetHeight; // force reflow so the slide-up transition runs
   nv.style.transform = 'translateY(0)';
-  if (!notesHintDismissed && notesHintSparkle) notesHintSparkle.start();
+  // Sparkles permanently while the notes hint is on screen — not just
+  // until first touched — so it stays a visible affordance every visit.
+  if (notesHintSparkle) notesHintSparkle.start();
 }
 
 function closeNowView() {
@@ -3711,11 +3712,6 @@ function closeNotesView() {
     notes.classList.remove('peeking');
     void notes.offsetWidth; // force reflow so re-adding the class replays the animation
     notes.classList.add('peeking');
-    // The sparkle hint has done its job once it's been touched — gone for good.
-    if (!notesHintDismissed) {
-      notesHintDismissed = true;
-      if (notesHintSparkle) notesHintSparkle.stop();
-    }
   }, { passive: true });
 
   meta.addEventListener('touchmove', e => {
