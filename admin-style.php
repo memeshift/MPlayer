@@ -76,7 +76,7 @@ label {
 }
 .mp-label-row { display: flex; align-items: center; gap: 6px; position: relative; }
 .mp-hint-btn {
-  width: 20px; height: 20px; padding: 0; border-radius: 50%; border: 1px solid var(--border);
+  width: 20px; height: 20px; min-width: 20px; min-height: 20px; padding: 0; border-radius: 50%; border: 1px solid var(--border);
   background: var(--panel); color: var(--text-dim); font-family: var(--font-ui); font-size: 12px;
   line-height: 1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex: none;
   position: relative;
