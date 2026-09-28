@@ -1262,10 +1262,10 @@ body {
   z-index: 10;
 }
 
-/* Admin-bar and scroll-end dust canvases span their full container width
-   (rather than the small centered socials burst) so the effect reads
-   edge-to-edge across the bar/hint instead of as a small central puff. */
-.mp-admin-dust-canvas,
+/* Scroll-edge dust canvases span their full container width (rather than
+   the small centered socials burst) so the effect reads edge-to-edge
+   across the hint instead of as a small central puff. */
+.mp-scrolltop-dust-canvas,
 .mp-scrollend-dust-canvas {
   position: absolute;
   inset: 0;
@@ -1277,14 +1277,35 @@ body {
   z-index: 10;
 }
 
-/* Bottom-of-list "you've reached the end" hint — fixed so it works the
-   same whether the document or #lib-body is the thing that scrolled.
-   Full-width to match the admin bar's edge-to-edge dust. */
+/* Scroll-edge hints — fixed so they work the same whether the document or
+   #lib-body is the thing that scrolled, and shown for every visitor, not
+   just logged-in admins. Each straddles its edge 50/50 via a half-height
+   transform, so it reads as dust spilling in from just past the edge.
+   #mp-scrolltop-fx tracks --mp-admin-bar-h, which is only ever set by
+   initAdminBar(): for a logged-in admin it sits on the bar's bottom edge,
+   for a logged-out visitor the var is unset and it falls back to 0px —
+   the top edge of the screen itself. */
+#mp-scrolltop-fx {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: var(--mp-admin-bar-h, 0px);
+  transform: translateY(-50%);
+  height: 40px;
+  pointer-events: none;
+  z-index: 9998;
+  transition: top 0.25s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  #mp-scrolltop-fx { transition: none; }
+}
+
 #mp-scrollend-fx {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  bottom: 0;
+  transform: translateY(50%);
   height: 40px;
   pointer-events: none;
   z-index: 9998;
@@ -4406,45 +4427,25 @@ init();
       // back on scroll-up, so it doesn't permanently eat mobile viewport.
       // Two independent scroll containers can drive this: the document
       // (desktop/main view) and #lib-body (the mobile library overlay,
-      // which scrolls internally rather than scrolling the page).
+      // which scrolls internally rather than scrolling the page). The
+      // scroll-top/scroll-bottom dust hint itself is handled separately
+      // by initScrollEdgeDust(), which runs for every visitor — this
+      // watcher only concerns itself with sliding the bar.
       var hidden = false;
 
       function setHidden(val) {
         if (val === hidden) return;
-        var wasHidden = hidden;
         hidden = val;
         bar.classList.toggle('mp-admin-bar--hidden', hidden);
         var h = hidden ? 0 : barH;
         document.documentElement.style.setProperty('--mp-admin-bar-h', h + 'px');
         if (app) app.style.marginTop = h + 'px';
-        // Dust it only on a genuine reappearance, never on the initial
-        // (already-visible) state at page load.
-        if (wasHidden && !hidden) {
-          burstDust(bar, 'mp-admin-dust-canvas', bar.offsetWidth || 320, barH);
-        }
       }
 
-      // A small fixed hint that dusts once when a scroll container is
-      // dragged all the way to its end — shared by both scroll sources.
-      var scrollEndFx = document.createElement('div');
-      scrollEndFx.id = 'mp-scrollend-fx';
-      document.body.appendChild(scrollEndFx);
-      function dustScrollEnd() {
-        burstDust(scrollEndFx, 'mp-scrollend-dust-canvas', scrollEndFx.offsetWidth || 320, scrollEndFx.offsetHeight || 40);
-      }
-
-      function watchScroll(target, getY, getMax) {
+      function watchBarVisibility(target, getY) {
         var ticking = false;
-        var atBottom = false;
         function onScroll() {
-          var y = Math.max(getY(), 0);
-          setHidden(y > 0);
-
-          var max = getMax();
-          var nowAtBottom = max > 0 && y >= max - 2;
-          if (nowAtBottom && !atBottom) dustScrollEnd();
-          atBottom = nowAtBottom;
-
+          setHidden(Math.max(getY(), 0) > 0);
           ticking = false;
         }
         target.addEventListener('scroll', function () {
@@ -4455,20 +4456,80 @@ init();
         }, { passive: true });
       }
 
-      watchScroll(
-        window,
-        function () { return window.scrollY; },
-        function () { return document.documentElement.scrollHeight - window.innerHeight; }
-      );
+      watchBarVisibility(window, function () { return window.scrollY; });
       var libBody = document.getElementById('lib-body');
       if (libBody) {
-        watchScroll(
-          libBody,
-          function () { return libBody.scrollTop; },
-          function () { return libBody.scrollHeight - libBody.clientHeight; }
-        );
+        watchBarVisibility(libBody, function () { return libBody.scrollTop; });
       }
     }).catch(function () {});
+  }
+
+  /* Sparkle hints for both scroll edges, for every visitor (not just
+     logged-in admins). Each hint straddles its edge 50/50 — half hidden
+     past it, half inside the viewport:
+       - #mp-scrolltop-fx sits at `top: var(--mp-admin-bar-h, 0px)`, so it
+         straddles the bottom edge of the admin bar when one is showing
+         (admins), and falls back to the top edge of the screen itself
+         when there is no bar (--mp-admin-bar-h is only ever set by
+         initAdminBar, so logged-out visitors get the 0px fallback).
+       - #mp-scrollend-fx always straddles the bottom edge of the screen.
+     Both dust only on the edge transition (reaching top/bottom), not on
+     every scroll frame while pinned there, and not on initial page load. */
+  function initScrollEdgeDust() {
+    var topFx = document.createElement('div');
+    topFx.id = 'mp-scrolltop-fx';
+    document.body.appendChild(topFx);
+
+    var bottomFx = document.createElement('div');
+    bottomFx.id = 'mp-scrollend-fx';
+    document.body.appendChild(bottomFx);
+
+    function dustTop() {
+      burstDust(topFx, 'mp-scrolltop-dust-canvas', topFx.offsetWidth || 320, topFx.offsetHeight || 40);
+    }
+    function dustBottom() {
+      burstDust(bottomFx, 'mp-scrollend-dust-canvas', bottomFx.offsetWidth || 320, bottomFx.offsetHeight || 40);
+    }
+
+    function watchScroll(target, getY, getMax) {
+      var ticking = false;
+      var atTop = true;
+      var atBottom = false;
+      function onScroll() {
+        var y = Math.max(getY(), 0);
+
+        var nowAtTop = y <= 0;
+        if (nowAtTop && !atTop) dustTop();
+        atTop = nowAtTop;
+
+        var max = getMax();
+        var nowAtBottom = max > 0 && y >= max - 2;
+        if (nowAtBottom && !atBottom) dustBottom();
+        atBottom = nowAtBottom;
+
+        ticking = false;
+      }
+      target.addEventListener('scroll', function () {
+        if (!ticking) {
+          window.requestAnimationFrame(onScroll);
+          ticking = true;
+        }
+      }, { passive: true });
+    }
+
+    watchScroll(
+      window,
+      function () { return window.scrollY; },
+      function () { return document.documentElement.scrollHeight - window.innerHeight; }
+    );
+    var libBody = document.getElementById('lib-body');
+    if (libBody) {
+      watchScroll(
+        libBody,
+        function () { return libBody.scrollTop; },
+        function () { return libBody.scrollHeight - libBody.clientHeight; }
+      );
+    }
   }
 
   function initCustomizeMode(cfg) {
@@ -4897,6 +4958,7 @@ init();
   }
 
   initAdminBar();
+  initScrollEdgeDust();
 
   function applySiteName(name) {
     name = (name || '').trim() || 'MPlayer';
