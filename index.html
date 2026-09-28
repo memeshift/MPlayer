@@ -3060,11 +3060,14 @@ function scrollToTrackInfo() {
   const main  = document.querySelector('.panel-main');
   if (!panel) return;
   const offset = main ? main.getBoundingClientRect().height : 0;
-  const top = panel.getBoundingClientRect().top + window.scrollY - offset;
-  window.scrollTo({
-    top: Math.max(0, top),
-    behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-  });
+  const rect = panel.getBoundingClientRect();
+  const alreadyVisible = rect.top >= offset && rect.bottom <= window.innerHeight;
+  if (!alreadyVisible) {
+    window.scrollTo({
+      top: Math.max(0, rect.top + window.scrollY - offset),
+      behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    });
+  }
   panel.focus({ preventScroll: true });
 }
 
