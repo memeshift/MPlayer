@@ -77,23 +77,25 @@ label {
 .mp-label-row { display: flex; align-items: center; gap: 6px; position: relative; }
 .mp-hint-btn {
   width: 20px; height: 20px; min-width: 20px; min-height: 20px; padding: 0; border-radius: 50%; border: 1px solid var(--border);
-  background: var(--panel); color: var(--text-dim); font-family: var(--font-ui); font-size: 12px;
+  background: var(--panel); color: var(--text-dim); font-family: 'DM Mono', 'Courier New', monospace; font-size: 12px;
   line-height: 1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex: none;
   position: relative;
 }
 .mp-hint-btn:hover, .mp-hint-btn:focus-visible { color: var(--accent); border-color: var(--accent); }
 .mp-hint-btn:focus-visible { outline: 3px solid #707070; outline-offset: 2px; }
 .mp-hint-text {
-  display: none; position: absolute; bottom: calc(100% + 8px); right: 0;
-  background: var(--panel); border: 1px solid var(--border); border-radius: 4px;
-  padding: 8px 10px; font-size: 0.85rem; color: var(--text-dim); white-space: normal;
-  width: 200px; z-index: 100; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  display: none; position: absolute; bottom: calc(100% + 8px); left: 0;
+  background: #1a1a14; border: 1px solid var(--border); border-radius: 4px;
+  padding: 8px 10px; font-family: 'DM Mono', 'Courier New', monospace; font-size: 0.85rem; color: var(--text-dim); white-space: normal;
+  width: 200px; z-index: 1000; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 .mp-hint-text::after {
-  content: ''; position: absolute; top: 100%; right: 8px;
+  content: ''; position: absolute; top: 100%; left: var(--mp-arrow, 8px);
   width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent;
   border-top: 6px solid var(--border);
 }
+.mp-hint-text.mp-hint-below { bottom: auto; top: calc(100% + 8px); }
+.mp-hint-text.mp-hint-below::after { top: auto; bottom: 100%; border-top: none; border-bottom: 6px solid var(--border); }
 .mp-hint-text.is-visible { display: block; }
 input[type=text], input[type=email], input[type=password],
 input[type=number], input[type=url], input[type=file], textarea {
@@ -312,25 +314,70 @@ function mp_sr_status_html(string $text = ''): string {
  * Shows on hover/focus, toggles on click, closes on Escape or click-away.
  */
 function mp_hint_btn_script(): string {
-    return '<script>(function(){'
-         . 'var btns=document.querySelectorAll(".mp-hint-btn[aria-controls]");'
-         . 'function closeAll(){btns.forEach(function(b){'
-         . 'var h=document.getElementById(b.getAttribute("aria-controls"));'
-         . 'h.classList.remove("is-visible");b.setAttribute("aria-expanded","false");'
-         . '});}'
-         . 'function open(btn){'
-         . 'closeAll();'
-         . 'var h=document.getElementById(btn.getAttribute("aria-controls"));'
-         . 'h.classList.add("is-visible");btn.setAttribute("aria-expanded","true");'
-         . '}'
-         . 'btns.forEach(function(btn){'
-         . 'btn.addEventListener("mouseenter",function(){open(btn);});'
-         . 'btn.addEventListener("mouseleave",function(){setTimeout(function(){if(!btn.matches(":focus")){closeAll();}},100);});'
-         . 'btn.addEventListener("focus",function(){open(btn);});'
-         . 'btn.addEventListener("blur",function(){closeAll();});'
-         . 'btn.addEventListener("click",function(e){e.preventDefault();var h=document.getElementById(btn.getAttribute("aria-controls"));if(h.classList.contains("is-visible")){closeAll();}else{open(btn);}});'
-         . '});'
-         . 'document.addEventListener("keydown",function(e){if(e.key==="Escape"){closeAll();}});'
-         . 'document.addEventListener("click",function(e){var isBtn=e.target.closest(".mp-hint-btn");var isHint=e.target.closest(".mp-hint-text");if(!isBtn&&!isHint){closeAll();}});'
-         . '})();</script>';
+    return '<script>' . <<<JS
+(function(){
+  var btns = document.querySelectorAll(".mp-hint-btn[aria-controls]");
+  function scrollAncestor(el){
+    var p = el.parentElement;
+    while (p) {
+      var oy = getComputedStyle(p).overflowY;
+      if (oy === "auto" || oy === "scroll") return p;
+      p = p.parentElement;
+    }
+    return null;
+  }
+  function position(btn, h){
+    var br = btn.getBoundingClientRect();
+    var ar = scrollAncestor(h);
+    var rect = ar ? ar.getBoundingClientRect() : null;
+    var ceilTop = rect ? rect.top : 0;
+    var floorBottom = rect ? rect.bottom : window.innerHeight;
+    var wallLeft = rect ? rect.left : 0;
+    var wallRight = rect ? rect.right : window.innerWidth;
+    var spaceAbove = br.top - ceilTop;
+    var spaceBelow = floorBottom - br.bottom;
+    h.classList.toggle("mp-hint-below", spaceAbove < h.offsetHeight + 8 && spaceBelow > spaceAbove);
+    var hw = h.offsetWidth;
+    var idealLeft = br.left + br.width / 2 - hw / 2;
+    var clampedLeft = Math.max(wallLeft + 8, Math.min(idealLeft, wallRight - hw - 8));
+    var parentRect = h.offsetParent.getBoundingClientRect();
+    h.style.left = (clampedLeft - parentRect.left) + "px";
+    h.style.setProperty("--mp-arrow", ((br.left + br.width / 2) - clampedLeft - 6) + "px");
+  }
+  function closeAll(){
+    btns.forEach(function(b){
+      var h = document.getElementById(b.getAttribute("aria-controls"));
+      h.classList.remove("is-visible");
+      b.setAttribute("aria-expanded", "false");
+    });
+  }
+  function open(btn){
+    closeAll();
+    var h = document.getElementById(btn.getAttribute("aria-controls"));
+    h.classList.add("is-visible");
+    position(btn, h);
+    btn.setAttribute("aria-expanded", "true");
+  }
+  btns.forEach(function(btn){
+    btn.addEventListener("mouseenter", function(){ open(btn); });
+    btn.addEventListener("mouseleave", function(){ setTimeout(function(){ if (!btn.matches(":focus")) closeAll(); }, 100); });
+    btn.addEventListener("focus", function(){ open(btn); });
+    btn.addEventListener("blur", function(){ closeAll(); });
+    btn.addEventListener("click", function(e){
+      e.preventDefault();
+      var h = document.getElementById(btn.getAttribute("aria-controls"));
+      if (h.classList.contains("is-visible")) closeAll();
+      else open(btn);
+    });
+  });
+  document.addEventListener("keydown", function(e){ if (e.key === "Escape") closeAll(); });
+  document.addEventListener("click", function(e){
+    var isBtn = e.target.closest(".mp-hint-btn");
+    var isHint = e.target.closest(".mp-hint-text");
+    if (!isBtn && !isHint) closeAll();
+  });
+  window.addEventListener("resize", closeAll);
+})();
+JS
+    . '</script>';
 }

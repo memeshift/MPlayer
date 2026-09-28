@@ -4145,16 +4145,18 @@ init();
 /* Click/tap-only toggletip — never :hover, so it works on touch and doesn't
    fight the article's guidance against hover-only reveal on touch devices. */
 .mp-hint-text {
-  display: none; position: absolute; bottom: calc(100% + 8px); right: 0;
-  background: #141410; border: 1px solid #554e30; border-radius: 4px;
+  display: none; position: absolute; bottom: calc(100% + 8px); left: 0;
+  background: var(--pl-alt); border: 1px solid #554e30; border-radius: 4px;
   padding: 8px 10px; font-family: 'DM Mono', 'Courier New', monospace; font-size: 13px; color: #c8b86a; white-space: normal;
-  width: 200px; z-index: 100; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  width: 200px; z-index: 1000; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 .mp-hint-text::after {
-  content: ''; position: absolute; top: 100%; right: 8px;
+  content: ''; position: absolute; top: 100%; left: var(--mp-arrow, 8px);
   width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent;
   border-top: 6px solid #554e30;
 }
+.mp-hint-text.mp-hint-below { bottom: auto; top: calc(100% + 8px); }
+.mp-hint-text.mp-hint-below::after { top: auto; bottom: 100%; border-top: none; border-bottom: 6px solid #554e30; }
 .mp-hint-text.is-visible { display: block; }
 .mp-swatch-input { display: flex; align-items: stretch; flex: none; }
 .mp-swatch { width: 2.5em; border: 1px solid #554e30; border-radius: 4px 0 0 4px; }
@@ -4201,7 +4203,8 @@ init();
 }
 .art-dropzone:hover, .art-dropzone.drag-over { border-color: #fcd97c; color: #FAC946; }
 .art-dropzone-title { display: block; font-weight: bold; color: #FAC946; }
-.art-dropzone .mp-hint-btn { display: block; margin-top: 4px; margin-bottom: 0; font-size: 13px; color: #c8b86a; }
+.hint { color: #c8b86a; font-size: 13px; margin-top: 4px; }
+.art-dropzone .hint { display: block; margin-top: 4px; margin-bottom: 0; }
 .art-dropzone input[type=file] {
   position: absolute; inset: 0; width: 100%; height: 100%; min-height: 0; opacity: 0; cursor: pointer; padding: 0; border: none;
 }
@@ -4626,7 +4629,7 @@ init();
       +   '</div>'
       +   '<label id="mp-bg-dropzone" class="art-dropzone" for="mp-bg-file">'
       +     '<span id="mp-bg-dropzone-title" class="art-dropzone-title">Add background image</span>'
-      +     '<span class="mp-hint-btn">JPEG, PNG, GIF, or WebP. Drop a file or click to browse. 5MB limit. Even animated GIFs work.</span>'
+      +     '<span class="hint">JPEG, PNG, GIF, or WebP. Drop a file or click to browse. 5MB limit. Even animated GIFs work.</span>'
       +     '<input type="file" id="mp-bg-file" accept="image/jpeg,image/png,image/gif,image/webp">'
       +   '</label>'
       + '</div>'
@@ -4931,6 +4934,33 @@ init();
       preview();
     });
     var hintBtns = overlay.querySelectorAll('.mp-hint-btn[aria-controls]');
+    function hintScrollAncestor(el) {
+      var p = el.parentElement;
+      while (p) {
+        var oy = getComputedStyle(p).overflowY;
+        if (oy === 'auto' || oy === 'scroll') return p;
+        p = p.parentElement;
+      }
+      return null;
+    }
+    function positionHint(btn, hint) {
+      var br = btn.getBoundingClientRect();
+      var anchor = hintScrollAncestor(hint);
+      var ar = anchor ? anchor.getBoundingClientRect() : null;
+      var ceilTop = ar ? ar.top : 0;
+      var floorBottom = ar ? ar.bottom : window.innerHeight;
+      var wallLeft = ar ? ar.left : 0;
+      var wallRight = ar ? ar.right : window.innerWidth;
+      var spaceAbove = br.top - ceilTop;
+      var spaceBelow = floorBottom - br.bottom;
+      hint.classList.toggle('mp-hint-below', spaceAbove < hint.offsetHeight + 8 && spaceBelow > spaceAbove);
+      var hw = hint.offsetWidth;
+      var idealLeft = br.left + br.width / 2 - hw / 2;
+      var clampedLeft = Math.max(wallLeft + 8, Math.min(idealLeft, wallRight - hw - 8));
+      var parentRect = hint.offsetParent.getBoundingClientRect();
+      hint.style.left = (clampedLeft - parentRect.left) + 'px';
+      hint.style.setProperty('--mp-arrow', ((br.left + br.width / 2) - clampedLeft - 6) + 'px');
+    }
     function closeAllHints() {
       var anyOpen = false;
       hintBtns.forEach(function (btn) {
@@ -4945,7 +4975,11 @@ init();
         var hint = document.getElementById(btn.getAttribute('aria-controls'));
         var wasOpen = hint.classList.contains('is-visible');
         closeAllHints();
-        if (!wasOpen) { hint.classList.add('is-visible'); btn.setAttribute('aria-expanded', 'true'); }
+        if (!wasOpen) {
+          hint.classList.add('is-visible');
+          btn.setAttribute('aria-expanded', 'true');
+          positionHint(btn, hint);
+        }
       });
     });
     overlay.addEventListener('click', function (e) { if (e.target === overlay) cancel(); });
