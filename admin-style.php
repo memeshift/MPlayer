@@ -81,7 +81,7 @@ label {
   line-height: 1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex: none;
   position: absolute; top: 0; right: 0;
 }
-.mp-hint-btn:hover, .mp-hint-btn:focus-visible { color: var(--accent); border-color: var(--accent); }
+.mp-hint-btn:hover, .mp-hint-btn:focus-visible { background: var(--panel); color: var(--accent); border-color: var(--accent); }
 .mp-hint-btn:focus-visible { outline: 3px solid #707070; outline-offset: 2px; }
 .mp-hint-text {
   display: none; position: absolute; bottom: calc(100% + 8px); left: 0;
