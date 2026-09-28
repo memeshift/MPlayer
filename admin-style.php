@@ -74,12 +74,12 @@ label {
   margin-bottom: 6px;
   font-size: 0.95rem;
 }
-.mp-label-row { display: flex; align-items: center; gap: 6px; position: relative; }
+.mp-label-row { display: flex; align-items: center; gap: 6px; padding-right: 28px; }
 .mp-hint-btn {
   width: 20px; height: 20px; min-width: 20px; min-height: 20px; padding: 0; border-radius: 50%; border: 1px solid var(--border);
   background: var(--panel); color: var(--text-dim); font-family: 'DM Mono', 'Courier New', monospace; font-size: 12px;
   line-height: 1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex: none;
-  position: relative;
+  position: absolute; top: 0; right: 0;
 }
 .mp-hint-btn:hover, .mp-hint-btn:focus-visible { color: var(--accent); border-color: var(--accent); }
 .mp-hint-btn:focus-visible { outline: 3px solid #707070; outline-offset: 2px; }
@@ -311,7 +311,8 @@ function mp_sr_status_html(string $text = ''): string {
 
 /**
  * Hint button toggle script. Call once per page to initialize hint buttons.
- * Shows on hover/focus, toggles on click, closes on Escape or click-away.
+ * Click/tap-only toggletip (matches index.html's Customize modal) — never
+ * :hover, so it works the same on touch and desktop.
  */
 function mp_hint_btn_script(): string {
     return '<script>' . <<<JS
@@ -351,23 +352,17 @@ function mp_hint_btn_script(): string {
       b.setAttribute("aria-expanded", "false");
     });
   }
-  function open(btn){
-    closeAll();
-    var h = document.getElementById(btn.getAttribute("aria-controls"));
-    h.classList.add("is-visible");
-    position(btn, h);
-    btn.setAttribute("aria-expanded", "true");
-  }
   btns.forEach(function(btn){
-    btn.addEventListener("mouseenter", function(){ open(btn); });
-    btn.addEventListener("mouseleave", function(){ setTimeout(function(){ if (!btn.matches(":focus")) closeAll(); }, 100); });
-    btn.addEventListener("focus", function(){ open(btn); });
-    btn.addEventListener("blur", function(){ closeAll(); });
     btn.addEventListener("click", function(e){
       e.preventDefault();
       var h = document.getElementById(btn.getAttribute("aria-controls"));
-      if (h.classList.contains("is-visible")) closeAll();
-      else open(btn);
+      var wasOpen = h.classList.contains("is-visible");
+      closeAll();
+      if (!wasOpen) {
+        h.classList.add("is-visible");
+        position(btn, h);
+        btn.setAttribute("aria-expanded", "true");
+      }
     });
   });
   document.addEventListener("keydown", function(e){ if (e.key === "Escape") closeAll(); });
