@@ -53,6 +53,7 @@ body { max-width: 640px; }
   <input type="hidden" name="csrf" value="<?php echo htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8'); ?>">
   <input type="hidden" name="icon" id="icon" value="<?php echo htmlspecialchars($settings['icon'], ENT_QUOTES, 'UTF-8'); ?>">
 
+  <h2>Basics</h2>
   <div class="grid-2">
     <div class="field">
       <span class="mp-label-row">
@@ -100,6 +101,7 @@ body { max-width: 640px; }
     <small class="mp-hint-text" id="alias_label-hint">Library row that groups tracks by artist name. Rename it to whatever fits how you release music — "Monikers", "Projects", "Collaborations".</small>
   </div>
 
+  <h2>Socials &amp; Contact</h2>
   <div class="field">
     <label for="email">Email</label>
     <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($social['email'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="you@example.com">

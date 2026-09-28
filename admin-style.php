@@ -73,6 +73,7 @@ label {
   font-family: var(--font-ui);
   margin-bottom: 6px;
   font-size: 0.95rem;
+  color: var(--text-dim);
 }
 .mp-label-row { display: flex; align-items: center; gap: 6px; padding-right: 28px; }
 .mp-hint-btn {
