@@ -2423,7 +2423,7 @@ async function init() {
     updateFooter();
 
     if (urlParam) {
-      const idx = S.sorted.findIndex(tr => tr.file === encodeURIComponent(urlParam) || tr.file === urlParam);
+      const idx = S.sorted.findIndex(tr => decodeURIComponent(tr.file) === urlParam);
       if (idx >= 0) playTrack(idx);
     }
   } catch (e) {
