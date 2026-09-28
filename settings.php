@@ -61,10 +61,15 @@ body { max-width: 640px; }
     </div>
 
     <div class="field">
-      <label for="icon_file">Site icon</label>
-      <img id="icon-preview" src="favicon.php" alt="Current site icon" width="32" height="32" style="display:block;margin-bottom:8px;border-radius:4px">
-      <input type="file" id="icon_file" accept="image/png,image/jpeg,image/gif,image/webp" aria-describedby="icon-hint">
-      <p class="hint" id="icon-hint">The browser-tab icon. A square PNG works best. Max <?php echo (int) MAX_ART_MB; ?>MB.</p>
+      <div id="icon-preview-wrap" style="margin-bottom:12px;">
+        <img id="icon-preview" src="favicon.php" alt="Current site icon" width="44" height="44" style="display:block;border-radius:4px;border:1px solid var(--border);">
+      </div>
+      <label id="icon-dropzone" class="art-dropzone" for="icon_file">
+        <span class="art-dropzone-title">Upload site icon</span>
+        <span class="hint">Drop an image here or click to browse.</span>
+        <input type="file" id="icon_file" accept="image/png,image/jpeg,image/gif,image/webp">
+      </label>
+      <p class="hint" id="icon-hint">A square PNG works best. Max <?php echo (int) MAX_ART_MB; ?>MB.</p>
       <div id="icon-msg" role="status"></div>
     </div>
   </div>
@@ -172,6 +177,29 @@ document.getElementById('icon_file').addEventListener('change', function () {
       out.className = 'msg msg-error';
       out.textContent = err.message;
     });
+});
+
+// Drag and drop for icon
+var iconDropzone = document.getElementById('icon-dropzone');
+['dragover', 'dragenter'].forEach(function (evt) {
+  iconDropzone.addEventListener(evt, function (e) {
+    e.preventDefault();
+    iconDropzone.classList.add('drag-over');
+  });
+});
+['dragleave', 'drop'].forEach(function (evt) {
+  iconDropzone.addEventListener(evt, function (e) {
+    e.preventDefault();
+    iconDropzone.classList.remove('drag-over');
+  });
+});
+iconDropzone.addEventListener('drop', function (e) {
+  var f = e.dataTransfer.files && e.dataTransfer.files[0];
+  if (!f) return;
+  var dt = new DataTransfer();
+  dt.items.add(f);
+  document.getElementById('icon_file').files = dt.files;
+  document.getElementById('icon_file').dispatchEvent(new Event('change'));
 });
 </script>
 </body>
