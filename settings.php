@@ -53,18 +53,20 @@ body { max-width: 640px; }
   <input type="hidden" name="csrf" value="<?php echo htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8'); ?>">
   <input type="hidden" name="icon" id="icon" value="<?php echo htmlspecialchars($settings['icon'], ENT_QUOTES, 'UTF-8'); ?>">
 
-  <div class="field">
-    <label for="site_name">Site name</label>
-    <input type="text" id="site_name" name="site_name" maxlength="60" value="<?php echo htmlspecialchars($settings['site_name'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="<?php echo htmlspecialchars(mp_site_name(), ENT_QUOTES, 'UTF-8'); ?>">
-    <p class="hint">Shown in the player title bar, the browser tab, and password-reset emails.</p>
-  </div>
+  <div class="grid-2">
+    <div class="field">
+      <label for="site_name">Site name</label>
+      <input type="text" id="site_name" name="site_name" maxlength="60" value="<?php echo htmlspecialchars($settings['site_name'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="<?php echo htmlspecialchars(mp_site_name(), ENT_QUOTES, 'UTF-8'); ?>">
+      <p class="hint">Shown in the player title bar, the browser tab, and password-reset emails.</p>
+    </div>
 
-  <div class="field">
-    <label for="icon_file">Site icon</label>
-    <img id="icon-preview" src="favicon.php" alt="Current site icon" width="32" height="32" style="display:block;margin-bottom:8px;border-radius:4px">
-    <input type="file" id="icon_file" accept="image/png,image/jpeg,image/gif,image/webp" aria-describedby="icon-hint">
-    <p class="hint" id="icon-hint">The browser-tab icon. A square PNG works best. Max <?php echo (int) MAX_ART_MB; ?>MB.</p>
-    <div id="icon-msg" role="status"></div>
+    <div class="field">
+      <label for="icon_file">Site icon</label>
+      <img id="icon-preview" src="favicon.php" alt="Current site icon" width="32" height="32" style="display:block;margin-bottom:8px;border-radius:4px">
+      <input type="file" id="icon_file" accept="image/png,image/jpeg,image/gif,image/webp" aria-describedby="icon-hint">
+      <p class="hint" id="icon-hint">The browser-tab icon. A square PNG works best. Max <?php echo (int) MAX_ART_MB; ?>MB.</p>
+      <div id="icon-msg" role="status"></div>
+    </div>
   </div>
 
   <div class="field">
