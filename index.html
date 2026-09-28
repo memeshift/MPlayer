@@ -4386,19 +4386,14 @@ init();
       }
 
       function watchScroll(target, getY) {
-        var lastY = getY();
         var ticking = false;
         function onScroll() {
           var y = Math.max(getY(), 0);
-          var delta = y - lastY;
-          if (y <= barH) {
+          if (y <= 0) {
             setHidden(false);
-          } else if (delta > 4) {
+          } else {
             setHidden(true);
-          } else if (delta < -4) {
-            setHidden(false);
           }
-          lastY = y;
           ticking = false;
         }
         target.addEventListener('scroll', function () {
