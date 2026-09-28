@@ -1865,6 +1865,11 @@ input, select, textarea {
     display: flex; flex-direction: column;
     background: var(--pl-bg); color: var(--pl-text);
     font-family: var(--font-ui);
+    padding-top: var(--mp-admin-bar-h, 0px);
+    transition: padding-top 0.25s ease;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #lib.on { transition: none; }
   }
   :where(#lib) button { font-family: inherit; font-size: 16px; color: inherit; background: none; border: 0; cursor: pointer; text-align: left; transition: opacity .1s; }
   :where(#lib) button:active { opacity: .5; }
@@ -4366,9 +4371,10 @@ init();
 
       // Slide the bar (and the space it reserves) away on scroll-down,
       // back on scroll-up, so it doesn't permanently eat mobile viewport.
-      var lastY = window.scrollY;
+      // Two independent scroll containers can drive this: the document
+      // (desktop/main view) and #lib-body (the mobile library overlay,
+      // which scrolls internally rather than scrolling the page).
       var hidden = false;
-      var ticking = false;
 
       function setHidden(val) {
         if (val === hidden) return;
@@ -4379,26 +4385,35 @@ init();
         if (app) app.style.marginTop = h + 'px';
       }
 
-      function onScroll() {
-        var y = Math.max(window.scrollY, 0);
-        var delta = y - lastY;
-        if (y <= barH) {
-          setHidden(false);
-        } else if (delta > 4) {
-          setHidden(true);
-        } else if (delta < -4) {
-          setHidden(false);
+      function watchScroll(target, getY) {
+        var lastY = getY();
+        var ticking = false;
+        function onScroll() {
+          var y = Math.max(getY(), 0);
+          var delta = y - lastY;
+          if (y <= barH) {
+            setHidden(false);
+          } else if (delta > 4) {
+            setHidden(true);
+          } else if (delta < -4) {
+            setHidden(false);
+          }
+          lastY = y;
+          ticking = false;
         }
-        lastY = y;
-        ticking = false;
+        target.addEventListener('scroll', function () {
+          if (!ticking) {
+            window.requestAnimationFrame(onScroll);
+            ticking = true;
+          }
+        }, { passive: true });
       }
 
-      window.addEventListener('scroll', function () {
-        if (!ticking) {
-          window.requestAnimationFrame(onScroll);
-          ticking = true;
-        }
-      }, { passive: true });
+      watchScroll(window, function () { return window.scrollY; });
+      var libBody = document.getElementById('lib-body');
+      if (libBody) {
+        watchScroll(libBody, function () { return libBody.scrollTop; });
+      }
     }).catch(function () {});
   }
 
