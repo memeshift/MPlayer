@@ -61,8 +61,10 @@ body { max-width: 640px; }
     </div>
 
     <div class="field">
-      <div id="icon-preview-wrap" style="margin-bottom:12px;">
-        <img id="icon-preview" src="favicon.php" alt="Current site icon" width="44" height="44" style="display:block;border-radius:4px;border:1px solid var(--border);">
+      <label>Site icon</label>
+      <div id="icon-preview-wrap" hidden style="margin-bottom:12px;">
+        <img id="icon-preview" class="art-preview" src="favicon.php" alt="Current site icon">
+        <button type="button" id="remove-icon-btn" class="art-remove-btn" aria-label="Remove site icon">&times;</button>
       </div>
       <label id="icon-dropzone" class="art-dropzone" for="icon_file">
         <span class="art-dropzone-title">Upload site icon</span>
@@ -170,6 +172,8 @@ document.getElementById('icon_file').addEventListener('change', function () {
       if (!res.ok) throw new Error(res.data.error || 'Upload failed.');
       document.getElementById('icon').value = res.data.path;
       document.getElementById('icon-preview').src = res.data.path + '?v=' + Date.now();
+      document.getElementById('icon-preview-wrap').hidden = false;
+      document.getElementById('icon-dropzone').style.display = 'none';
       out.className = 'msg msg-success';
       out.textContent = 'Icon uploaded. Click the Save button below to apply it.';
     })
@@ -177,6 +181,17 @@ document.getElementById('icon_file').addEventListener('change', function () {
       out.className = 'msg msg-error';
       out.textContent = err.message;
     });
+});
+
+// Remove icon button
+document.getElementById('remove-icon-btn').addEventListener('click', function (e) {
+  e.preventDefault();
+  document.getElementById('icon_file').value = '';
+  document.getElementById('icon').value = '';
+  document.getElementById('icon-preview-wrap').hidden = true;
+  document.getElementById('icon-dropzone').style.display = '';
+  document.getElementById('icon-msg').className = '';
+  document.getElementById('icon-msg').textContent = '';
 });
 
 // Drag and drop for icon
