@@ -3109,7 +3109,10 @@ function showInfo(t) {
   const shareCol = $('info-share-col');
   if (shareCol && t.file) {
     shareCol.style.display = 'flex';
-    $('btn-share-link').onclick = e => { e.preventDefault(); openEmbedModal(t); };
+    const shareLink = $('btn-share-link');
+    if (shareLink) {
+      shareLink.onclick = e => { e.preventDefault(); openEmbedModal(t); };
+    }
     const iconBtn = $('btn-share-icon');
     if (iconBtn) {
       iconBtn.onclick = () => nativeShare(t);
