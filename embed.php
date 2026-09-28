@@ -41,7 +41,7 @@ if ($raw === '') { http_response_code(400); exit('Missing track parameter.'); }
 
 $filename = basename(rawurldecode($raw));
 $ext      = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-if (!in_array($ext, ALLOWED_EXT, true)) { http_response_code(400); exit('Invalid file type.'); }
+if ($ext !== ALLOWED_EXT) { http_response_code(400); exit('Invalid file type.'); }
 
 $musicDir = realpath(MUSIC_DIR);
 if ($musicDir === false) { http_response_code(500); exit('Music directory not found.'); }

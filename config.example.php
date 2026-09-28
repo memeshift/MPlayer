@@ -18,8 +18,8 @@ define('MUSIC_DIR', __DIR__ . '/music/');
 // Leave as 'music/' unless you move the music folder.
 define('MUSIC_URL', 'music/');
 
-// ── Only these file extensions are allowed ──
-define('ALLOWED_EXT', ['mp3']);
+// ── Only this file extension is allowed ──
+define('ALLOWED_EXT', 'mp3');
 
 // ── Browser cache durations (seconds) ──
 define('SCAN_CACHE_TTL',  300);    // 5 min  — track listing

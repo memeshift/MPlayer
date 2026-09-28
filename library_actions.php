@@ -32,7 +32,7 @@ mp_require_login();
 function la_resolveMusicFile(string $raw): ?string {
     $filename = basename($raw);
     $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-    if (!in_array($ext, ALLOWED_EXT, true)) return null;
+    if ($ext !== ALLOWED_EXT) return null;
     $musicDir = realpath(MUSIC_DIR);
     if ($musicDir === false) return null;
     $musicDir = rtrim($musicDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
@@ -67,7 +67,7 @@ if ($action === 'list') {
 
         $filename = basename($real);
         $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-        if (!in_array($ext, ALLOWED_EXT, true)) continue;
+        if ($ext !== ALLOWED_EXT) continue;
 
         $tags = parseID3($real);
         $tags['file'] = rawurlencode($filename);
