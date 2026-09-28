@@ -203,6 +203,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .nav-menu-item svg { width: 14px; height: 14px; flex: none; fill: currentColor; opacity: 0.8; }
 #art-preview-wrap, #icon-preview-wrap, .art-preview-wrap { position: relative; }
 #icon-preview-wrap { display: inline-block; }
+#icon-preview-wrap[hidden] { display: none; }
 .art-remove-btn {
   position: absolute;
   top: -10px;
