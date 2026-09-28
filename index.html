@@ -2424,7 +2424,10 @@ async function init() {
 
     if (urlParam) {
       const idx = S.sorted.findIndex(tr => decodeURIComponent(tr.file) === urlParam);
-      if (idx >= 0) playTrack(idx);
+      if (idx >= 0) {
+        playTrack(idx, false);
+        window.scrollTo(0, 0);
+      }
     }
   } catch (e) {
     const s = $('pl-status');
@@ -2584,7 +2587,7 @@ const lc = s => (s || '').toLowerCase();
 /* ════════════════════════════════════════════════════════════════════
    PLAYBACK
 ════════════════════════════════════════════════════════════════════ */
-function playTrack(index) {
+function playTrack(index, autoplay = true) {
   if (index < 0 || index >= S.sorted.length) return;
   S.current = index;
   const t   = S.sorted[index];
@@ -2593,16 +2596,16 @@ function playTrack(index) {
 
   audio.src = 'music/' + t.file;
   audio.load();
-  audio.play().catch(err => console.warn('Playback error:', err));
+  if (autoplay) audio.play().catch(err => console.warn('Playback error:', err));
 
-  S.playing = true;
+  S.playing = autoplay;
 
   const pi = $('play-icon'), pp = $('pause-icon');
-  if (pi) pi.style.display = 'none';
-  if (pp) pp.style.display = 'block';
+  if (pi) pi.style.display = autoplay ? 'none' : 'block';
+  if (pp) pp.style.display = autoplay ? 'block' : 'none';
   const nvpi = $('now-view-play-icon'), nvpp = $('now-view-pause-icon');
-  if (nvpi) nvpi.style.display = 'none';
-  if (nvpp) nvpp.style.display = 'block';
+  if (nvpi) nvpi.style.display = autoplay ? 'none' : 'block';
+  if (nvpp) nvpp.style.display = autoplay ? 'block' : 'none';
 
   setScrollTitle(ledLabel(t));
   markCurrent();
@@ -2613,10 +2616,10 @@ function playTrack(index) {
   /* ── A11Y FIX 3: announce track to screen readers ──
      Rollback: remove this one line.
   ── */
-  $('sr-status').textContent = `Now playing: ${trackLabel(t)}`;
+  $('sr-status').textContent = `${autoplay ? 'Now playing' : 'Loaded'}: ${trackLabel(t)}`;
   /* ── /A11Y FIX 3 (playTrack) ── */
 
-  document.title = `▶ ${trackLabel(t)} — ${window.SITE_NAME}`;
+  document.title = `${autoplay ? '▶ ' : ''}${trackLabel(t)} — ${window.SITE_NAME}`;
 }
 
 /* ════════════════════════════════════════════════════════════════════
