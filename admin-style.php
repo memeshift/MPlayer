@@ -74,6 +74,27 @@ label {
   margin-bottom: 6px;
   font-size: 0.95rem;
 }
+.mp-label-row { display: flex; align-items: center; gap: 6px; position: relative; }
+.mp-hint-btn {
+  width: 20px; height: 20px; padding: 0; border-radius: 50%; border: 1px solid var(--border);
+  background: var(--panel); color: var(--text-dim); font-family: var(--font-ui); font-size: 12px;
+  line-height: 1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex: none;
+  position: relative;
+}
+.mp-hint-btn:hover, .mp-hint-btn:focus-visible { color: var(--accent); border-color: var(--accent); }
+.mp-hint-btn:focus-visible { outline: 3px solid #707070; outline-offset: 2px; }
+.mp-hint-text {
+  display: none; position: absolute; bottom: calc(100% + 8px); right: 0;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 4px;
+  padding: 8px 10px; font-size: 0.85rem; color: var(--text-dim); white-space: normal;
+  width: 200px; z-index: 100; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+.mp-hint-text::after {
+  content: ''; position: absolute; top: 100%; right: 8px;
+  width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent;
+  border-top: 6px solid var(--border);
+}
+.mp-hint-text.is-visible { display: block; }
 input[type=text], input[type=email], input[type=password],
 input[type=number], input[type=url], input[type=file], textarea {
   width: 100%;
@@ -88,7 +109,6 @@ input[type=number], input[type=url], input[type=file], textarea {
 }
 textarea { min-height: 88px; resize: vertical; }
 .field { margin-bottom: 4px; }
-.mp-hint-btn { color: var(--text-dim); font-size: 0.85rem; margin-top: 4px; }
 button, .btn {
   display: inline-flex;
   align-items: center;
@@ -284,4 +304,32 @@ function mp_sr_status_html(string $text = ''): string {
     return '<div id="sr-status" role="status" aria-live="polite" aria-atomic="true" '
          . 'style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;">'
          . $escaped . '</div>';
+}
+
+/**
+ * Hint button toggle script. Call once per page to initialize hint buttons.
+ * Shows on hover/focus, toggles on click, closes on Escape or click-away.
+ */
+function mp_hint_btn_script(): string {
+    return '<script>(function(){'
+         . 'var btns=document.querySelectorAll(".mp-hint-btn");'
+         . 'function closeAll(){btns.forEach(function(b){'
+         . 'var h=document.getElementById(b.getAttribute("aria-controls"));'
+         . 'h.classList.remove("is-visible");b.setAttribute("aria-expanded","false");'
+         . '});}'
+         . 'function open(btn){'
+         . 'closeAll();'
+         . 'var h=document.getElementById(btn.getAttribute("aria-controls"));'
+         . 'h.classList.add("is-visible");btn.setAttribute("aria-expanded","true");'
+         . '}'
+         . 'btns.forEach(function(btn){'
+         . 'btn.addEventListener("mouseenter",function(){open(btn);});'
+         . 'btn.addEventListener("mouseleave",function(){setTimeout(function(){if(!btn.matches(":focus")){closeAll();}},100);});'
+         . 'btn.addEventListener("focus",function(){open(btn);});'
+         . 'btn.addEventListener("blur",function(){closeAll();});'
+         . 'btn.addEventListener("click",function(e){e.preventDefault();var h=document.getElementById(btn.getAttribute("aria-controls"));if(h.classList.contains("is-visible")){closeAll();}else{open(btn);}});'
+         . '});'
+         . 'document.addEventListener("keydown",function(e){if(e.key==="Escape"){closeAll();}});'
+         . 'document.addEventListener("click",function(e){var isBtn=e.target.closest(".mp-hint-btn");var isHint=e.target.closest(".mp-hint-text");if(!isBtn&&!isHint){closeAll();}});'
+         . '})();</script>';
 }

@@ -132,21 +132,30 @@ $csrf = mp_csrf_token();
       <input type="text" id="setup_code" name="setup_code" required autofocus autocomplete="off">
     </div>
     <div class="field">
-      <label for="username">Username</label>
+      <span class="mp-label-row">
+        <label for="username">Username</label>
+        <button type="button" class="mp-hint-btn" aria-label="Username requirements" aria-expanded="false" aria-controls="username-hint">?</button>
+      </span>
       <input type="text" id="username" name="username" required autocomplete="username"
              value="<?php echo htmlspecialchars((string) ($_POST['username'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
-      <p class="mp-hint-btn">3–32 characters: letters, numbers, dot, dash or underscore.</p>
+      <small class="mp-hint-text" id="username-hint">3–32 characters: letters, numbers, dot, dash or underscore.</small>
     </div>
     <div class="field">
-      <label for="email">Email</label>
+      <span class="mp-label-row">
+        <label for="email">Email</label>
+        <button type="button" class="mp-hint-btn" aria-label="What is email for?" aria-expanded="false" aria-controls="email-hint">?</button>
+      </span>
       <input type="email" id="email" name="email" required autocomplete="email"
              value="<?php echo htmlspecialchars((string) ($_POST['email'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
-      <p class="mp-hint-btn">Where password-reset links are sent.</p>
+      <small class="mp-hint-text" id="email-hint">Where password-reset links are sent.</small>
     </div>
     <div class="field">
-      <label for="password">Password</label>
+      <span class="mp-label-row">
+        <label for="password">Password</label>
+        <button type="button" class="mp-hint-btn" aria-label="Password requirements" aria-expanded="false" aria-controls="setup-password-hint">?</button>
+      </span>
       <input type="password" id="password" name="password" required autocomplete="new-password">
-      <p class="mp-hint-btn">At least 12 characters.</p>
+      <small class="mp-hint-text" id="setup-password-hint">At least 12 characters.</small>
     </div>
     <div class="field">
       <label for="password_confirm">Confirm password</label>
@@ -156,5 +165,6 @@ $csrf = mp_csrf_token();
   </form>
 
 <?php endif; ?>
+<?php echo mp_hint_btn_script(); ?>
 </body>
 </html>

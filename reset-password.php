@@ -110,9 +110,12 @@ $csrf = mp_csrf_token();
     <input type="hidden" name="csrf" value="<?php echo htmlspecialchars($csrf, ENT_QUOTES, 'UTF-8'); ?>">
     <input type="hidden" name="token" value="<?php echo htmlspecialchars($token, ENT_QUOTES, 'UTF-8'); ?>">
     <div class="field">
-      <label for="password">New password</label>
+      <span class="mp-label-row">
+        <label for="password">New password</label>
+        <button type="button" class="mp-hint-btn" aria-label="Password requirements" aria-expanded="false" aria-controls="password-hint">?</button>
+      </span>
       <input type="password" id="password" name="password" autocomplete="new-password" minlength="12" required autofocus>
-      <p class="mp-hint-btn">At least 12 characters.</p>
+      <small class="mp-hint-text" id="password-hint">At least 12 characters.</small>
     </div>
     <div class="field">
       <label for="password_confirm">Confirm new password</label>
@@ -121,5 +124,6 @@ $csrf = mp_csrf_token();
     <button type="submit">Set new password</button>
   </form>
 <?php endif; ?>
+<?php echo mp_hint_btn_script(); ?>
 </body>
 </html>

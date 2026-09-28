@@ -55,13 +55,19 @@ body { max-width: 640px; }
 
   <div class="grid-2">
     <div class="field">
-      <label for="site_name">Site name</label>
+      <span class="mp-label-row">
+        <label for="site_name">Site name</label>
+        <button type="button" class="mp-hint-btn" aria-label="What is Site name?" aria-expanded="false" aria-controls="site_name-hint">?</button>
+      </span>
       <input type="text" id="site_name" name="site_name" maxlength="60" value="<?php echo htmlspecialchars($settings['site_name'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="<?php echo htmlspecialchars(mp_site_name(), ENT_QUOTES, 'UTF-8'); ?>">
-      <p class="mp-hint-btn">Shown in the player title bar, the browser tab, and password-reset emails.</p>
+      <small class="mp-hint-text" id="site_name-hint">Shown in the player title bar, the browser tab, and password-reset emails.</small>
     </div>
 
     <div class="field">
-      <label>Site icon</label>
+      <span class="mp-label-row">
+        <label>Site icon</label>
+        <button type="button" class="mp-hint-btn" aria-label="What is Site icon?" aria-expanded="false" aria-controls="icon-hint">?</button>
+      </span>
       <div id="icon-preview-wrap" hidden style="margin-bottom:12px;">
         <img id="icon-preview" class="art-preview" src="favicon.php" alt="Current site icon">
         <button type="button" id="remove-icon-btn" class="art-remove-btn" aria-label="Remove site icon">&times;</button>
@@ -71,21 +77,27 @@ body { max-width: 640px; }
         <span class="mp-hint-btn">Drop an image here or click to browse.</span>
         <input type="file" id="icon_file" accept="image/png,image/jpeg,image/gif,image/webp">
       </label>
-      <p class="mp-hint-btn" id="icon-hint">A square PNG works best. Max <?php echo (int) MAX_ART_MB; ?>MB.</p>
+      <small class="mp-hint-text" id="icon-hint">A square PNG works best. Max <?php echo (int) MAX_ART_MB; ?>MB.</small>
       <div id="icon-msg" role="status"></div>
     </div>
   </div>
 
   <div class="field">
-    <label for="landing_text">Library landing text</label>
+    <span class="mp-label-row">
+      <label for="landing_text">Library landing text</label>
+      <button type="button" class="mp-hint-btn" aria-label="What is Library landing text?" aria-expanded="false" aria-controls="landing_text-hint">?</button>
+    </span>
     <textarea id="landing_text" name="landing_text" maxlength="200" rows="3"><?php echo htmlspecialchars($settings['landing_text'], ENT_QUOTES, 'UTF-8'); ?></textarea>
-    <p class="mp-hint-btn">Shown above the row buttons on the mobile library landing page. Leave blank to hide. <span id="landing_text-count"></span></p>
+    <small class="mp-hint-text" id="landing_text-hint">Shown above the row buttons on the mobile library landing page. Leave blank to hide. <span id="landing_text-count"></span></small>
   </div>
 
   <div class="field">
-    <label for="alias_label">Alias row label</label>
+    <span class="mp-label-row">
+      <label for="alias_label">Alias row label</label>
+      <button type="button" class="mp-hint-btn" aria-label="What is Alias row label?" aria-expanded="false" aria-controls="alias_label-hint">?</button>
+    </span>
     <input type="text" id="alias_label" name="alias_label" maxlength="30" value="<?php echo htmlspecialchars($settings['alias_label'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="Aliases">
-    <p class="mp-hint-btn">Library row that groups tracks by artist name. Rename it to whatever fits how you release music — "Monikers", "Projects", "Collaborations".</p>
+    <small class="mp-hint-text" id="alias_label-hint">Library row that groups tracks by artist name. Rename it to whatever fits how you release music — "Monikers", "Projects", "Collaborations".</small>
   </div>
 
   <div class="field">
@@ -227,5 +239,6 @@ iconDropzone.addEventListener('drop', function (e) {
   document.getElementById('icon_file').dispatchEvent(new Event('change'));
 });
 </script>
+<?php echo mp_hint_btn_script(); ?>
 </body>
 </html>
