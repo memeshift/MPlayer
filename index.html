@@ -1251,9 +1251,7 @@ body {
   gap: 0;
 }
 
-.socials-burst-canvas,
-.mp-admin-dust-canvas,
-.mp-scrollend-dust-canvas {
+.socials-burst-canvas {
   position: absolute;
   left: 50%;
   top: 50%;
@@ -1264,14 +1262,29 @@ body {
   z-index: 10;
 }
 
+/* Admin-bar and scroll-end dust canvases span their full container width
+   (rather than the small centered socials burst) so the effect reads
+   edge-to-edge across the bar/hint instead of as a small central puff. */
+.mp-admin-dust-canvas,
+.mp-scrollend-dust-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s ease-in;
+  z-index: 10;
+}
+
 /* Bottom-of-list "you've reached the end" hint — fixed so it works the
-   same whether the document or #lib-body is the thing that scrolled. */
+   same whether the document or #lib-body is the thing that scrolled.
+   Full-width to match the admin bar's edge-to-edge dust. */
 #mp-scrollend-fx {
   position: fixed;
-  left: 50%;
+  left: 0;
+  right: 0;
   bottom: max(10px, env(safe-area-inset-bottom, 0px));
-  transform: translateX(-50%);
-  width: 160px;
   height: 40px;
   pointer-events: none;
   z-index: 9998;
@@ -3284,12 +3297,6 @@ function attachSparkle(linkEl, bindDefaultTriggers = true) {
   const W_fallback = 120;
   function W() { return cvs.width || W_fallback; }
 
-  function themeColors() {
-    if (app.dataset.theme !== 'mplayer') return ['#14ff14', '#00cc00', '#ffffff'];
-    const cs = getComputedStyle(app);
-    return ['--chrome', '--chrome-hi', '--titlebar-bg'].map(v => cs.getPropertyValue(v).trim());
-  }
-
   const MARGIN = 22;
   let particles = [];
   let rafId     = null;
@@ -3314,7 +3321,7 @@ function attachSparkle(linkEl, bindDefaultTriggers = true) {
       da:      randomBetween(-0.009, -0.004),
       dx:      randomBetween(-0.225, 0.225),
       dy:      randomBetween(-0.275, 0.275),
-      rgb:     hexToRgb(themeColors()[Math.floor(Math.random() * 3)]),
+      rgb:     hexToRgb(mpThemeColors()[Math.floor(Math.random() * 3)]),
       twinkle: Math.random() * Math.PI * 2,
     };
   }
@@ -3382,6 +3389,15 @@ function attachSparkle(linkEl, bindDefaultTriggers = true) {
   return { start, stop };
 }
 
+/* Live theme colors, read from the CSS custom properties Customize writes
+   to #app — so every sparkle/dust effect stays in sync with whatever
+   palette is currently set, not a hardcoded guess at it. */
+function mpThemeColors() {
+  if (app.dataset.theme !== 'mplayer') return ['#14ff14', '#00cc00', '#ffffff'];
+  const cs = getComputedStyle(app);
+  return ['--chrome', '--chrome-hi', '--titlebar-bg'].map(v => cs.getPropertyValue(v).trim());
+}
+
 /* ════════════════════════════════════════════════════════════════════
    DUST BURST — a one-shot, self-fading particle puff. Used for the
    socials "thanks for sharing" burst and for small state-change hints
@@ -3401,9 +3417,7 @@ function burstDust(container, canvasClass, w, h, fadeSeconds = 3.0, count = 55) 
   cvs.height = h;
 
   const ctx    = cvs.getContext('2d');
-  const COLORS = app.dataset.theme === 'mplayer'
-    ? ['#FAC946', '#F90002', '#007998']
-    : ['#14ff14', '#00cc00', '#ffffff'];
+  const COLORS = mpThemeColors();
   const MARGIN = 10;
 
   let particles = [];
@@ -4406,7 +4420,7 @@ init();
         // Dust it only on a genuine reappearance, never on the initial
         // (already-visible) state at page load.
         if (wasHidden && !hidden) {
-          burstDust(bar, 'mp-admin-dust-canvas', 160, Math.min(barH, 36));
+          burstDust(bar, 'mp-admin-dust-canvas', bar.offsetWidth || 320, barH);
         }
       }
 
@@ -4416,7 +4430,7 @@ init();
       scrollEndFx.id = 'mp-scrollend-fx';
       document.body.appendChild(scrollEndFx);
       function dustScrollEnd() {
-        burstDust(scrollEndFx, 'mp-scrollend-dust-canvas', 160, 36);
+        burstDust(scrollEndFx, 'mp-scrollend-dust-canvas', scrollEndFx.offsetWidth || 320, scrollEndFx.offsetHeight || 40);
       }
 
       function watchScroll(target, getY, getMax) {
