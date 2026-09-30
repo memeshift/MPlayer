@@ -208,7 +208,7 @@ body.batch-active { max-width: 640px; }
 
           <div class="field">
             <label for="comment">Notes / comment</label>
-            <textarea id="comment" name="comment" maxlength="1000"></textarea>
+            <textarea id="comment" name="comment" maxlength="2000"></textarea>
           </div>
           <div class="field">
             <label for="buy_url">Buy link</label>

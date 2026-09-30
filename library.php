@@ -137,7 +137,7 @@ body.select-mode .list-actions { position: sticky; top: 0; z-index: 10; backgrou
         <div class="field"><label>Year<input type="text" name="year" maxlength="4" inputmode="numeric"></label></div>
         <div class="field"><label>Track number<input type="text" name="track" maxlength="10" inputmode="numeric"></label></div>
       </div>
-      <div class="field"><label>Notes / comment<textarea name="comment" maxlength="1000"></textarea></label></div>
+      <div class="field"><label>Notes / comment<textarea name="comment" maxlength="2000"></textarea></label></div>
       <div class="field"><label>Buy link<input type="url" name="buy_url" maxlength="500" placeholder="https://"></label></div>
       <div class="field"><label>More-info link<input type="url" name="info_url" maxlength="500" placeholder="https://"></label></div>
       <div class="field"><label class="checkbox-field"><input type="checkbox" name="download_enabled"> Allow visitors to download this track</label></div>

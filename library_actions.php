@@ -108,7 +108,7 @@ if ($action === 'edit') {
         'album'    => la_capField((string)($_POST['album'] ?? ''), 200),
         'year'     => la_capField((string)($_POST['year'] ?? ''), 4),
         'track'    => la_capField((string)($_POST['track'] ?? ''), 10),
-        'comment'  => la_capField((string)($_POST['comment'] ?? ''), 1000),
+        'comment'  => la_capField((string)($_POST['comment'] ?? ''), 2000),
         'buy_url'  => mb_substr(sanitiseUrl((string)($_POST['buy_url'] ?? '')), 0, 500),
         'info_url' => mb_substr(sanitiseUrl((string)($_POST['info_url'] ?? '')), 0, 500),
         'download_enabled' => !empty($_POST['download_enabled']),
