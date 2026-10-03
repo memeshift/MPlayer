@@ -238,6 +238,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .art-dropzone-title { display: block; font-family: var(--font-ui); font-weight: bold; color: var(--text); }
 .hint { color: var(--text-dim); font-size: 0.85rem; margin-top: 4px; }
 .art-dropzone .hint { display: block; margin-top: 4px; margin-bottom: 0; }
+.art-preview-wrap:not([hidden]) + .art-dropzone .art-fallback { display: none; }
 .art-dropzone input[type=file] {
   position: absolute;
   inset: 0;

@@ -180,7 +180,7 @@ body.batch-active { max-width: 640px; }
               </div>
               <label id="art-dropzone" class="art-dropzone" for="art-input">
                 <span id="art-dropzone-title" class="art-dropzone-title">Add cover art</span>
-                <span class="hint">Upload a square image (JPEG, PNG, GIF, WebP) to update cover art. Otherwise, a unique graphic pattern based on the album (or the filename, if there's no album) will be used.</span>
+                <span class="hint">Upload a square image (JPEG, PNG, GIF, WebP) to update cover art. <span class="art-fallback">Otherwise, a unique graphic pattern based on the album (or the filename, if there's no album) will be used.</span></span>
                 <input type="file" id="art-input" name="art" accept="image/jpeg,image/png,image/gif,image/webp">
               </label>
               <input type="checkbox" id="remove-art-input" hidden>
