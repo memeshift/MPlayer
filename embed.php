@@ -70,6 +70,13 @@ $audioUrl  = $baseUrl . '/music/' . rawurlencode($filename);
 $artUrl    = $baseUrl . '/art.php?f=' . $fileEnc;
 $playerUrl = $baseUrl . '/?t=' . $fileEnc;
 
+// Customize colours for the art-less pattern (same mapping as index.html's DESIGN_VAR_GROUPS).
+$design    = mp_read_site_settings()['design'];
+$artVars   = '';
+foreach (['--chrome' => 'titlebar_color', '--led' => 'controls_dock_color', '--pl-text' => 'pl_item_color', '--pl-bg' => 'bg_color'] as $var => $key) {
+    if (preg_match('/^#[0-9a-fA-F]{6}$/', (string) ($design[$key] ?? ''))) $artVars .= $var . ':' . $design[$key] . ';';
+}
+
 // ── Security headers ──
 // X-Frame-Options is intentionally omitted — this file is designed to be
 // embedded in iframes on any domain. The modern equivalent is:
@@ -138,6 +145,8 @@ html, body {
   line-height: 1;
   user-select: none;
 }
+
+.art-placeholder.art-pattern { position: absolute; inset: 0; font-size: 0; }
 
 /* Right: info + controls */
 .content {
@@ -257,11 +266,11 @@ html, body {
   <div class="player-body">
 
     <!-- Album art -->
-    <div class="art-block">
+    <div class="art-block" style="<?= htmlspecialchars($artVars, ENT_QUOTES, 'UTF-8') ?>">
       <?php if ($hasArt): ?>
         <img src="<?= $artUrl ?>" alt="Album art for <?= $title ?>">
       <?php else: ?>
-        <span class="art-placeholder">♪</span>
+        <span class="art-placeholder" id="art-ph">♪</span>
       <?php endif; ?>
     </div>
 
@@ -296,6 +305,55 @@ html, body {
 
 <audio id="audio" src="<?= htmlspecialchars($audioUrl, ENT_QUOTES, 'UTF-8') ?>" preload="none"></audio>
 
+<?php if (!$hasArt): ?>
+<script>
+// Progressive enhancement: the ♪ placeholder above is the no-JS fallback.
+(function() {
+  'use strict';
+  var ph = document.getElementById('art-ph');
+  if (!ph) return;
+  // Every recipe is tile-relative (no px). artBackground sizes the tile as a whole fraction of the box
+  // (nx × ny tiles), so a pattern always starts and ends on a tile edge and repeats seamlessly beside a copy of itself.
+  // Each recipe returns layers: an image, or [image, position] for half-tile shifts.
+  const artArc = (c, top, pos) => [`radial-gradient(ellipse 29.4% 20% at 29.4% ${top ? 0 : 100}%, #0000 70%, ${c} 0 98%, #0000 100%)`, pos];
+  const ART_PATTERNS = [
+    (a, b) => [`linear-gradient(45deg, ${a} 25%, ${b} 25% 50%, ${a} 50% 75%, ${b} 75%)`],
+    (a, b) => [`conic-gradient(${a} 25%, ${b} 0 50%, ${a} 0 75%, ${b} 0)`],
+    (a, b) => [`radial-gradient(circle closest-side at 25% 25%, ${a} 85%, #0000 90%)`, `radial-gradient(circle closest-side at 75% 75%, ${b} 85%, #0000 90%)`],
+    (a, b) => [`radial-gradient(circle, ${a} 8%, transparent 10% 30%, ${b} 32% 46%, transparent 48%)`],
+    (a, b) => [`linear-gradient(#0000 44%, ${a} 0 56%, #0000 0)`, `linear-gradient(90deg, #0000 44%, ${b} 0 56%, #0000 0)`],
+    (a, b) => [`linear-gradient(135deg, ${a} 25%, transparent 25%)`, `linear-gradient(225deg, ${b} 25%, transparent 25%)`],
+    (a, b) => [`conic-gradient(from -22.5deg, ${a} 12.5%, ${b} 0 25%, ${a} 0 37.5%, ${b} 0 50%, ${a} 0 62.5%, ${b} 0 75%, ${a} 0 87.5%, ${b} 0)`],
+    (a, b) => [`radial-gradient(circle closest-side, ${a} 60%, #0000 65%)`, `linear-gradient(45deg, #0000 45%, ${b} 0 55%, #0000 0)`, `linear-gradient(-45deg, #0000 45%, ${b} 0 55%, #0000 0)`],
+    (a, b, nx, ny) => { const x = `${50 / (nx - 1)}%`, y = `${50 / (ny - 1)}%`;
+      return [artArc(a, 0, '0 0'), artArc(a, 1, `${x} 0`), artArc(b, 0, `0 ${y}`), artArc(b, 1, `${x} ${y}`)]; },
+    (a, b) => [`radial-gradient(circle farthest-side at 0 0, ${a} 48%, #0000 50%)`, `radial-gradient(circle farthest-side at 100% 100%, ${b} 48%, #0000 50%)`]
+  ];
+  const ART_COLORS = ['var(--led)', 'var(--chrome)', 'var(--pl-text)'];
+  const ART_PAIRS = ART_COLORS.flatMap(a => ART_COLORS.filter(b => b !== a).map(b => [a, b]));
+  const ART_COUNTS = [3, 4, 5, 6, 7, 8];
+  const ART_GRIDS = ART_COUNTS.flatMap(x => ART_COUNTS.filter(y => x <= 2 * y && y <= 2 * x).map(y => [x, y]));
+  const artBackground = (pat, a, b, nx, ny) => ART_PATTERNS[pat](a, b, nx, ny).map(l => {
+    const [img, pos = '0 0'] = [].concat(l);
+    return `${img} ${pos}/calc(100% / ${nx}) calc(100% / ${ny})`;
+  }).join(', ');
+
+  // Copy of index.html's pattern code (keep in sync): same filename → same pattern. Slots = recipe × tile grid × colour pair (1,920).
+  function artPatternStyle(file) {
+    let h = 2166136261;
+    for (const c of file) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
+    h ^= h >>> 16; h = Math.imul(h, 2246822507); h ^= h >>> 13; h = Math.imul(h, 3266489909); h ^= h >>> 16;
+    h >>>= 0;
+    const pick = k => { const v = h % k; h = Math.floor(h / k); return v; };
+    const pat = pick(ART_PATTERNS.length), [nx, ny] = ART_GRIDS[pick(ART_GRIDS.length)], [a, b] = ART_PAIRS[pick(ART_PAIRS.length)];
+    return `background:${artBackground(pat, a, b, nx, ny)};background-color:var(--pl-bg)`;
+  }
+  ph.className = 'art-placeholder art-pattern';
+  ph.textContent = '';
+  ph.style.cssText = artPatternStyle(<?= json_encode($fileEnc, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>);
+})();
+</script>
+<?php endif; ?>
 <script>
 (function() {
   'use strict';

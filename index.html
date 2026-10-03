@@ -777,6 +777,17 @@ body {
   user-select: none;
 }
 
+.art-placeholder.art-pattern { position: absolute; inset: 0; font-size: 0; }
+.now-view-art-wrap .art-placeholder.art-pattern {
+  position: static;
+  width: min(78vw, 420px);
+  height: min(78vw, 420px);
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: var(--radius);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+}
+
 #album-art {
   width: 100%;
   height: 100%;
@@ -1986,7 +1997,7 @@ input, select, textarea {
   .lib-thumb { flex: none; width: 52px; height: 52px; border-radius: 50%; overflow: hidden; background: var(--pl-alt); display: flex; align-items: center; justify-content: center; }
   .lib-thumb.sq { border-radius: 6px; }
   .lib-thumb img, .lib-cover img { width: 100%; height: 100%; object-fit: cover; }
-  .lib-ph { color: var(--sort-text); font-size: 22.4px; }
+  .lib-ph { display: block; width: 100%; height: 100%; }
   .lib-letter { margin: 20px 0 4px; color: var(--chrome); font-size: 17.6px; font-weight: 700; }
   .lib-index { position: absolute; right: 2px; top: 110px; bottom: 140px; display: flex; flex-direction: column; justify-content: space-around; }
   #lib .lib-index button { padding: 0 6px; min-height: 22px; color: var(--chrome); font-size: 12px; font-weight: 700; }
@@ -3208,7 +3219,7 @@ function showInfo(t) {
     img.setAttribute('alt', altText);
     img.src = `art.php?f=${t.file}&v=${t.mtime}`;
     img.onload  = () => { img.style.display = 'block'; ph.style.display = 'none'; syncNowView(t); };
-    img.onerror = () => { img.style.display = 'none';  ph.style.display = 'flex'; syncNowView(t); };
+    img.onerror = () => { img.style.display = 'none';  applyArtPattern(ph, t); ph.style.display = 'flex'; syncNowView(t); };
 
     img.classList.add('art-clickable');
     img.setAttribute('role', 'button');
@@ -3217,6 +3228,7 @@ function showInfo(t) {
   } else {
     img.setAttribute('alt', '');
     img.style.display = 'none';
+    applyArtPattern(ph, t);
     ph.style.display  = 'flex';
     syncNowView(t);
 
@@ -3760,6 +3772,7 @@ function syncNowView(t) {
     nvBg.style.backgroundImage = `url("${img.src}")`;
   } else {
     nvImg.style.display = 'none';
+    applyArtPattern(nvPh, t);
     nvPh.style.display  = 'flex';
     nvBg.style.backgroundImage = 'none';
   }
@@ -3941,7 +3954,51 @@ const L = { featured: { tracks: [], albums: [] }, landingText: '', aliasLabel: '
 const libEl = $('lib'), libBody = $('lib-body'), libNav = $('lib-nav');
 
 const libTitle = t => t.title || decodeURIComponent(t.file).replace(/\.mp3$/i, '');
-const libArt   = t => t.has_art ? `<img src="art.php?f=${t.file}&v=${t.mtime}" alt="" loading="lazy">` : '<span class="lib-ph" aria-hidden="true">♪</span>';
+// Every recipe is tile-relative (no px). artBackground sizes the tile as a whole fraction of the box
+// (nx × ny tiles), so a pattern always starts and ends on a tile edge and repeats seamlessly beside a copy of itself.
+// Each recipe returns layers: an image, or [image, position] for half-tile shifts.
+const artArc = (c, top, pos) => [`radial-gradient(ellipse 29.4% 20% at 29.4% ${top ? 0 : 100}%, #0000 70%, ${c} 0 98%, #0000 100%)`, pos];
+const ART_PATTERNS = [
+  (a, b) => [`linear-gradient(45deg, ${a} 25%, ${b} 25% 50%, ${a} 50% 75%, ${b} 75%)`],
+  (a, b) => [`conic-gradient(${a} 25%, ${b} 0 50%, ${a} 0 75%, ${b} 0)`],
+  (a, b) => [`radial-gradient(circle closest-side at 25% 25%, ${a} 85%, #0000 90%)`, `radial-gradient(circle closest-side at 75% 75%, ${b} 85%, #0000 90%)`],
+  (a, b) => [`radial-gradient(circle, ${a} 8%, transparent 10% 30%, ${b} 32% 46%, transparent 48%)`],
+  (a, b) => [`linear-gradient(#0000 44%, ${a} 0 56%, #0000 0)`, `linear-gradient(90deg, #0000 44%, ${b} 0 56%, #0000 0)`],
+  (a, b) => [`linear-gradient(135deg, ${a} 25%, transparent 25%)`, `linear-gradient(225deg, ${b} 25%, transparent 25%)`],
+  (a, b) => [`conic-gradient(from -22.5deg, ${a} 12.5%, ${b} 0 25%, ${a} 0 37.5%, ${b} 0 50%, ${a} 0 62.5%, ${b} 0 75%, ${a} 0 87.5%, ${b} 0)`],
+  (a, b) => [`radial-gradient(circle closest-side, ${a} 60%, #0000 65%)`, `linear-gradient(45deg, #0000 45%, ${b} 0 55%, #0000 0)`, `linear-gradient(-45deg, #0000 45%, ${b} 0 55%, #0000 0)`],
+  (a, b, nx, ny) => { const x = `${50 / (nx - 1)}%`, y = `${50 / (ny - 1)}%`;
+    return [artArc(a, 0, '0 0'), artArc(a, 1, `${x} 0`), artArc(b, 0, `0 ${y}`), artArc(b, 1, `${x} ${y}`)]; },
+  (a, b) => [`radial-gradient(circle farthest-side at 0 0, ${a} 48%, #0000 50%)`, `radial-gradient(circle farthest-side at 100% 100%, ${b} 48%, #0000 50%)`]
+];
+const ART_COLORS = ['var(--led)', 'var(--chrome)', 'var(--pl-text)'];
+const ART_PAIRS = ART_COLORS.flatMap(a => ART_COLORS.filter(b => b !== a).map(b => [a, b]));
+const ART_COUNTS = [3, 4, 5, 6, 7, 8];
+const ART_GRIDS = ART_COUNTS.flatMap(x => ART_COUNTS.filter(y => x <= 2 * y && y <= 2 * x).map(y => [x, y]));
+const artBackground = (pat, a, b, nx, ny) => ART_PATTERNS[pat](a, b, nx, ny).map(l => {
+  const [img, pos = '0 0'] = [].concat(l);
+  return `${img} ${pos}/calc(100% / ${nx}) calc(100% / ${ny})`;
+}).join(', ');
+
+// Pure function of the filename: the same file gets the same pattern in every view,
+// whatever else is uploaded. Slots = recipe × tile grid × colour pair (1,920).
+function artPatternStyle(t) {
+  let h = 2166136261;
+  for (const c of t.file) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
+  h ^= h >>> 16; h = Math.imul(h, 2246822507); h ^= h >>> 13; h = Math.imul(h, 3266489909); h ^= h >>> 16;
+  h >>>= 0;
+  const pick = k => { const v = h % k; h = Math.floor(h / k); return v; };
+  const pat = pick(ART_PATTERNS.length), [nx, ny] = ART_GRIDS[pick(ART_GRIDS.length)], [a, b] = ART_PAIRS[pick(ART_PAIRS.length)];
+  return `background:${artBackground(pat, a, b, nx, ny)};background-color:var(--pl-bg)`;
+}
+
+function applyArtPattern(el, t) {
+  el.className = 'art-placeholder art-pattern';
+  el.textContent = '';
+  el.style.cssText = artPatternStyle(t);
+}
+
+const libArt   = t => t.has_art ? `<img src="art.php?f=${t.file}&v=${t.mtime}" alt="" loading="lazy">` : `<span class="lib-ph" style="${artPatternStyle(t)}" aria-hidden="true"></span>`;
 const libByTrack = (a, b) => (parseInt(a.track, 10) || 0) - (parseInt(b.track, 10) || 0);
 const libAlbums  = () => [...new Set(S.tracks.map(t => t.album).filter(Boolean))].sort((a, b) => a.localeCompare(b));
 const libAliases = () => [...new Set(S.tracks.map(t => t.artist).filter(Boolean))].sort((a, b) => a.localeCompare(b));
@@ -3993,8 +4050,8 @@ function libAliasesScreen() {
   keys.forEach(k => {
     html += `<div class="lib-letter" id="lib-sec-${k === '#' ? 'num' : k}" aria-hidden="true">${k}</div>`;
     groups[k].forEach(a => {
-      const t = S.tracks.find(x => x.artist === a && x.has_art);
-      html += `<button type="button" class="lib-row" data-alias="${esc(a)}"><span class="lib-thumb">${t ? libArt(t) : '<span class="lib-ph" aria-hidden="true">♪</span>'}</span>` +
+      const t = S.tracks.find(x => x.artist === a && x.has_art) || S.tracks.find(x => x.artist === a);
+      html += `<button type="button" class="lib-row" data-alias="${esc(a)}"><span class="lib-thumb">${libArt(t)}</span>` +
         `<span class="lib-row-name">${esc(a)}</span><span class="lib-chev" aria-hidden="true">›</span></button>`;
     });
   });
