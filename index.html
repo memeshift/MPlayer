@@ -2693,7 +2693,11 @@ function updateMediaSession(t) {
     { src: `art.php?f=${t.file}&v=${t.mtime}`, sizes: '512x512', type: 'image/jpeg' },
   ] : [];
 
-  navigator.mediaSession.metadata = new MediaMetadata({ title, artist, album, artwork });
+  const md = new MediaMetadata({ title, artist, album, artwork });
+  navigator.mediaSession.metadata = md;
+  if (!t.has_art) artPatternBlobUrl(t).then(src => {
+    if (navigator.mediaSession.metadata === md) md.artwork = [{ src, sizes: '512x512', type: 'image/png' }];
+  }).catch(err => console.warn('Lock-screen art failed:', err));
 
   navigator.mediaSession.setActionHandler('play',          () => audio.play());
   navigator.mediaSession.setActionHandler('pause',         () => audio.pause());
@@ -4052,6 +4056,24 @@ function applyArtPattern(el, t) {
   el.textContent = '';
   el.dataset.art = artPatternStyle(t);
   el.style.cssText = el.dataset.art;
+}
+
+const artBlobCache = new Map();
+// Rasterizes the CSS pattern for the lock screen, with theme variables resolved to their current values.
+async function artPatternBlobUrl(t) {
+  const cs = getComputedStyle(app);
+  const style = artPatternStyle(t).replace(/var\((--[\w-]+)\)/g, (_, v) => cs.getPropertyValue(v).trim());
+  if (artBlobCache.has(style)) return artBlobCache.get(style);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512"><foreignObject width="512" height="512"><div xmlns="http://www.w3.org/1999/xhtml" style="width:512px;height:512px;${style}"></div></foreignObject></svg>`;
+  const img = new Image();
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  await img.decode();
+  const c = document.createElement('canvas');
+  c.width = c.height = 512;
+  c.getContext('2d').drawImage(img, 0, 0);
+  const url = URL.createObjectURL(await new Promise((ok, no) => c.toBlob(b => b ? ok(b) : no(new Error('toBlob null')), 'image/png')));
+  artBlobCache.set(style, url);
+  return url;
 }
 
 const libArt   = t => t.has_art ? `<img src="art.php?f=${t.file}&v=${t.mtime}" alt="" loading="lazy">` : `<span class="lib-ph" style="${artPatternStyle(t)}" aria-hidden="true"></span>`;
