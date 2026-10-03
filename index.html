@@ -1214,6 +1214,16 @@ body {
   word-break: break-word;
 }
 .now-view-notes-meta-val a { color: inherit; }
+.now-view-notes-link {
+  font: inherit;
+  color: var(--chrome);
+  background: none;
+  border: 0;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+}
+.now-view-notes-link:focus-visible { outline: 2px solid var(--chrome); outline-offset: 2px; }
 .now-view-notes-text {
   font-family: var(--font-info-body);
   font-size: 16px;
@@ -3811,19 +3821,32 @@ function syncNowView(t) {
   $('now-view-artist').textContent = t.artist || '—';
   $('now-view-notes-text').textContent = t.comment || '—';
 
+  const navLink = (kind, name) => `<button type="button" class="now-view-notes-link" data-nv-${kind}="${esc(name)}">${esc(name)}</button>`;
   const metaFields = [
     ['TITLE',  t.title],
-    ['ARTIST', t.artist],
-    ['ALBUM',  t.album],
+    t.artist ? ['ARTIST', navLink('artist', t.artist)] : null,
+    t.album  ? ['ALBUM',  navLink('album',  t.album)]  : null,
     ['YEAR',   t.year],
     ['TRACK',  t.track],
     t.buy_url  ? ['BUY',  `<a href="${esc(safeHttpUrl(t.buy_url))}" target="_blank" rel="noopener noreferrer">»buy/support</a>`]  : null,
     t.info_url ? ['INFO', `<a href="${esc(safeHttpUrl(t.info_url))}" target="_blank" rel="noopener noreferrer">»more info</a>`] : null,
   ].filter(f => f && f[1]);
   $('now-view-notes-meta').innerHTML = metaFields.map(([key, val]) =>
-    `<div class="now-view-notes-meta-item"><div class="now-view-notes-meta-key">${key}</div><div class="now-view-notes-meta-val">${key === 'BUY' || key === 'INFO' ? val : esc(val)}</div></div>`
+    `<div class="now-view-notes-meta-item"><div class="now-view-notes-meta-key">${key}</div><div class="now-view-notes-meta-val">${['BUY', 'INFO', 'ARTIST', 'ALBUM'].includes(key) ? val : esc(val)}</div></div>`
   ).join('');
 }
+
+/* ARTIST / ALBUM in the notes panel jump to that screen of the in-app
+   library: dismiss the now-playing view, then push the screen onto the
+   library's back stack so ‹ returns to wherever the user was browsing. */
+$('now-view-notes-meta').addEventListener('click', e => {
+  const el = e.target.closest('.now-view-notes-link');
+  if (!el) return;
+  const d = el.dataset;
+  closeNowView();
+  if (d.nvArtist) libPush(() => libArtistScreen(d.nvArtist), true);
+  else if (d.nvAlbum) libPush(() => libAlbumScreen(d.nvAlbum), true);
+});
 
 function openNotesView() {
   $('now-view-notes').style.transform = 'translateY(0)';
@@ -4093,6 +4116,13 @@ function libAliasesScreen() {
   return { title: L.aliasLabel, html };
 }
 
+const libArtistScreen = name => ({ title: name, html: S.tracks.filter(t => t.artist === name).map(t => libSongRow(t)).join('') });
+
+function libAlbumScreen(name) {
+  const ts = libAlbumTracks(name);
+  return { title: name, hero: true, html: libAlbumHero(name) + (ts.length > 1 ? ts.map(t => libSongRow(t, false)).join('') : '') };
+}
+
 const libScreens = {
   aliases: libAliasesScreen,
   albums: () => ({ title: 'Albums', html: '<div class="lib-grid">' + libAlbums().map(a => libAlbumTile(a)).join('') + '</div>' }),
@@ -4159,11 +4189,8 @@ libEl.addEventListener('click', e => {
   lastKeyActivatedButton = null;
   if (el.id === 'lib-back') { L.stack.pop(); libRender(); libFocusHeading(suppressRing); }
   else if (d.go)    libPush(libScreens[d.go], suppressRing);
-  else if (d.alias) libPush(() => ({ title: d.alias, html: S.tracks.filter(t => t.artist === d.alias).map(t => libSongRow(t)).join('') }), suppressRing);
-  else if (d.album) libPush(() => {
-    const ts = libAlbumTracks(d.album);
-    return { title: d.album, hero: true, html: libAlbumHero(d.album) + (ts.length > 1 ? ts.map(t => libSongRow(t, false)).join('') : '') };
-  }, suppressRing);
+  else if (d.alias) libPush(() => libArtistScreen(d.alias), suppressRing);
+  else if (d.album) libPush(() => libAlbumScreen(d.album), suppressRing);
   else if (d.play !== undefined) { playTrack(+d.play); openNowView(); }
   else if (d.jump)  $('lib-sec-' + d.jump).scrollIntoView();
   else if (el.id === 'lib-mini-open') openNowView();
