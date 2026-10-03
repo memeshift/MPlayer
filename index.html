@@ -3950,7 +3950,7 @@ function closeNotesView() {
 /* ══ MOBILE LIBRARY (landing page) ══
    Screens are functions returning {title, html}; L.stack is the back stack.
    Every tap is handled by one delegated listener via data-* attributes. */
-const L = { featured: { tracks: [], albums: [] }, landingText: '', aliasLabel: 'Aliases', stack: [] };
+const L = { featured: { tracks: [], albums: [] }, landingText: '', aliasLabel: 'Artists', stack: [] };
 const libEl = $('lib'), libBody = $('lib-body'), libNav = $('lib-nav');
 
 const libTitle = t => t.title || decodeURIComponent(t.file).replace(/\.mp3$/i, '');

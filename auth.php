@@ -61,8 +61,8 @@ function mp_default_site_settings(): array {
         // Shown above the row buttons on the mobile library landing page.
         // Blank by default so a fresh install shows nothing extra.
         'landing_text' => '',
-        // Label for the library row that groups tracks by artist ("Aliases"
-        // by default). Blank falls back to "Aliases" — see index.html's
+        // Label for the library row that groups tracks by artist ("Artists"
+        // by default). Blank falls back to "Artists" — see index.html's
         // libHome()/libAliasesScreen().
         'alias_label' => '',
         // Blank by default: a fresh install shows no social icons at all
