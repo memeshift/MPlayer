@@ -414,6 +414,21 @@ body {
   cursor: pointer;
 }
 
+#seekbar,
+#seekbar-d,
+#now-view-seek {
+  background: linear-gradient(to right, var(--seek-buf, var(--pl-num)) var(--buf, 0%), var(--seek-track, var(--slider-track)) var(--buf, 0%));
+}
+#seekbar.buffering,
+#seekbar-d.buffering,
+#now-view-seek.buffering { animation: mp-buffer-pulse 1s ease-in-out infinite; }
+@keyframes mp-buffer-pulse { 50% { opacity: 0.45; } }
+@media (prefers-reduced-motion: reduce) {
+  #seekbar.buffering,
+  #seekbar-d.buffering,
+  #now-view-seek.buffering { animation: none; opacity: 0.6; }
+}
+
 .vol-row {
   display: flex;
   align-items: center;
@@ -1682,7 +1697,8 @@ input[type="range"]::-moz-range-thumb {
     height: 3px;
     border-radius: 3px;
     border: none;
-    background: var(--led-dim);
+    --seek-track: var(--led-dim);
+    --seek-buf: var(--info-comment);
   }
 
   .dock-seek-row input[type="range"]::-webkit-slider-thumb {
@@ -1861,6 +1877,14 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .pl-blink { animation: blink 1.2s step-end infinite; }
+
+.mp-progress { height: 8px; margin: 10px auto 0; max-width: 320px; background: var(--pl-bg); border: 1px solid var(--pl-num); border-radius: var(--radius); overflow: hidden; }
+.mp-progress-fill { height: 100%; width: 0; background: var(--pl-text); transition: width 0.15s linear; }
+.mp-progress.indeterminate .mp-progress-fill { width: 35%; animation: mp-progress-slide 1.2s ease-in-out infinite; }
+@keyframes mp-progress-slide { from { margin-left: -35%; } to { margin-left: 100%; } }
+@media (prefers-reduced-motion: reduce) {
+  .mp-progress.indeterminate .mp-progress-fill { width: 100%; animation: none; opacity: 0.5; }
+}
 
 /* ════════════════════════════════════════════════════════════════════════
    A11Y FIX: iOS input anti-zoom (font-size < 16px triggers Mobile Safari zoom)
@@ -2237,6 +2261,7 @@ input, select, textarea {
       <div class="pl-scroll" id="pl-scroll">
         <div class="pl-status" id="pl-status">
           <span class="pl-blink">■</span>&nbsp;SCANNING MUSIC DIRECTORY…
+          <div class="mp-progress indeterminate" role="progressbar" aria-label="Loading library"><div class="mp-progress-fill"></div></div>
         </div>
         <!-- A11Y FIX 5: role="listbox" kept; keyboard nav added in JS -->
         <ul id="playlist" role="listbox" aria-label="Track list"></ul>
@@ -2744,7 +2769,31 @@ function prevTrack() {
 ════════════════════════════════════════════════════════════════════ */
 let seekDragging = false;
 
+const seekEls = () => ['seekbar', 'seekbar-d', 'now-view-seek'].map($).filter(Boolean);
+
+function setBuffering(on) {
+  seekEls().forEach(e => {
+    e.classList.toggle('buffering', on);
+    e.setAttribute('aria-busy', on);
+  });
+}
+
+function updateBuffered() {
+  let end = 0;
+  for (let i = 0; i < audio.buffered.length; i++) {
+    if (audio.buffered.start(i) <= audio.currentTime && audio.currentTime <= audio.buffered.end(i)) end = audio.buffered.end(i);
+  }
+  const pct = audio.duration ? (end / audio.duration) * 100 + '%' : '0%';
+  seekEls().forEach(e => e.style.setProperty('--buf', pct));
+}
+
 function bindAudio() {
+  ['progress', 'loadedmetadata', 'seeked'].forEach(ev => audio.addEventListener(ev, updateBuffered));
+  audio.addEventListener('loadstart', () => { setBuffering(false); updateBuffered(); });
+  audio.addEventListener('play', () => { if (audio.readyState < 3) setBuffering(true); });
+  audio.addEventListener('waiting', () => setBuffering(true));
+  ['playing', 'pause', 'error', 'emptied'].forEach(ev => audio.addEventListener(ev, () => setBuffering(false)));
+
   audio.addEventListener('timeupdate', () => {
     if (!audio.duration || isNaN(audio.duration)) return;
     const t = fmtTime(audio.currentTime);

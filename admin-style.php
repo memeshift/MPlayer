@@ -252,6 +252,13 @@ a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visib
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 @media (max-width: 480px) { .grid-2 { grid-template-columns: 1fr; } }
 #landing_text-count { color: var(--link); }
+.mp-progress { height: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+.mp-progress-fill { height: 100%; width: 0; background: var(--accent); transition: width 0.15s linear; }
+.mp-progress.indeterminate .mp-progress-fill { width: 35%; animation: mp-progress-slide 1.2s ease-in-out infinite; }
+@keyframes mp-progress-slide { from { margin-left: -35%; } to { margin-left: 100%; } }
+@media (prefers-reduced-motion: reduce) {
+  .mp-progress.indeterminate .mp-progress-fill { width: 100%; animation: none; opacity: 0.5; }
+}
 CSS;
 }
 

@@ -150,6 +150,10 @@ body.batch-active { max-width: 640px; }
 
 <?php echo mp_sr_status_html(); ?>
 <div id="msg" role="alert"></div>
+<div id="progress-wrap" style="margin:12px 0" hidden>
+  <p id="progress-label" class="hint"></p>
+  <div class="mp-progress" id="progress-bar" role="progressbar" aria-labelledby="progress-label" aria-valuemin="0" aria-valuemax="100"><div class="mp-progress-fill"></div></div>
+</div>
 <div id="published-log"></div>
 
 <div id="step-pick">
@@ -252,6 +256,58 @@ body.batch-active { max-width: 640px; }
     msg.className = text ? (isError ? 'msg msg-error' : 'msg msg-success') : '';
   }
 
+  const progWrap = $('progress-wrap');
+  const progLabel = $('progress-label');
+  const progBar = $('progress-bar');
+  const progFill = progBar.firstElementChild;
+
+  // pct === null shows the indeterminate bar (server-side work has no measurable progress)
+  function showProgress(label, pct) {
+    progWrap.hidden = false;
+    progLabel.textContent = label;
+    progBar.classList.toggle('indeterminate', pct === null);
+    if (pct === null) {
+      progBar.removeAttribute('aria-valuenow');
+      progFill.style.width = '';
+    } else {
+      progBar.setAttribute('aria-valuenow', Math.round(pct));
+      progFill.style.width = pct + '%';
+    }
+  }
+  function hideProgress() {
+    progWrap.hidden = true;
+    progFill.style.width = '';
+  }
+
+  const fmtMB = (n) => (n / 1048576).toFixed(1);
+  const fmtEta = (s) => s >= 60 ? Math.floor(s / 60) + 'm ' + (s % 60) + 's' : s + 's';
+
+  // fetch() has no upload progress events; XHR is the only way to get them
+  function uploadWithProgress(url, fd, name) {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      const t0 = Date.now();
+      xhr.open('POST', url);
+      xhr.upload.onprogress = (e) => {
+        if (!e.lengthComputable) return showProgress('Uploading ' + name + '…', null);
+        const rate = e.loaded / Math.max((Date.now() - t0) / 1000, 0.001);
+        const eta = Math.round((e.total - e.loaded) / rate);
+        showProgress('Uploading ' + name + ' — ' + fmtMB(e.loaded) + ' / ' + fmtMB(e.total) + ' MB · ' + fmtMB(rate) + ' MB/s · ' + fmtEta(eta) + ' left', (e.loaded / e.total) * 100);
+      };
+      xhr.upload.onload = () => showProgress('Processing ' + name + '…', null);
+      xhr.onload = () => {
+        const ok = xhr.status >= 200 && xhr.status < 300;
+        try {
+          resolve({ ok, data: JSON.parse(xhr.responseText) });
+        } catch (_) {
+          resolve({ ok: false, data: { error: 'Server returned an unexpected response (HTTP ' + xhr.status + ').' } });
+        }
+      };
+      xhr.onerror = () => reject(new Error('Network error during upload.'));
+      xhr.send(fd);
+    });
+  }
+
   const dropZone = $('drop-zone');
   const fileInput = $('file-input');
 
@@ -305,9 +361,8 @@ body.batch-active { max-width: 640px; }
     fd.append('file', file, safeName);
     fd.append('csrf', document.querySelector('input[name=csrf]').value);
     try {
-      const resp = await fetch('upload_inspect.php', { method: 'POST', body: fd });
-      const data = await resp.json();
-      if (!resp.ok || data.error) throw new Error(data.error || 'Upload failed.');
+      const { ok, data } = await uploadWithProgress('upload_inspect.php', fd, file.name);
+      if (!ok || data.error) throw new Error(data.error || 'Upload failed.');
 
       item.token = data.token;
       item.tags = {
@@ -324,6 +379,7 @@ body.batch-active { max-width: 640px; }
       item.errorMsg = err.message || 'Could not read that file.';
       announce(item.name + ': ' + item.errorMsg, true);
     }
+    hideProgress();
     renderList();
     if (selected === -1 && item.status === 'pending') selectItem(items.indexOf(item));
   }
@@ -574,6 +630,7 @@ body.batch-active { max-width: 640px; }
       fd.append('keep_art', '1');
     }
 
+    showProgress('Publishing ' + item.name + '… large files take a moment.', null);
     try {
       const resp = await fetch('upload_commit.php', { method: 'POST', body: fd });
       const data = await resp.json();
@@ -620,6 +677,7 @@ body.batch-active { max-width: 640px; }
       publishBtn.disabled = false;
       $('cancel-btn').disabled = false;
     }
+    hideProgress();
   });
 
   function cancelItem(i) {

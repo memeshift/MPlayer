@@ -91,5 +91,5 @@ function applyTrackOrder(array $tracks): array {
 define('STAGING_DIR', __DIR__ . '/staging/');
 
 // ── Upload limits ──
-define('MAX_UPLOAD_MB', 50);   // MP3 file
+define('MAX_UPLOAD_MB', 300);   // MP3 file
 define('MAX_ART_MB', 5);       // cover art image
