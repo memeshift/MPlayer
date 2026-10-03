@@ -3704,7 +3704,7 @@ function openArtModal() {
     modalImg.src = img.src;
     modalImg.alt = img.getAttribute('alt') || '';
   } else {
-    modalPat.style.cssText = ph.style.cssText;
+    modalPat.style.cssText = ph.dataset.art;
   }
 
   const modal = $('art-modal');
@@ -4027,7 +4027,8 @@ function artPatternStyle(t) {
 function applyArtPattern(el, t) {
   el.className = 'art-placeholder art-pattern';
   el.textContent = '';
-  el.style.cssText = artPatternStyle(t);
+  el.dataset.art = artPatternStyle(t);
+  el.style.cssText = el.dataset.art;
 }
 
 const libArt   = t => t.has_art ? `<img src="art.php?f=${t.file}&v=${t.mtime}" alt="" loading="lazy">` : `<span class="lib-ph" style="${artPatternStyle(t)}" aria-hidden="true"></span>`;
