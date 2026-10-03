@@ -1011,6 +1011,16 @@ body {
   border-radius: var(--radius);
 }
 
+.art-modal-pattern {
+  width: min(80vw, 70vh, 720px);
+  aspect-ratio: 1;
+  box-shadow: 2px 3px 20px rgba(0,0,0,0.9);
+  border-radius: var(--radius);
+}
+.art-modal-pattern[hidden] { display: none; }
+
+.art-modal img[hidden] { display: none; }
+
 .art-modal-close {
   position: absolute;
   top: -14px;
@@ -2314,6 +2324,7 @@ input, select, textarea {
     <div class="art-modal">
       <button class="art-modal-close" id="art-modal-close" aria-label="Close">&#10005;</button>
       <img id="art-modal-img" src="" alt="">
+      <div class="art-modal-pattern" id="art-modal-pattern" role="img" aria-label="Generated artwork" hidden></div>
     </div>
   </div>
 
@@ -3225,7 +3236,12 @@ function showInfo(t) {
     img.setAttribute('role', 'button');
     img.setAttribute('tabindex', '0');
     img.setAttribute('aria-label', `View larger ${altText}`);
+    ph.removeAttribute('role');
+    ph.removeAttribute('tabindex');
+    ph.removeAttribute('aria-label');
   } else {
+    img.onload = img.onerror = null;
+    img.removeAttribute('src');
     img.setAttribute('alt', '');
     img.style.display = 'none';
     applyArtPattern(ph, t);
@@ -3236,6 +3252,9 @@ function showInfo(t) {
     img.removeAttribute('role');
     img.removeAttribute('tabindex');
     img.removeAttribute('aria-label');
+    ph.setAttribute('role', 'button');
+    ph.setAttribute('tabindex', '0');
+    ph.setAttribute('aria-label', 'View larger generated artwork');
   }
 }
 
@@ -3672,10 +3691,21 @@ function closeEmbedModal() {
 
 function openArtModal() {
   const img = $('album-art');
-  if (img.style.display !== 'block' || !img.src) return;
+  const ph  = $('art-ph');
+  const showImg = img.style.display === 'block' && img.src;
+  const showPattern = !showImg && ph.classList.contains('art-pattern') && ph.style.display !== 'none';
+  if (!showImg && !showPattern) return;
 
-  $('art-modal-img').src = img.src;
-  $('art-modal-img').alt = img.getAttribute('alt') || '';
+  const modalImg = $('art-modal-img');
+  const modalPat = $('art-modal-pattern');
+  modalImg.hidden = !showImg;
+  modalPat.hidden = !showPattern;
+  if (showImg) {
+    modalImg.src = img.src;
+    modalImg.alt = img.getAttribute('alt') || '';
+  } else {
+    modalPat.style.cssText = ph.style.cssText;
+  }
 
   const modal = $('art-modal');
   modal.style.display = 'flex';
@@ -3688,7 +3718,8 @@ function closeArtModal() {
   if (modal.style.display === 'none') return;
   modal.style.display = 'none';
   $('art-modal-img').src = '';
-  $('album-art').focus();
+  const img = $('album-art');
+  (img.style.display === 'block' ? img : $('art-ph')).focus();
 }
 
 function isMobileView() {
@@ -3698,12 +3729,12 @@ function isMobileView() {
 $('art-wrap').addEventListener('click', () => {
   isMobileView() ? openNowView() : openArtModal();
 });
-$('album-art').addEventListener('keydown', e => {
+['album-art', 'art-ph'].forEach(id => $(id).addEventListener('keydown', e => {
   if (e.key === 'Enter' || e.key === ' ') {
     e.preventDefault();
     isMobileView() ? openNowView() : openArtModal();
   }
-});
+}));
 $('art-modal-close').addEventListener('click', closeArtModal);
 $('art-modal').addEventListener('click', e => {
   if (e.target === $('art-modal')) closeArtModal();
