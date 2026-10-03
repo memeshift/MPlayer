@@ -1545,7 +1545,7 @@ input[type="range"]::-moz-range-thumb {
   box-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
-@media (max-width: 600px) {
+@media (max-width: 600px) and (pointer: coarse) {
   input[type="range"]::-webkit-slider-thumb { width: 44px; height: 44px; }
   input[type="range"]::-moz-range-thumb     { width: 44px; height: 44px; }
 }
@@ -1557,7 +1557,7 @@ input[type="range"]::-moz-range-thumb {
    RESPONSIVE — MOBILE
 ════════════════════════════════════════════════════════════════════════ */
 
-@media (max-width: 600px) {
+@media (max-width: 600px) and (pointer: coarse) {
   html {
     /* Keep user/browser text scaling behavior predictable on mobile */
     -webkit-text-size-adjust: 100%;
@@ -1962,7 +1962,7 @@ input, select, textarea {
    MOBILE LIBRARY (landing page) — #lib in the markup, "MOBILE LIBRARY" in JS
 ════════════════════════════════════════════════════════════════════════ */
 #lib { display: none; }
-@media (max-width: 600px) {
+@media (max-width: 600px) and (pointer: coarse) {
   #lib.on {
     position: fixed; inset: 0; z-index: 200;
     display: flex; flex-direction: column;
@@ -3374,7 +3374,7 @@ function resizeCanvas() {
   canvas.height = wrap.clientHeight || 42;
   drawVis();
 
-  if (window.innerWidth > 600) libEl.classList.remove('on');
+  if (!isMobileView()) libEl.classList.remove('on');
 }
 
 /* ════════════════════════════════════════════════════════════════════
@@ -3723,7 +3723,7 @@ function closeArtModal() {
 }
 
 function isMobileView() {
-  return window.matchMedia('(max-width: 600px)').matches;
+  return window.matchMedia('(max-width: 600px) and (pointer: coarse)').matches;
 }
 
 $('art-wrap').addEventListener('click', () => {
@@ -4203,7 +4203,7 @@ audio.addEventListener('pause', libMini);
 })();
 
 function libInit(skip) {
-  if (!skip && window.innerWidth <= 600) libEl.classList.add('on');
+  if (!skip && isMobileView()) libEl.classList.add('on');
   libRender();
 }
 
