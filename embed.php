@@ -70,6 +70,9 @@ $audioUrl  = $baseUrl . '/music/' . rawurlencode($filename);
 $artUrl    = $baseUrl . '/art.php?f=' . $fileEnc;
 $playerUrl = $baseUrl . '/?t=' . $fileEnc;
 
+// Pattern seed: same string index.html hashes (album, else URL-encoded filename). Raw tag, not the HTML-escaped $album.
+$artSeed   = (string) ($tags['album'] ?? '') !== '' ? 'album:' . $tags['album'] : 'file:' . $fileEnc;
+
 // Customize colours for the art-less pattern (same mapping as index.html's DESIGN_VAR_GROUPS).
 $design    = mp_read_site_settings()['design'];
 $artVars   = '';
@@ -338,10 +341,10 @@ html, body {
     return `${img} ${pos}/calc(100% / ${nx}) calc(100% / ${ny})`;
   }).join(', ');
 
-  // Copy of index.html's pattern code (keep in sync): same filename → same pattern. Slots = recipe × tile grid × colour pair (1,920).
-  function artPatternStyle(file) {
+  // Copy of index.html's pattern code (keep in sync): same seed → same pattern. Slots = recipe × tile grid × colour pair (1,920).
+  function artPatternStyle(seed) {
     let h = 2166136261;
-    for (const c of file) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
+    for (const c of seed) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
     h ^= h >>> 16; h = Math.imul(h, 2246822507); h ^= h >>> 13; h = Math.imul(h, 3266489909); h ^= h >>> 16;
     h >>>= 0;
     const pick = k => { const v = h % k; h = Math.floor(h / k); return v; };
@@ -350,7 +353,7 @@ html, body {
   }
   ph.className = 'art-placeholder art-pattern';
   ph.textContent = '';
-  ph.style.cssText = artPatternStyle(<?= json_encode($fileEnc, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>);
+  ph.style.cssText = artPatternStyle(<?= json_encode($artSeed, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>);
 })();
 </script>
 <?php endif; ?>

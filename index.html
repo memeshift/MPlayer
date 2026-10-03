@@ -3980,11 +3980,12 @@ const artBackground = (pat, a, b, nx, ny) => ART_PATTERNS[pat](a, b, nx, ny).map
   return `${img} ${pos}/calc(100% / ${nx}) calc(100% / ${ny})`;
 }).join(', ');
 
-// Pure function of the filename: the same file gets the same pattern in every view,
-// whatever else is uploaded. Slots = recipe × tile grid × colour pair (1,920).
+// Pure function of the album (tracks of one album share a pattern), or of the filename when there is no album:
+// the same input gets the same pattern in every view, whatever else is uploaded. Slots = recipe × tile grid × colour pair (1,920).
+// embed.php builds the same seed string.
 function artPatternStyle(t) {
   let h = 2166136261;
-  for (const c of t.file) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
+  for (const c of t.album ? 'album:' + t.album : 'file:' + t.file) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
   h ^= h >>> 16; h = Math.imul(h, 2246822507); h ^= h >>> 13; h = Math.imul(h, 3266489909); h ^= h >>> 16;
   h >>>= 0;
   const pick = k => { const v = h % k; h = Math.floor(h / k); return v; };
