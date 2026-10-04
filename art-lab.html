@@ -65,6 +65,15 @@ button:active { filter: brightness(.9); }
 .link { background: none; color: var(--muted); font-weight: 400; text-decoration: underline; min-height: 32px; padding: 4px 0; text-align: left; }
 :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 .foot { color: var(--muted); font-size: 12px; }
+[hidden] { display: none !important; }
+.check { display: flex; align-items: center; gap: 10px; min-height: 44px; }
+.check input { width: 22px; height: 22px; accent-color: var(--accent); margin: 0; }
+textarea {
+  width: 100%; min-height: 150px; padding: 10px; resize: vertical;
+  background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 0;
+  font: 12px/1.45 var(--mono);
+}
+.hint { margin: 0; color: var(--muted); font-size: 12px; }
 </style>
 </head>
 <body>
@@ -106,6 +115,26 @@ button:active { filter: brightness(.9); }
     <div class="row"><label for="scale">Brush scale</label><output id="o-scale"></output><input type="range" id="scale" min="1" max="8" step="0.1" value="5"></div>
     <div class="row"><label for="weight">Stroke weight</label><output id="o-weight"></output><input type="range" id="weight" min="0.2" max="3" step="0.1" value="1.6"></div>
     <div class="row"><label for="wiggle">Wobble</label><output id="o-wiggle"></output><input type="range" id="wiggle" min="0" max="10" step="0.5" value="2"></div>
+  </section>
+
+  <section aria-labelledby="h-custom">
+    <h2 id="h-custom">Custom brush</h2>
+    <p class="hint">Designs a new brush and uses it for every mark. Based on the p5.brush Brush Maker. Brush scale does not change it.</p>
+    <label class="check"><input type="checkbox" id="useCustom"><span>Use custom brush</span></label>
+    <div class="field"><label for="cb-type">Brush type</label>
+      <select id="cb-type"><option value="default">default (pencil)</option><option value="spray">spray</option><option value="marker">marker</option></select>
+    </div>
+    <div class="row"><label for="cb-weight">Weight</label><output id="o-cb-weight"></output><input type="range" id="cb-weight"></div>
+    <div class="row"><label for="cb-scatter">Scatter</label><output id="o-cb-scatter"></output><input type="range" id="cb-scatter"></div>
+    <div class="row" id="row-cb-sharpness"><label for="cb-sharpness">Sharpness</label><output id="o-cb-sharpness"></output><input type="range" id="cb-sharpness" min="0" max="1" step="0.01"></div>
+    <div class="row" id="row-cb-grain"><label for="cb-grain">Grain</label><output id="o-cb-grain"></output><input type="range" id="cb-grain"></div>
+    <div class="row"><label for="cb-opacity">Opacity</label><output id="o-cb-opacity"></output><input type="range" id="cb-opacity"></div>
+    <div class="row"><label for="cb-spacing">Spacing</label><output id="o-cb-spacing"></output><input type="range" id="cb-spacing"></div>
+    <div class="row"><label for="cb-noise">Noise</label><output id="o-cb-noise"></output><input type="range" id="cb-noise"></div>
+    <div class="row"><label for="cb-pressStart">Pressure at start</label><output id="o-cb-pressStart"></output><input type="range" id="cb-pressStart" min="0.1" max="3" step="0.02"></div>
+    <div class="row"><label for="cb-pressEnd">Pressure at end</label><output id="o-cb-pressEnd"></output><input type="range" id="cb-pressEnd" min="0.1" max="3" step="0.02"></div>
+    <div class="field"><label for="cb-code">brush.add() code</label><textarea id="cb-code" readonly spellcheck="false"></textarea></div>
+    <button type="button" id="cb-copy">Copy code</button>
   </section>
 
   <section aria-labelledby="h-fill">
@@ -162,6 +191,49 @@ button:active { filter: brightness(.9); }
   var stage = $('stage');
   var SLIDERS = ['tiles', 'mix', 'size', 'scale', 'weight', 'wiggle', 'opacity', 'bleed', 'texture', 'hatchGap', 'hatchAngle'];
 
+  /* ── Custom brush (ranges and starting values taken from the p5.brush Brush Maker) ── */
+  var CB_KEYS = ['weight', 'scatter', 'sharpness', 'grain', 'opacity', 'spacing', 'noise', 'pressStart', 'pressEnd'];
+  var CB_RANGES = {
+    default: { weight: [0, 3, 0.01], scatter: [0, 25, 0.05], grain: [0, 1, 0.01], opacity: [1, 255, 1], spacing: [0.01, 2, 0.01], noise: [0, 1, 0.05] },
+    spray:   { weight: [0, 3, 0.01], scatter: [10, 50, 1],   grain: [0, 107, 1],  opacity: [1, 255, 1], spacing: [2, 50, 1],      noise: [0, 1, 0.05] },
+    marker:  { weight: [0, 50, 1],   scatter: [0, 15, 0.05],                      opacity: [0, 5, 0.01], spacing: [0.002, 0.5, 0.002], noise: [0, 1, 0.05] }
+  };
+  var CB_PRESETS = {
+    default: { weight: 0.9, scatter: 1.8, sharpness: 0.3, grain: 0.9, opacity: 170, spacing: 0.3,  noise: 1, pressStart: 1.1, pressEnd: 0.9,  rotate: 'natural' },
+    spray:   { weight: 0.6, scatter: 18,  grain: 40,                  opacity: 90,  spacing: 5,    noise: 1, pressStart: 0.7, pressEnd: 1,    rotate: 'random' },
+    marker:  { weight: 6,   scatter: 0.36,                            opacity: 1,   spacing: 0.09, noise: 1, pressStart: 1.2, pressEnd: 0.85, rotate: 'none', markerTip: true }
+  };
+  var CB_NAME = 'labBrush';
+  var CB_FIXED = { sharpness: [0, 1, 0.01], pressStart: [0.1, 3, 0.02], pressEnd: [0.1, 3, 0.02] };
+
+  function cbConfig(s) {
+    var t = s.cbType, pr = CB_PRESETS[t], c = s.cb;
+    var cfg = { type: t, weight: c.weight, scatter: c.scatter, opacity: c.opacity, spacing: c.spacing, noise: c.noise, pressure: [c.pressStart, c.pressEnd], rotate: pr.rotate };
+    if (t === 'default') { cfg.sharpness = c.sharpness; cfg.grain = c.grain; }
+    if (t === 'spray') cfg.grain = c.grain;
+    if (t === 'marker') cfg.markerTip = true;
+    return cfg;
+  }
+  function cbCode(s) {
+    var cfg = cbConfig(s), keys = Object.keys(cfg);
+    var body = keys.map(function (k) {
+      var v = cfg[k];
+      return '  ' + k + ': ' + (Array.isArray(v) ? '[' + v.join(', ') + ']' : typeof v === 'string' ? '"' + v + '"' : v) + ',';
+    }).join('\n');
+    return 'brush.add("myBrush", {\n' + body + '\n});';
+  }
+  function applyCbType(type) {
+    var r = CB_RANGES[type], pr = CB_PRESETS[type];
+    CB_KEYS.forEach(function (k) {
+      var el = $('cb-' + k), rg = r[k] || CB_FIXED[k];
+      if (!rg) return;
+      el.min = rg[0]; el.max = rg[1]; el.step = rg[2];
+      if (pr[k] !== undefined) el.value = pr[k];
+    });
+    $('row-cb-sharpness').hidden = type !== 'default';
+    $('row-cb-grain').hidden = type === 'marker';
+  }
+
   /* ── Canvas ── */
   var SIZE = 600; // internal drawing units; CSS scales it to the column
   var ok = false;
@@ -204,6 +276,10 @@ button:active { filter: brightness(.9); }
     var s = { seed: $('seed').value || 'Untitled Album', brushName: $('brushName').value, fieldName: $('fieldName').value, colors: {} };
     SLIDERS.forEach(function (k) { s[k] = parseFloat($(k).value); });
     COLOR_KEYS.forEach(function (k) { s.colors[k] = $('c-' + k).value; });
+    s.useCustom = $('useCustom').checked;
+    s.cbType = $('cb-type').value;
+    s.cb = {};
+    CB_KEYS.forEach(function (k) { s.cb[k] = parseFloat($('cb-' + k).value); });
     return s;
   }
 
@@ -211,6 +287,7 @@ button:active { filter: brightness(.9); }
      Each tile gets one of five marks; the Shape mix slider shifts the odds from
      filled circles towards hatched and line work. Colors alternate in a checker
      between Accent and Title Bar & Highlights, with Playlist Text as the third ink. */
+  var appliedScale = 1;
   function draw(s) {
     var rnd = mulberry(hashSeed('album:' + s.seed));
     var seedNum = hashSeed('brush:' + s.seed);
@@ -220,7 +297,10 @@ button:active { filter: brightness(.9); }
     brush.seed(seedNum);
     brush.noiseSeed(seedNum);
     brush.clear(s.colors.bg);
-    brush.scaleBrushes(s.scale);
+    // scaleBrushes() multiplies the brushes' current size, so apply only the change since last draw.
+    if (s.scale !== appliedScale) { brush.scaleBrushes(s.scale / appliedScale); appliedScale = s.scale; }
+    var brushName = s.brushName;
+    if (s.useCustom) { brush.add(CB_NAME, cbConfig(s)); brushName = CB_NAME; }
 
     brush.push();
     brush.translate(-SIZE / 2, -SIZE / 2);
@@ -241,24 +321,24 @@ button:active { filter: brightness(.9); }
           brush.fill(inkA, s.opacity);
           brush.fillBleed(s.bleed);
           brush.fillTexture(s.texture, 0.4);
-          brush.set(s.brushName, inkB, s.weight);
+          brush.set(brushName, inkB, s.weight);
           brush.circle(cx, cy, r);
         } else if (kind === 'ring') {
-          brush.set(s.brushName, inkA, s.weight * 1.4);
+          brush.set(brushName, inkA, s.weight * 1.4);
           brush.circle(cx, cy, r);
           brush.fill(C, s.opacity * 0.8);
           brush.fillBleed(s.bleed);
           brush.noStroke();
           brush.circle(cx, cy, r * 0.35);
         } else if (kind === 'hatch') {
-          brush.hatchStyle(s.brushName, inkB, s.weight);
+          brush.hatchStyle(brushName, inkB, s.weight);
           brush.hatch(s.hatchGap, s.hatchAngle + (rnd() < 0.5 ? 0 : 90), { rand: 0.05 });
-          brush.set(s.brushName, inkA, s.weight);
+          brush.set(brushName, inkA, s.weight);
           brush.rect(cx - r, cy - r, r * 2, r * 2, 'corner');
         } else {
-          brush.set(s.brushName, inkA, s.weight * 1.2);
+          brush.set(brushName, inkA, s.weight * 1.2);
           brush.line(cx - r, cy - r, cx + r, cy + r);
-          brush.set(s.brushName, C, s.weight);
+          brush.set(brushName, C, s.weight);
           brush.line(cx - r, cy + r, cx + r, cy - r);
         }
       }
@@ -279,20 +359,33 @@ button:active { filter: brightness(.9); }
   function syncReadouts() {
     SLIDERS.forEach(function (k) { $('o-' + k).textContent = $(k).value; });
     COLOR_KEYS.forEach(function (k) { $('x-' + k).textContent = $('c-' + k).value.toUpperCase(); });
+    CB_KEYS.forEach(function (k) { $('o-cb-' + k).textContent = $('cb-' + k).value; });
+    $('cb-code').value = cbCode(readState());
   }
   function setColors(p) { COLOR_KEYS.forEach(function (k) { $('c-' + k).value = p[k].toLowerCase(); }); }
   function changed() { syncReadouts(); schedule(); }
 
   SLIDERS.forEach(function (k) { $(k).addEventListener('input', changed); });
   COLOR_KEYS.forEach(function (k) { $('c-' + k).addEventListener('input', changed); });
-  ['seed', 'brushName', 'fieldName'].forEach(function (k) { $(k).addEventListener('input', changed); });
+  ['seed', 'brushName', 'fieldName', 'useCustom'].forEach(function (k) { $(k).addEventListener('input', changed); });
+  CB_KEYS.forEach(function (k) { $('cb-' + k).addEventListener('input', changed); });
+  $('cb-type').addEventListener('input', function () { applyCbType($('cb-type').value); changed(); });
+  $('cb-copy').addEventListener('click', function () {
+    var box = $('cb-code'), btn = $('cb-copy');
+    function done(t) { btn.textContent = t; setTimeout(function () { btn.textContent = 'Copy code'; }, 1500); }
+    function fallback() { box.focus(); box.select(); done('Selected, press copy'); }
+    try { navigator.clipboard.writeText(box.value).then(function () { done('Copied'); }, fallback); } catch (e) { fallback(); }
+  });
   $('randomize').addEventListener('click', function () { setColors(randomPalette()); changed(); });
   $('restore').addEventListener('click', function () {
     setColors(DEFAULTS);
     SLIDERS.forEach(function (k) { $(k).value = $(k).defaultValue; });
+    $('cb-type').value = 'default';
+    applyCbType('default');
     changed();
   });
 
+  applyCbType('default');
   syncReadouts();
   schedule();
 })();
