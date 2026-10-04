@@ -287,7 +287,11 @@ button:active { filter: brightness(.9); }
   COLOR_KEYS.forEach(function (k) { $('c-' + k).addEventListener('input', changed); });
   ['seed', 'brushName', 'fieldName'].forEach(function (k) { $(k).addEventListener('input', changed); });
   $('randomize').addEventListener('click', function () { setColors(randomPalette()); changed(); });
-  $('restore').addEventListener('click', function () { setColors(DEFAULTS); changed(); });
+  $('restore').addEventListener('click', function () {
+    setColors(DEFAULTS);
+    SLIDERS.forEach(function (k) { $(k).value = $(k).defaultValue; });
+    changed();
+  });
 
   syncReadouts();
   schedule();
