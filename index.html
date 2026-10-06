@@ -2498,7 +2498,7 @@ async function init() {
 
     S.tracks = data;
     S.sorted = [...data];
-    libInit(!!urlParam);
+    libInit();
 
     $('pl-status').style.display = 'none';
     renderPlaylist();
@@ -2509,7 +2509,7 @@ async function init() {
       if (idx >= 0) {
         playTrack(idx, false);
         window.scrollTo(0, 0);
-        if (isMobileView()) openNowView();
+        if (isMobileView()) { libMini(); openNowView(); }
       }
     }
   } catch (e) {
@@ -4280,8 +4280,8 @@ audio.addEventListener('pause', libMini);
   });
 })();
 
-function libInit(skip) {
-  if (!skip && isMobileView()) libEl.classList.add('on');
+function libInit() {
+  if (isMobileView()) libEl.classList.add('on');
   libRender();
 }
 
