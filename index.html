@@ -1224,6 +1224,24 @@ body {
   cursor: pointer;
 }
 .now-view-notes-link:focus-visible { outline: 2px solid var(--chrome); outline-offset: 2px; }
+.now-view-share-btn {
+  flex: none;
+  width: 100%;
+  min-height: 48px;
+  margin-bottom: 20px;
+  background: transparent;
+  border: 1px solid var(--chrome);
+  border-radius: var(--radius);
+  color: var(--pl-text);
+  font-family: var(--font-info);
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.now-view-share-btn:active { background: rgba(255,255,255,0.08); }
+.now-view-share-btn:focus-visible { outline: 2px solid var(--chrome); outline-offset: 2px; }
 .now-view-notes-text {
   font-family: var(--font-info-body);
   font-size: 16px;
@@ -2376,6 +2394,7 @@ input, select, textarea {
     <div class="now-view-notes" id="now-view-notes" aria-hidden="true">
       <div class="now-view-notes-handle" id="now-view-notes-handle" aria-hidden="true"></div>
       <div class="now-view-notes-meta" id="now-view-notes-meta"></div>
+      <button type="button" class="now-view-share-btn" id="now-view-share">Share</button>
       <div class="now-view-notes-label">NOTES</div>
       <div class="now-view-notes-text" id="now-view-notes-text">—</div>
     </div>
@@ -3824,6 +3843,7 @@ function syncNowView(t) {
   setNowViewTitle(t.title || decodeURIComponent(t.file).replace(/\.mp3$/i, ''));
   $('now-view-artist').textContent = t.artist || '—';
   $('now-view-notes-text').textContent = t.comment || '—';
+  $('now-view-share').onclick = () => nativeShare(t);
 
   const navLink = (kind, name) => `<button type="button" class="now-view-notes-link" data-nv-${kind}="${esc(name)}">${esc(name)}</button>`;
   const metaFields = [
