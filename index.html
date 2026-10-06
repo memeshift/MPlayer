@@ -2509,6 +2509,7 @@ async function init() {
       if (idx >= 0) {
         playTrack(idx, false);
         window.scrollTo(0, 0);
+        if (isMobileView()) openNowView();
       }
     }
   } catch (e) {
