@@ -1226,13 +1226,18 @@ body {
 .now-view-notes-link:focus-visible { outline: 2px solid var(--chrome); outline-offset: 2px; }
 .now-view-share-btn {
   flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   width: 100%;
   min-height: 48px;
   margin-bottom: 20px;
   background: transparent;
-  border: 1px solid var(--chrome);
-  border-radius: var(--radius);
+  border: 1px solid currentColor;
+  border-radius: 6px;
   color: var(--pl-text);
+  opacity: 0.75;
   font-family: var(--font-info);
   font-size: 14px;
   letter-spacing: 0.12em;
@@ -2394,7 +2399,10 @@ input, select, textarea {
     <div class="now-view-notes" id="now-view-notes" aria-hidden="true">
       <div class="now-view-notes-handle" id="now-view-notes-handle" aria-hidden="true"></div>
       <div class="now-view-notes-meta" id="now-view-notes-meta"></div>
-      <button type="button" class="now-view-share-btn" id="now-view-share">Share</button>
+      <button type="button" class="now-view-share-btn" id="now-view-share">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v13"/><path d="M8 7l4-4 4 4"/><path d="M20 16v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3"/></svg>
+        <span>Share</span>
+      </button>
       <div class="now-view-notes-label">NOTES</div>
       <div class="now-view-notes-text" id="now-view-notes-text">—</div>
     </div>
