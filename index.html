@@ -3682,7 +3682,7 @@ function nativeShare(t) {
   const url   = trackDeepLink(t);
   const title = (t.artist && t.title) ? `${t.artist} — ${t.title}` : (t.title || decodeURIComponent(t.file));
   if (navigator.share) {
-    navigator.share({ title, text: `Listen to ${title} on ${window.SITE_NAME}`, url }).catch(() => {});
+    navigator.share({ title, url }).catch(() => {});
   } else {
     openEmbedModal(t);
   }
