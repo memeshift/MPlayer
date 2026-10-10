@@ -1055,9 +1055,14 @@ body {
   overflow: hidden;
 }
 .now-view.dragging { transition: none; }
-/* Set by openNowView()/closeNowView(). Stops the browser's pull-to-refresh
-   (and scroll chaining to the page behind) while the view is open. */
-html.nv-open { overscroll-behavior-y: contain; }
+/* Pull-to-refresh is only wanted on the library home screen (it rescans for
+   new tracks). It is switched off while the now-playing view is open
+   (.nv-open, set in openNowView/closeNowView) and on every library screen
+   below home (.lib-deep, set in libRender). Loading/error screens keep it
+   on so a failed scan can be retried. */
+html.nv-open,
+html.lib-deep,
+html.lib-deep #lib-body { overscroll-behavior-y: contain; }
 .now-view-bg {
   position: absolute;
   inset: -10%;
@@ -4235,6 +4240,7 @@ const libScreens = {
 };
 
 function libRender() {
+  document.documentElement.classList.toggle('lib-deep', L.stack.length > 0);
   const top = L.stack[L.stack.length - 1] || libHome;
   const { title, html, hero } = top();
   libNav.innerHTML = L.stack.length ? '<button type="button" id="lib-back" aria-label="Back">‹</button>' : '';
