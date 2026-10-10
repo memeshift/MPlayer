@@ -3896,14 +3896,41 @@ function closeNotesView() {
   $('now-view-notes').style.transform = 'translateY(100%)';
 }
 
+/* Flick detection for the swipe gestures below. A swipe commits if it travels
+   far enough (each handler's own distance threshold) OR if it is a quick flick:
+   moving faster than FLICK_MIN_SPEED at release, over at least FLICK_MIN_PX.
+   Speed is measured over the last FLICK_WINDOW_MS only, so a fast drag that
+   pauses before the finger lifts does not count as a flick. */
+const FLICK_MIN_PX = 24;
+const FLICK_MIN_SPEED = 0.5;  // px per ms (500 px/s)
+const FLICK_WINDOW_MS = 100;
+function makeFlick() {
+  let samples = [];
+  const speed = () => {  // signed px/ms, positive = downward
+    const now = performance.now();
+    const recent = samples.filter(p => now - p.t <= FLICK_WINDOW_MS);
+    if (recent.length < 2) return 0;
+    const a = recent[0], b = recent[recent.length - 1];
+    return b.t > a.t ? (b.y - a.y) / (b.t - a.t) : 0;
+  };
+  return {
+    start(y) { samples = [{ y, t: performance.now() }]; },
+    move(y)  { samples.push({ y, t: performance.now() }); },
+    // dir: +1 for a downward flick, -1 for upward. dy: signed distance dragged.
+    isFlick(dir, dy) { return Math.abs(dy) >= FLICK_MIN_PX && speed() * dir >= FLICK_MIN_SPEED; }
+  };
+}
+
 /* Swipe up from the title/artist area to reveal notes */
 (() => {
   const meta  = document.querySelector('.now-view-meta');
   const notes = $('now-view-notes');
+  const flick = makeFlick();
   let startY = 0, dragging = false;
 
   meta.addEventListener('touchstart', e => {
     startY = e.touches[0].clientY;
+    flick.start(startY);
     dragging = true;
     notes.classList.add('dragging');
     // Tease the panel with a little peek-and-bounce so it reads as draggable.
@@ -3915,6 +3942,7 @@ function closeNotesView() {
   meta.addEventListener('touchmove', e => {
     if (!dragging) return;
     notes.classList.remove('peeking'); // an actual drag takes over from the teaser
+    flick.move(e.touches[0].clientY);
     const delta = Math.min(0, e.touches[0].clientY - startY); // negative = upward
     notes.style.transform = `translateY(calc(100% + ${delta}px))`;
   }, { passive: true });
@@ -3924,7 +3952,7 @@ function closeNotesView() {
     dragging = false;
     notes.classList.remove('dragging');
     const endY = (e.changedTouches[0] || {}).clientY ?? startY;
-    if (endY - startY < -80) {
+    if (endY - startY < -80 || flick.isFlick(-1, endY - startY)) {
       openNotesView();
     } else {
       closeNotesView();
@@ -3941,10 +3969,13 @@ function closeNotesView() {
 (() => {
   const notes  = $('now-view-notes');
   const handle = $('now-view-notes-handle');
+  const flick = makeFlick();
   let startY = 0, dragY = 0, dragging = false;
 
   handle.addEventListener('touchstart', e => {
     startY = e.touches[0].clientY;
+    flick.start(startY);
+    dragY = 0;
     dragging = true;
     notes.classList.add('dragging');
     e.stopPropagation();
@@ -3952,6 +3983,7 @@ function closeNotesView() {
 
   handle.addEventListener('touchmove', e => {
     if (!dragging) return;
+    flick.move(e.touches[0].clientY);
     dragY = Math.max(0, e.touches[0].clientY - startY);
     notes.style.transform = `translateY(${dragY}px)`;
     e.stopPropagation();
@@ -3961,7 +3993,7 @@ function closeNotesView() {
     if (!dragging) return;
     dragging = false;
     notes.classList.remove('dragging');
-    if (dragY > 100) {
+    if (dragY > 100 || flick.isFlick(1, dragY)) {
       closeNotesView();
     } else {
       openNotesView();
@@ -3977,11 +4009,14 @@ function closeNotesView() {
    to closing the whole player.) */
 (() => {
   const notes = $('now-view-notes');
+  const flick = makeFlick();
   let startY = 0, dragY = 0, dragging = false;
 
   notes.addEventListener('touchstart', e => {
     if (notes.scrollTop > 0) return; // not at the top — let native scroll handle it
     startY = e.touches[0].clientY;
+    flick.start(startY);
+    dragY = 0;
     dragging = true;
   }, { passive: true });
 
@@ -3989,6 +4024,7 @@ function closeNotesView() {
     if (!dragging) return;
     const delta = e.touches[0].clientY - startY;
     if (delta <= 0) { dragging = false; return; } // scrolling back up — hand off to native scroll
+    flick.move(e.touches[0].clientY);
     notes.classList.add('dragging');
     dragY = delta;
     notes.style.transform = `translateY(${dragY}px)`;
@@ -3998,7 +4034,7 @@ function closeNotesView() {
     if (!dragging) return;
     dragging = false;
     notes.classList.remove('dragging');
-    if (dragY > 100) {
+    if (dragY > 100 || flick.isFlick(1, dragY)) {
       closeNotesView();
     } else {
       openNotesView();
@@ -4009,6 +4045,7 @@ function closeNotesView() {
 /* Swipe down anywhere on the view (except the seek slider) to dismiss */
 (() => {
   const nv = $('now-view');
+  const flick = makeFlick();
   let startY = 0, dragY = 0, dragging = false;
 
   nv.addEventListener('touchstart', e => {
@@ -4018,12 +4055,14 @@ function closeNotesView() {
     // swipe starting elsewhere in the notes body bubbling up here.
     if (e.target.closest('input[type="range"]') || e.target.closest('#now-view-notes')) return;
     startY = e.touches[0].clientY;
+    flick.start(startY);
     dragging = true;
     nv.classList.add('dragging');
   }, { passive: true });
 
   nv.addEventListener('touchmove', e => {
     if (!dragging) return;
+    flick.move(e.touches[0].clientY);
     dragY = Math.max(0, e.touches[0].clientY - startY);
     nv.style.transform = `translateY(${dragY}px)`;
   }, { passive: true });
@@ -4032,7 +4071,7 @@ function closeNotesView() {
     if (!dragging) return;
     dragging = false;
     nv.classList.remove('dragging');
-    if (dragY > 120) {
+    if (dragY > 120 || flick.isFlick(1, dragY)) {
       closeNowView();
     } else {
       nv.style.transform = 'translateY(0)';
