@@ -1995,8 +1995,10 @@ input, select, textarea {
    MOBILE LIBRARY (landing page) — #lib in the markup, "MOBILE LIBRARY" in JS
 ════════════════════════════════════════════════════════════════════════ */
 #lib { display: none; }
+/* Same condition as isMobileView(). Shown from first paint so the desktop
+   layout never flashes while scan.php is still loading. */
 @media (max-width: 600px) and (pointer: coarse) {
-  #lib.on {
+  #lib {
     position: fixed; inset: 0; z-index: 200;
     display: flex; flex-direction: column;
     background: var(--pl-bg); color: var(--pl-text);
@@ -2005,7 +2007,7 @@ input, select, textarea {
     transition: padding-top 0.25s ease;
   }
   @media (prefers-reduced-motion: reduce) {
-    #lib.on { transition: none; }
+    #lib { transition: none; }
   }
   :where(#lib) button { font-family: inherit; font-size: 16px; color: inherit; background: none; border: 0; cursor: pointer; text-align: left; transition: opacity .1s; }
   :where(#lib) button:active { opacity: .5; }
@@ -2025,6 +2027,7 @@ input, select, textarea {
      var(--led-glow) on every focusable element, independent of outline.
      Suppressing both here. */
   body.lib-nofocusring #lib h1:focus-visible { outline: none; box-shadow: none; }
+  .lib-loading { padding: 32px 0; color: var(--pl-num); font-family: var(--font-pl); font-size: 1.4rem; letter-spacing: 0.1em; text-align: center; }
   #lib-body { flex: 1; overflow-y: auto; padding: 0 16px 140px; -webkit-overflow-scrolling: touch; }
   #lib-back { width: 44px; height: 44px; margin: 12px 0 0 12px; border-radius: 50%; background: var(--titlebar-bg); color: var(--titlebar-text); font-size: 24px; text-align: center; }
   #lib h1 { margin: 16px 0 12px; font-size: 36px; font-weight: 700; }
@@ -2412,7 +2415,7 @@ input, select, textarea {
   <!-- ══ MOBILE LIBRARY (landing page, ≤600px) ══ -->
   <div id="lib" aria-label="Music">
     <div id="lib-nav"></div>
-    <div id="lib-body"></div>
+    <div id="lib-body"><p class="lib-loading" role="status">Loading…</p></div>
     <div id="lib-mini" hidden>
       <button type="button" id="lib-mini-open" aria-label="Open now playing"></button>
       <button type="button" id="lib-mini-play" aria-label="Play or pause">&#9654;</button>
@@ -2513,9 +2516,12 @@ async function init() {
       }
     }
   } catch (e) {
+    const msg = `ERROR: ${esc(e.message)}<br><small style="opacity:.6">Check that scan.php and the music/ folder exist.</small>`;
     const s = $('pl-status');
     s.classList.add('error');
-    s.innerHTML = `ERROR: ${esc(e.message)}<br><small style="opacity:.6">Check that scan.php and the music/ folder exist.</small>`;
+    s.innerHTML = msg;
+    // On mobile the desktop panel is covered by #lib, so show the error there too.
+    if (isMobileView()) libBody.innerHTML = `<div class="pl-status error">${msg}</div>`;
   }
 
   bindControls();
@@ -3415,8 +3421,6 @@ function resizeCanvas() {
   canvas.width  = wrap.clientWidth  || 280;
   canvas.height = wrap.clientHeight || 42;
   drawVis();
-
-  if (!isMobileView()) libEl.classList.remove('on');
 }
 
 /* ════════════════════════════════════════════════════════════════════
@@ -4281,7 +4285,6 @@ audio.addEventListener('pause', libMini);
 })();
 
 function libInit() {
-  if (isMobileView()) libEl.classList.add('on');
   libRender();
 }
 
