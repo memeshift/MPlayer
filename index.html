@@ -1055,6 +1055,9 @@ body {
   overflow: hidden;
 }
 .now-view.dragging { transition: none; }
+/* Set by openNowView()/closeNowView(). Stops the browser's pull-to-refresh
+   (and scroll chaining to the page behind) while the view is open. */
+html.nv-open { overscroll-behavior-y: contain; }
 .now-view-bg {
   position: absolute;
   inset: -10%;
@@ -3797,6 +3800,7 @@ function openNowView() {
   if (!t) return;
   const nv = $('now-view');
   nv.style.display = 'flex';
+  document.documentElement.classList.add('nv-open');
   // Sync after display:flex, not before — the title-scroll measurement
   // needs real layout width, which a display:none box doesn't have.
   syncNowView(t);
@@ -3811,6 +3815,7 @@ function openNowView() {
 function closeNowView() {
   const nv = $('now-view');
   if (nv.style.display !== 'flex') return;
+  document.documentElement.classList.remove('nv-open');
   nv.classList.remove('dragging');
   nv.style.transform = 'translateY(100%)';
   closeNotesView();
@@ -3987,7 +3992,8 @@ function makeFlick() {
     dragY = Math.max(0, e.touches[0].clientY - startY);
     notes.style.transform = `translateY(${dragY}px)`;
     e.stopPropagation();
-  }, { passive: true });
+    if (e.cancelable) e.preventDefault(); // stop the browser's own drag (pull-to-refresh)
+  }, { passive: false });
 
   handle.addEventListener('touchend', e => {
     if (!dragging) return;
@@ -4028,7 +4034,8 @@ function makeFlick() {
     notes.classList.add('dragging');
     dragY = delta;
     notes.style.transform = `translateY(${dragY}px)`;
-  }, { passive: true });
+    if (e.cancelable) e.preventDefault(); // stop the browser's own drag (pull-to-refresh)
+  }, { passive: false });
 
   notes.addEventListener('touchend', () => {
     if (!dragging) return;
@@ -4065,7 +4072,8 @@ function makeFlick() {
     flick.move(e.touches[0].clientY);
     dragY = Math.max(0, e.touches[0].clientY - startY);
     nv.style.transform = `translateY(${dragY}px)`;
-  }, { passive: true });
+    if (e.cancelable) e.preventDefault(); // stop the browser's own drag (pull-to-refresh)
+  }, { passive: false });
 
   nv.addEventListener('touchend', () => {
     if (!dragging) return;
